@@ -121,16 +121,15 @@ export default function App() {
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
 
   return (
-    <div className="min-h-screen">
-      <div className="min-h-screen max-w-screen-xl mx-auto relative overflow-x-hidden">
-      <Sidebar 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        user={user} 
-        onNavigate={setCurrentView} 
-        onSignOut={handleSignOut} 
+    <div className="min-h-screen max-w-screen-xl mx-auto relative overflow-x-hidden">
+      <Sidebar
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        user={user}
+        onNavigate={setCurrentView}
+        onSignOut={handleSignOut}
       />
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {currentView === 'welcome' && <WelcomeScreen key="welcome" onContinue={() => setCurrentView('home')} />}
 
         {currentView === 'home' && (
@@ -204,7 +203,7 @@ export default function App() {
         {currentView === 'address-editor' && (
           <AddressEditorScreen key="address" cart={cart} cartTotal={cartTotal} user={user}
             address={checkout.address} isGoogleLoaded={isGoogleLoaded}
-            onSetAddress={checkout.setAddress} 
+            onSetAddress={checkout.setAddress}
             onSave={() => { if (user) persistDefaultAddress(checkout.address).then(() => setCurrentView('profile')); }}
             {...commonProps}
           />
@@ -231,24 +230,23 @@ export default function App() {
         )}
 
         {currentView === 'admin' && (
-          <AdminDashboard 
-            key="admin" 
-            onBack={() => setCurrentView('home')} 
-            onNavigate={setCurrentView} 
+          <AdminDashboard
+            key="admin"
+            onBack={() => setCurrentView('home')}
+            onNavigate={setCurrentView}
             homeBgConfig={homeBgConfig}
             onSetHomeBgConfig={setHomeBgConfig}
           />
         )}
       </AnimatePresence>
 
-      <FloatingCart 
-        cart={cart} 
-        cartTotal={cartTotal} 
-        onNavigate={setCurrentView} 
+      <FloatingCart
+        cart={cart}
+        cartTotal={cartTotal}
+        onNavigate={setCurrentView}
         isVisible={currentView !== 'cart' && currentView !== 'welcome' && currentView !== 'register' && currentView !== 'product-details'}
       />
 
-      {/* Success Toast */}
       <AnimatePresence>
         {showSuccessToast && (
           <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: -20 }} exit={{ opacity: 0, y: 100 }}
