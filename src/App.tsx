@@ -131,8 +131,8 @@ export default function App() {
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
 
   return (
-    <div className="min-h-screen bg-stone-50 font-body selection:bg-primary/10">
-      <div className="min-h-screen w-full mx-auto bg-white shadow-2xl relative overflow-x-hidden md:max-w-[1440px] md:border-x md:border-primary/5">
+    <div className="min-h-screen bg-white relative overflow-x-hidden">
+      <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
@@ -252,15 +252,6 @@ export default function App() {
             )}
           </AnimatePresence>
         </main>
-
-        <BottomNav
-          active={currentView}
-          cart={cart}
-          cartTotal={cartTotal}
-          hasScrolledOnce={hasScrolledOnce}
-          showBottomNav={showBottomNav}
-          onNavigate={setCurrentView}
-        />
 
         <FloatingCart
           cart={cart}
