@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Instagram, Facebook, MessageCircle } from 'lucide-react';
 import { SPLASH_IMAGE, BUSINESS_INFO } from '../constants';
 

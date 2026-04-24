@@ -3,7 +3,7 @@
  * Todo o estado está organizado em hooks dedicados.
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { useAuth } from './hooks/useAuth';
 import { useCart } from './hooks/useCart';
@@ -33,7 +33,6 @@ import { AuthScreen } from './screens/AuthScreen';
 
 import { Sidebar } from './components/Sidebar';
 import { FloatingCart } from './components/FloatingCart';
-import { motion } from 'motion/react';
 import { Plus } from 'lucide-react';
 
 export default function App() {
