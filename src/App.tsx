@@ -123,144 +123,144 @@ export default function App() {
   return (
     <div className="min-h-screen bg-stone-100/50 lg:py-6">
       <div className="min-h-screen max-w-[1440px] mx-auto bg-white shadow-2xl relative overflow-x-hidden lg:min-h-[95vh] lg:rounded-[32px]">
-      <Sidebar
-        isOpen={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        user={user}
-        onNavigate={setCurrentView}
-        onSignOut={handleSignOut}
-      />
-      
-      <AnimatePresence mode="wait">
-        {currentView === 'welcome' && <WelcomeScreen key="welcome" onContinue={() => setCurrentView('home')} />}
+        <Sidebar
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          user={user}
+          onNavigate={setCurrentView}
+          onSignOut={handleSignOut}
+        />
 
-        {currentView === 'home' && (
-          <HomeScreen key="home" cart={cart} cartTotal={cartTotal} user={user} favorites={favorites}
-            activeRecCategory={activeRecCategory} homeBgConfig={homeBgConfig}
-            {...commonProps}
-            onSetCategory={setActiveRecCategory}
-            onProductClick={handleProductClick}
-            onToggleFavorite={toggleFavorite}
-            onToggleCartItem={toggleCartItem}
-          />
-        )}
+        <AnimatePresence mode="wait">
+          {currentView === 'welcome' && <WelcomeScreen key="welcome" onContinue={() => setCurrentView('home')} />}
 
-        {currentView === 'product-list' && (
-          <ProductListScreen key="product-list" cart={cart} cartTotal={cartTotal} favorites={favorites}
-            activeRecCategory={activeRecCategory} {...commonProps}
-            onSetCategory={setActiveRecCategory}
-            onProductClick={handleProductClick}
-            onToggleFavorite={toggleFavorite}
-            onToggleCartItem={toggleCartItem}
-          />
-        )}
+          {currentView === 'home' && (
+            <HomeScreen key="home" cart={cart} cartTotal={cartTotal} user={user} favorites={favorites}
+              activeRecCategory={activeRecCategory} homeBgConfig={homeBgConfig}
+              {...commonProps}
+              onSetCategory={setActiveRecCategory}
+              onProductClick={handleProductClick}
+              onToggleFavorite={toggleFavorite}
+              onToggleCartItem={toggleCartItem}
+            />
+          )}
 
-        {currentView === 'product-details' && selectedProduct && (
-          <ProductDetailScreen key="product-details" product={selectedProduct} cart={cart} favorites={favorites}
-            onAddToCart={addToCart} onToggleFavorite={toggleFavorite} onNavigate={setCurrentView}
-          />
-        )}
+          {currentView === 'product-list' && (
+            <ProductListScreen key="product-list" cart={cart} cartTotal={cartTotal} favorites={favorites}
+              activeRecCategory={activeRecCategory} {...commonProps}
+              onSetCategory={setActiveRecCategory}
+              onProductClick={handleProductClick}
+              onToggleFavorite={toggleFavorite}
+              onToggleCartItem={toggleCartItem}
+            />
+          )}
 
-        {currentView === 'cart' && (
-          <CartScreen key="cart" cart={cart} cartTotal={cartTotal} grandTotal={grandTotal}
-            currentDeliveryFee={checkout.currentDeliveryFee} isCalculatingRoute={checkout.isCalculatingRoute}
-            user={user} deliveryMethod={checkout.deliveryMethod} paymentMethod={checkout.paymentMethod}
-            address={checkout.address} needsChange={checkout.needsChange} changeAmount={checkout.changeAmount}
-            isLocating={checkout.isLocating} isAddressEditing={checkout.isAddressEditing}
-            showAddressError={checkout.showAddressError} saveAddressAsDefault={checkout.saveAddressAsDefault}
-            isGoogleLoaded={isGoogleLoaded}
-            onNavigate={setCurrentView}
-            onSetDeliveryMethod={(m) => checkout.setDeliveryMethod(m)}
-            onSetPaymentMethod={(m) => checkout.setPaymentMethod(m)}
-            onSetAddress={checkout.setAddress}
-            onSetNeedsChange={checkout.setNeedsChange}
-            onSetChangeAmount={checkout.setChangeAmount}
-            onSetAddressEditing={checkout.setIsAddressEditing}
-            onSetShowAddressError={checkout.setShowAddressError}
-            onSetSaveAddressAsDefault={checkout.setSaveAddressAsDefault}
-            onUpdateQuantity={updateQuantity} onRemoveFromCart={removeFromCart}
-            onLocate={checkout.handleLocate} onCheckout={handleCheckout}
-          />
-        )}
+          {currentView === 'product-details' && selectedProduct && (
+            <ProductDetailScreen key="product-details" product={selectedProduct} cart={cart} favorites={favorites}
+              onAddToCart={addToCart} onToggleFavorite={toggleFavorite} onNavigate={setCurrentView}
+            />
+          )}
 
-        {currentView === 'saved' && (
-          <SavedScreen key="saved" cart={cart} cartTotal={cartTotal} favorites={favorites}
-            onProductClick={handleProductClick} onToggleFavorite={toggleFavorite}
-            onToggleCartItem={toggleCartItem} {...commonProps}
-          />
-        )}
+          {currentView === 'cart' && (
+            <CartScreen key="cart" cart={cart} cartTotal={cartTotal} grandTotal={grandTotal}
+              currentDeliveryFee={checkout.currentDeliveryFee} isCalculatingRoute={checkout.isCalculatingRoute}
+              user={user} deliveryMethod={checkout.deliveryMethod} paymentMethod={checkout.paymentMethod}
+              address={checkout.address} needsChange={checkout.needsChange} changeAmount={checkout.changeAmount}
+              isLocating={checkout.isLocating} isAddressEditing={checkout.isAddressEditing}
+              showAddressError={checkout.showAddressError} saveAddressAsDefault={checkout.saveAddressAsDefault}
+              isGoogleLoaded={isGoogleLoaded}
+              onNavigate={setCurrentView}
+              onSetDeliveryMethod={(m) => checkout.setDeliveryMethod(m)}
+              onSetPaymentMethod={(m) => checkout.setPaymentMethod(m)}
+              onSetAddress={checkout.setAddress}
+              onSetNeedsChange={checkout.setNeedsChange}
+              onSetChangeAmount={checkout.setChangeAmount}
+              onSetAddressEditing={checkout.setIsAddressEditing}
+              onSetShowAddressError={checkout.setShowAddressError}
+              onSetSaveAddressAsDefault={checkout.setSaveAddressAsDefault}
+              onUpdateQuantity={updateQuantity} onRemoveFromCart={removeFromCart}
+              onLocate={checkout.handleLocate} onCheckout={handleCheckout}
+            />
+          )}
 
-        {currentView === 'profile' && (
-          <ProfileScreen key="profile" cart={cart} cartTotal={cartTotal} user={user}
-            onProfilePicUpload={handleProfilePicUpload} {...commonProps}
-          />
-        )}
+          {currentView === 'saved' && (
+            <SavedScreen key="saved" cart={cart} cartTotal={cartTotal} favorites={favorites}
+              onProductClick={handleProductClick} onToggleFavorite={toggleFavorite}
+              onToggleCartItem={toggleCartItem} {...commonProps}
+            />
+          )}
 
-        {currentView === 'orders' && (
-          <OrdersScreen key="orders" cart={cart} cartTotal={cartTotal} orders={orders}
-            {...commonProps}
-          />
-        )}
+          {currentView === 'profile' && (
+            <ProfileScreen key="profile" cart={cart} cartTotal={cartTotal} user={user}
+              onProfilePicUpload={handleProfilePicUpload} {...commonProps}
+            />
+          )}
 
-        {currentView === 'address-editor' && (
-          <AddressEditorScreen key="address" cart={cart} cartTotal={cartTotal} user={user}
-            address={checkout.address} isGoogleLoaded={isGoogleLoaded}
-            onSetAddress={checkout.setAddress}
-            onSave={() => { if (user) persistDefaultAddress(checkout.address).then(() => setCurrentView('profile')); }}
-            {...commonProps}
-          />
-        )}
+          {currentView === 'orders' && (
+            <OrdersScreen key="orders" cart={cart} cartTotal={cartTotal} orders={orders}
+              {...commonProps}
+            />
+          )}
 
-        {currentView === 'settings' && (
-          <SettingsScreen key="settings" cart={cart} cartTotal={cartTotal} user={user}
-            onSignOut={handleSignOut} {...commonProps}
-          />
-        )}
+          {currentView === 'address-editor' && (
+            <AddressEditorScreen key="address" cart={cart} cartTotal={cartTotal} user={user}
+              address={checkout.address} isGoogleLoaded={isGoogleLoaded}
+              onSetAddress={checkout.setAddress}
+              onSave={() => { if (user) persistDefaultAddress(checkout.address).then(() => setCurrentView('profile')); }}
+              {...commonProps}
+            />
+          )}
 
-        {currentView === 'categories-list' && (
-          <CategoriesScreen key="categories" cart={cart} cartTotal={cartTotal}
-            {...commonProps}
-          />
-        )}
+          {currentView === 'settings' && (
+            <SettingsScreen key="settings" cart={cart} cartTotal={cartTotal} user={user}
+              onSignOut={handleSignOut} {...commonProps}
+            />
+          )}
 
-        {currentView === 'register' && (
-          <AuthScreen key="auth"
-            onSignIn={async (e, p) => { const ok = await handleSignIn(e, p); if (ok) setCurrentView('home'); return ok; }}
-            onSignUp={async (e, p, d) => { const ok = await handleSignUp(e, p, d); if (ok) setCurrentView('home'); return ok; }}
-            onNavigate={setCurrentView}
-          />
-        )}
+          {currentView === 'categories-list' && (
+            <CategoriesScreen key="categories" cart={cart} cartTotal={cartTotal}
+              {...commonProps}
+            />
+          )}
 
-        {currentView === 'admin' && (
-          <AdminDashboard
-            key="admin"
-            onBack={() => setCurrentView('home')}
-            onNavigate={setCurrentView}
-            homeBgConfig={homeBgConfig}
-            onSetHomeBgConfig={setHomeBgConfig}
-          />
-        )}
-      </AnimatePresence>
+          {currentView === 'register' && (
+            <AuthScreen key="auth"
+              onSignIn={async (e, p) => { const ok = await handleSignIn(e, p); if (ok) setCurrentView('home'); return ok; }}
+              onSignUp={async (e, p, d) => { const ok = await handleSignUp(e, p, d); if (ok) setCurrentView('home'); return ok; }}
+              onNavigate={setCurrentView}
+            />
+          )}
 
-      <FloatingCart
-        cart={cart}
-        cartTotal={cartTotal}
-        onNavigate={setCurrentView}
-        isVisible={currentView !== 'cart' && currentView !== 'welcome' && currentView !== 'register' && currentView !== 'product-details'}
-      />
+          {currentView === 'admin' && (
+            <AdminDashboard
+              key="admin"
+              onBack={() => setCurrentView('home')}
+              onNavigate={setCurrentView}
+              homeBgConfig={homeBgConfig}
+              onSetHomeBgConfig={setHomeBgConfig}
+            />
+          )}
+        </AnimatePresence>
 
-      <AnimatePresence>
-        {showSuccessToast && (
-          <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: -20 }} exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-screen-xl px-6 z-[100] flex justify-center pointer-events-none">
-            <div className="bg-primary text-cream px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-md">
-              <div className="w-6 h-6 bg-gold rounded-full flex items-center justify-center text-primary"><Plus size={14} /></div>
-              <span className="font-headline font-bold text-[11px] tracking-wide">Adicionado ao carrinho</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        <FloatingCart
+          cart={cart}
+          cartTotal={cartTotal}
+          onNavigate={setCurrentView}
+          isVisible={currentView !== 'cart' && currentView !== 'welcome' && currentView !== 'register' && currentView !== 'product-details'}
+        />
+
+        <AnimatePresence>
+          {showSuccessToast && (
+            <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: -20 }} exit={{ opacity: 0, y: 100 }}
+              className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-screen-xl px-6 z-[100] flex justify-center pointer-events-none">
+              <div className="bg-primary text-cream px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-md">
+                <div className="w-6 h-6 bg-gold rounded-full flex items-center justify-center text-primary"><Plus size={14} /></div>
+                <span className="font-headline font-bold text-[11px] tracking-wide">Adicionado ao carrinho</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

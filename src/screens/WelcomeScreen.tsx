@@ -14,12 +14,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
         style={{ backgroundImage: `url('${SPLASH_IMAGE}')` }} />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
 
-      <div className="relative z-20 w-full px-8 pb-16 flex flex-col items-center text-center space-y-8">
+      <div className="relative z-20 w-full px-6 pb-12 flex flex-col items-center text-center space-y-6">
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
-          <div className="flex justify-center mb-2">
-            <img src="/logo.png" alt="Logo" className="h-40 w-auto object-contain drop-shadow-2xl brightness-110" />
+          <div className="flex justify-center mb-0">
+            <img src="/logo.png" alt="Logo" className="h-32 sm:h-40 w-auto object-contain drop-shadow-2xl brightness-110" />
           </div>
-          <p className="font-body text-cream/90 text-[16px] leading-relaxed font-medium whitespace-nowrap">Feitos com carinho para surpreender em cada detalhe.</p>
+          <p className="font-body text-cream/90 text-sm sm:text-base leading-relaxed font-medium max-w-[280px] sm:max-w-none mx-auto">
+            Feitos com carinho para surpreender em cada detalhe.
+          </p>
         </motion.div>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="w-full space-y-6">
