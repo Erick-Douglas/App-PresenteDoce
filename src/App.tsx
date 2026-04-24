@@ -121,8 +121,8 @@ export default function App() {
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
 
   return (
-    <div className="bg-stone-50 min-h-screen lg:py-8">
-      <div className="bg-white min-h-screen max-w-screen-xl mx-auto shadow-2xl relative overflow-x-hidden lg:min-h-[90vh] lg:rounded-[40px] lg:border-8 lg:border-stone-100">
+    <div className="min-h-screen">
+      <div className="min-h-screen max-w-screen-xl mx-auto relative overflow-x-hidden">
       <Sidebar 
         isOpen={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)} 
@@ -260,7 +260,6 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
     </div>
   );
 }
