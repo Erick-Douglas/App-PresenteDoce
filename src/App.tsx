@@ -121,7 +121,8 @@ export default function App() {
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
 
   return (
-    <div className="min-h-screen max-w-screen-xl mx-auto relative overflow-x-hidden">
+    <div className="min-h-screen bg-stone-100/50 lg:py-6">
+      <div className="min-h-screen max-w-[1440px] mx-auto bg-white shadow-2xl relative overflow-x-hidden lg:min-h-[95vh] lg:rounded-[32px]">
       <Sidebar
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
@@ -129,6 +130,7 @@ export default function App() {
         onNavigate={setCurrentView}
         onSignOut={handleSignOut}
       />
+      
       <AnimatePresence mode="wait">
         {currentView === 'welcome' && <WelcomeScreen key="welcome" onContinue={() => setCurrentView('home')} />}
 
@@ -258,6 +260,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
     </div>
   );
 }

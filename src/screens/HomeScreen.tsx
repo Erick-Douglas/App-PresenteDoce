@@ -84,7 +84,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* White content area */}
         <div className="-mt-12 bg-white rounded-t-[40px] relative z-20 shadow-[0_-20px_40px_rgba(0,0,0,0.12)] pt-10 min-h-screen">
-          <div className="space-y-8">
+          <div className="max-w-[1200px] mx-auto space-y-8">
             {/* Category stories */}
             <section className="px-6">
               <div className="flex justify-between items-start gap-1 overflow-x-auto pb-2 scrollbar-hide">
