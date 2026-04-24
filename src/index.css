@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,700&family=Manrope:wght@400;600;700&family=Great+Vibes&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Manrope", sans-serif;
+  --font-logo: "Great Vibes", cursive;
+  
+  --color-primary: #800000; /* Bordô Absoluto */
+  --color-primary-container: #FBCE00; /* Ouro Vivo */
+  --color-on-primary: #FFF6DB; /* Cream Dream */
+  --color-cream: #FFFDD0;
+  --color-gold: #FFD700;
+  --color-surface: #FFFFFF; /* Changed to pure white */
+  --color-on-surface: #1A1A1A;
+  --color-on-surface-variant: #4A4A4A;
+  --color-surface-container-highest: #f4edd4;
+  --color-surface-container-low: #f9f2dc;
+  --color-surface-container-lowest: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-on-surface font-body antialiased overflow-x-hidden;
+    color-scheme: light dark;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

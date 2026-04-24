@@ -1,0 +1,8 @@
+{
+  "name": "Presente Doce",
+  "description": "Confeitaria Artesanal",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}
