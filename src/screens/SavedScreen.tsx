@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart } from 'lucide-react';
 import { PRODUCTS } from '../constants';
 import { Product, CartItem, View } from '../types';

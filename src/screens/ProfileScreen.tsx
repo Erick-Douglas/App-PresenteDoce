@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import {
   Menu, ChevronRight, Heart, MapPin, Package, Pencil,
   Settings, Settings2, User as UserIcon,

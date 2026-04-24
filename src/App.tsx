@@ -32,6 +32,7 @@ import { CategoriesScreen } from './screens/CategoriesScreen';
 import { AuthScreen } from './screens/AuthScreen';
 
 import { Sidebar } from './components/Sidebar';
+import { BottomNav } from './components/BottomNav';
 import { FloatingCart } from './components/FloatingCart';
 import { Plus } from 'lucide-react';
 
@@ -42,6 +43,8 @@ export default function App() {
   const [orderCounter, setOrderCounter] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [homeBgConfig, setHomeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
+  const [showBottomNav, setShowBottomNav] = useState(true);
+  const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
 
   const { user, fetchUserProfile, handleSignIn, handleSignUp, handleSignOut, persistDefaultAddress, handleProfilePicUpload } = useAuth();
   const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart } = useCart();
@@ -51,6 +54,15 @@ export default function App() {
   const checkout = useCheckout(isGoogleLoaded);
 
   const grandTotal = cartTotal + checkout.currentDeliveryFee;
+
+  // Scroll logic for BottomNav
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) setHasScrolledOnce(true);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Load user orders when user changes
   useEffect(() => {
@@ -69,11 +81,10 @@ export default function App() {
     setCurrentView('product-details');
   }, []);
 
-  const handleCheckout = () => {
+  const handleFinalCheckout = () => {
     if (!checkout.deliveryMethod) { alert('Por favor, selecione o método de entrega.'); return; }
     if (checkout.deliveryMethod === 'delivery' && !checkout.address.address) {
       checkout.setShowAddressError(true);
-      document.getElementById('delivery-info')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
     if (!checkout.paymentMethod) { alert('Por favor, selecione uma forma de pagamento.'); return; }
@@ -120,8 +131,8 @@ export default function App() {
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
 
   return (
-    <div className="min-h-screen bg-stone-100/50 lg:py-6">
-      <div className="min-h-screen max-w-[1440px] mx-auto bg-white shadow-2xl relative overflow-x-hidden lg:min-h-[95vh] lg:rounded-[32px]">
+    <div className="min-h-screen bg-stone-50 font-body selection:bg-primary/10">
+      <div className="min-h-screen w-full mx-auto bg-white shadow-2xl relative overflow-x-hidden md:max-w-[1440px] md:border-x md:border-primary/5">
         <Sidebar
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
@@ -130,116 +141,126 @@ export default function App() {
           onSignOut={handleSignOut}
         />
 
-        <AnimatePresence mode="wait">
-          {currentView === 'welcome' && <WelcomeScreen key="welcome" onContinue={() => setCurrentView('home')} />}
+        <main className="min-h-screen flex flex-col">
+          <AnimatePresence mode="wait">
+            {currentView === 'welcome' && <WelcomeScreen key="welcome" onNavigate={setCurrentView} />}
 
-          {currentView === 'home' && (
-            <HomeScreen key="home" cart={cart} cartTotal={cartTotal} user={user} favorites={favorites}
-              activeRecCategory={activeRecCategory} homeBgConfig={homeBgConfig}
-              {...commonProps}
-              onSetCategory={setActiveRecCategory}
-              onProductClick={handleProductClick}
-              onToggleFavorite={toggleFavorite}
-              onToggleCartItem={toggleCartItem}
-            />
-          )}
+            {currentView === 'home' && (
+              <HomeScreen key="home" cart={cart} cartTotal={cartTotal} user={user} favorites={favorites}
+                activeRecCategory={activeRecCategory} homeBgConfig={homeBgConfig}
+                {...commonProps}
+                onSetCategory={setActiveRecCategory}
+                onProductClick={handleProductClick}
+                onToggleFavorite={toggleFavorite}
+                onToggleCartItem={toggleCartItem}
+              />
+            )}
 
-          {currentView === 'product-list' && (
-            <ProductListScreen key="product-list" cart={cart} cartTotal={cartTotal} favorites={favorites}
-              activeRecCategory={activeRecCategory} {...commonProps}
-              onSetCategory={setActiveRecCategory}
-              onProductClick={handleProductClick}
-              onToggleFavorite={toggleFavorite}
-              onToggleCartItem={toggleCartItem}
-            />
-          )}
+            {currentView === 'product-list' && (
+              <ProductListScreen key="product-list" cart={cart} cartTotal={cartTotal} favorites={favorites}
+                activeRecCategory={activeRecCategory} {...commonProps}
+                onSetCategory={setActiveRecCategory}
+                onProductClick={handleProductClick}
+                onToggleFavorite={toggleFavorite}
+                onToggleCartItem={toggleCartItem}
+              />
+            )}
 
-          {currentView === 'product-details' && selectedProduct && (
-            <ProductDetailScreen key="product-details" product={selectedProduct} cart={cart} favorites={favorites}
-              onAddToCart={addToCart} onToggleFavorite={toggleFavorite} onNavigate={setCurrentView}
-            />
-          )}
+            {currentView === 'product-details' && selectedProduct && (
+              <ProductDetailScreen key="product-details" product={selectedProduct} cart={cart} favorites={favorites}
+                onAddToCart={addToCart} onToggleFavorite={toggleFavorite} onNavigate={setCurrentView}
+              />
+            )}
 
-          {currentView === 'cart' && (
-            <CartScreen key="cart" cart={cart} cartTotal={cartTotal} grandTotal={grandTotal}
-              currentDeliveryFee={checkout.currentDeliveryFee} isCalculatingRoute={checkout.isCalculatingRoute}
-              user={user} deliveryMethod={checkout.deliveryMethod} paymentMethod={checkout.paymentMethod}
-              address={checkout.address} needsChange={checkout.needsChange} changeAmount={checkout.changeAmount}
-              isLocating={checkout.isLocating} isAddressEditing={checkout.isAddressEditing}
-              showAddressError={checkout.showAddressError} saveAddressAsDefault={checkout.saveAddressAsDefault}
-              isGoogleLoaded={isGoogleLoaded}
-              onNavigate={setCurrentView}
-              onSetDeliveryMethod={(m) => checkout.setDeliveryMethod(m)}
-              onSetPaymentMethod={(m) => checkout.setPaymentMethod(m)}
-              onSetAddress={checkout.setAddress}
-              onSetNeedsChange={checkout.setNeedsChange}
-              onSetChangeAmount={checkout.setChangeAmount}
-              onSetAddressEditing={checkout.setIsAddressEditing}
-              onSetShowAddressError={checkout.setShowAddressError}
-              onSetSaveAddressAsDefault={checkout.setSaveAddressAsDefault}
-              onUpdateQuantity={updateQuantity} onRemoveFromCart={removeFromCart}
-              onLocate={checkout.handleLocate} onCheckout={handleCheckout}
-            />
-          )}
+            {currentView === 'cart' && (
+              <CartScreen
+                key="cart"
+                {...checkout}
+                cart={cart} cartTotal={cartTotal} grandTotal={grandTotal}
+                isGoogleLoaded={isGoogleLoaded} user={user}
+                onUpdateQuantity={updateQuantity} onRemoveFromCart={removeFromCart}
+                onCheckout={handleFinalCheckout} onNavigate={setCurrentView}
+                onSetDeliveryMethod={checkout.setDeliveryMethod}
+                onSetPaymentMethod={checkout.setPaymentMethod}
+                onSetAddress={checkout.setAddress}
+                onSetNeedsChange={checkout.setNeedsChange}
+                onSetChangeAmount={checkout.setChangeAmount}
+                onSetAddressEditing={checkout.setIsAddressEditing}
+                onSetShowAddressError={checkout.setShowAddressError}
+                onSetSaveAddressAsDefault={checkout.setSaveAddressAsDefault}
+                onLocate={checkout.handleLocate}
+              />
+            )}
 
-          {currentView === 'saved' && (
-            <SavedScreen key="saved" cart={cart} cartTotal={cartTotal} favorites={favorites}
-              onProductClick={handleProductClick} onToggleFavorite={toggleFavorite}
-              onToggleCartItem={toggleCartItem} {...commonProps}
-            />
-          )}
+            {currentView === 'profile' && (
+              <ProfileScreen key="profile" cart={cart} cartTotal={cartTotal} user={user}
+                onProfilePicUpload={handleProfilePicUpload} {...commonProps}
+              />
+            )}
 
-          {currentView === 'profile' && (
-            <ProfileScreen key="profile" cart={cart} cartTotal={cartTotal} user={user}
-              onProfilePicUpload={handleProfilePicUpload} {...commonProps}
-            />
-          )}
+            {currentView === 'orders' && (
+              <OrdersScreen key="orders" cart={cart} cartTotal={cartTotal} orders={orders}
+                {...commonProps}
+              />
+            )}
 
-          {currentView === 'orders' && (
-            <OrdersScreen key="orders" cart={cart} cartTotal={cartTotal} orders={orders}
-              {...commonProps}
-            />
-          )}
+            {currentView === 'address-editor' && (
+              <AddressEditorScreen key="address-editor" cart={cart} cartTotal={cartTotal} user={user}
+                address={checkout.address} isGoogleLoaded={isGoogleLoaded}
+                onSetAddress={checkout.setAddress}
+                onSave={() => { if (user) persistDefaultAddress(checkout.address).then(() => setCurrentView('profile')); }}
+                {...commonProps}
+              />
+            )}
 
-          {currentView === 'address-editor' && (
-            <AddressEditorScreen key="address" cart={cart} cartTotal={cartTotal} user={user}
-              address={checkout.address} isGoogleLoaded={isGoogleLoaded}
-              onSetAddress={checkout.setAddress}
-              onSave={() => { if (user) persistDefaultAddress(checkout.address).then(() => setCurrentView('profile')); }}
-              {...commonProps}
-            />
-          )}
+            {currentView === 'settings' && (
+              <SettingsScreen key="settings" cart={cart} cartTotal={cartTotal} user={user}
+                onSignOut={handleSignOut} {...commonProps}
+              />
+            )}
 
-          {currentView === 'settings' && (
-            <SettingsScreen key="settings" cart={cart} cartTotal={cartTotal} user={user}
-              onSignOut={handleSignOut} {...commonProps}
-            />
-          )}
+            {currentView === 'categories-list' && (
+              <CategoriesScreen key="categories" cart={cart} cartTotal={cartTotal}
+                activeCategory={activeRecCategory} onSetCategory={setActiveRecCategory}
+                {...commonProps}
+              />
+            )}
 
-          {currentView === 'categories-list' && (
-            <CategoriesScreen key="categories" cart={cart} cartTotal={cartTotal}
-              {...commonProps}
-            />
-          )}
+            {currentView === 'saved' && (
+              <SavedScreen key="saved" cart={cart} cartTotal={cartTotal} favorites={favorites}
+                onProductClick={handleProductClick} onToggleFavorite={toggleFavorite}
+                onToggleCartItem={toggleCartItem} {...commonProps}
+              />
+            )}
 
-          {currentView === 'register' && (
-            <AuthScreen key="auth"
-              onSignIn={async (e, p) => { const ok = await handleSignIn(e, p); if (ok) setCurrentView('home'); return ok; }}
-              onSignUp={async (e, p, d) => { const ok = await handleSignUp(e, p, d); if (ok) setCurrentView('home'); return ok; }}
-              onNavigate={setCurrentView}
-            />
-          )}
+            {currentView === 'register' && (
+              <AuthScreen key="auth"
+                onSignIn={handleSignIn}
+                onSignUp={handleSignUp}
+                onNavigate={setCurrentView}
+              />
+            )}
 
-          {currentView === 'admin' && (
-            <AdminDashboard
-              key="admin"
-              onBack={() => setCurrentView('home')}
-              onNavigate={setCurrentView}
-              homeBgConfig={homeBgConfig}
-              onSetHomeBgConfig={setHomeBgConfig}
-            />
-          )}
-        </AnimatePresence>
+            {currentView === 'admin' && user?.is_admin && (
+              <AdminDashboard
+                key="admin"
+                onBack={() => setCurrentView('home')}
+                onNavigate={setCurrentView}
+                homeBgConfig={homeBgConfig}
+                onSetHomeBgConfig={setHomeBgConfig}
+              />
+            )}
+          </AnimatePresence>
+        </main>
+
+        <BottomNav
+          active={currentView}
+          cart={cart}
+          cartTotal={cartTotal}
+          hasScrolledOnce={hasScrolledOnce}
+          showBottomNav={showBottomNav}
+          onNavigate={setCurrentView}
+        />
 
         <FloatingCart
           cart={cart}

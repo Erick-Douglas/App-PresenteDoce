@@ -20,9 +20,15 @@
 }
 
 @layer base {
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
   body {
-    @apply bg-white text-on-surface font-body antialiased overflow-x-hidden;
-    color-scheme: light dark;
+    @apply bg-stone-50 text-on-surface font-body antialiased overflow-x-hidden;
+    color-scheme: light;
   }
 }
 

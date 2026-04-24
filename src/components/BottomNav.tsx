@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Home as HomeIcon, Heart, ShoppingCart, User as UserIcon } from 'lucide-react';
 import { View, CartItem } from '../types';
 
@@ -24,9 +24,9 @@ export function BottomNav({ active = 'home', cart, cartTotal, hasScrolledOnce, s
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '100%', opacity: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-0 left-0 right-0 z-50"
+          className="fixed bottom-0 left-0 right-0 z-50 flex justify-center px-4 md:px-0"
         >
-          <nav className="w-full bg-primary/95 backdrop-blur-2xl border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.4)] flex justify-around items-center h-20 rounded-t-[32px] px-2">
+          <nav className="w-full max-w-lg md:max-w-xl bg-primary/95 backdrop-blur-2xl border-t border-white/10 shadow-[0_-15px_40px_rgba(0,0,0,0.4)] flex justify-around items-center h-20 rounded-t-[32px] px-2 mb-4 md:mb-6">
             <button
               onClick={() => onNavigate('home')}
               className={`flex flex-col items-center justify-center gap-1 flex-1 h-full transition-all duration-500 ${active === 'home' ? 'text-gold' : 'text-cream/30'}`}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Heart, Minus, Plus, ChevronRight } from 'lucide-react';
 import { Product, CartItem, View } from '../types';
 

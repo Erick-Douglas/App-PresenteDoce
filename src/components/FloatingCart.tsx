@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 import { View, CartItem } from '../types';
 
@@ -20,11 +20,11 @@ export function FloatingCart({ cart, cartTotal, onNavigate, isVisible }: Floatin
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-screen-xl px-6 z-[90]"
+          className="fixed bottom-6 left-0 right-0 z-[90] flex justify-center px-6"
         >
           <button
             onClick={() => onNavigate('cart')}
-            className="w-full bg-primary text-white p-4 rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-between group active:scale-[0.98] transition-all border border-white/10 backdrop-blur-md"
+            className="w-full max-w-lg bg-primary text-white p-4 rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-between group active:scale-[0.98] transition-all border border-white/10 backdrop-blur-md"
           >
             <div className="flex items-center gap-4">
               <div className="relative">

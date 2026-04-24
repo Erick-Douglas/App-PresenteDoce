@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, MapPin, Minus, Package, Pencil, Plus, ShoppingBag,
   ShoppingCart, Trash2, Truck,
@@ -42,8 +42,8 @@ interface CartScreenProps {
 
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'Dinheiro', img: 'https://cdn-icons-png.flaticon.com/512/2331/2331941.png' },
-  { id: 'mbway', label: 'MB WAY', img: 'https://lh3.googleusercontent.com/-_Y-L-o4G-V8/YC-l9uI9f-I/AAAAAAAAB-k/f4K_yv6M0-o/logo-mbway.png' },
-  { id: 'wise', label: 'Wise', img: 'https://wise.com/imagelibrary/favicon/apple-touch-icon-180x180.png' },
+  { id: 'mbway', label: 'MB WAY', img: '/mbway.svg' },
+  { id: 'wise', label: 'Wise', img: '/wise.svg' },
 ] as const;
 
 export const CartScreen: React.FC<CartScreenProps> = (props) => {
@@ -254,7 +254,7 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
                   </div>
                   <span className={`text-[10px] font-bold ${paymentMethod === m.id ? 'text-primary' : 'text-black/60'}`}>{m.label}</span>
                 </div>
-                <div className="w-8 h-5 flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-8 flex items-center justify-center overflow-hidden rounded-md">
                   <img src={m.img} alt={m.label} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
                 </div>
               </button>
@@ -301,7 +301,7 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
               <div className="flex justify-between items-center text-[10px]">
                 <span className="font-bold text-black/60">Pagamento</span>
                 <span className="font-bold text-primary flex items-center gap-1.5">
-                  <img src={PAYMENT_METHODS.find(m => m.id === paymentMethod)?.img} className="w-4 h-3 object-contain" alt="" />
+                  <img src={PAYMENT_METHODS.find(m => m.id === paymentMethod)?.img} className="w-8 h-5 object-contain rounded-sm" alt="" />
                   {PAYMENT_METHODS.find(m => m.id === paymentMethod)?.label}
                 </span>
               </div>

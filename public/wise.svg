@@ -1,0 +1,6 @@
+<svg width="160" height="64" viewBox="0 0 160 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="160" height="64" rx="16" fill="#163300"/>
+  <rect x="14" y="14" width="36" height="36" rx="10" fill="#9FE870"/>
+  <path d="M24 24H29.1L32 33.7L35.3 24H39.2L42.5 33.7L45.4 24H50L44.9 40H40.5L37.2 30.8L33.9 40H29.5L24 24Z" fill="#163300"/>
+  <text x="64" y="39" fill="#9FE870" font-family="Arial, sans-serif" font-size="24" font-weight="800" letter-spacing="1">WISE</text>
+</svg>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Heart, ShoppingCart, Share2, Menu, Instagram, Facebook } from 'lucide-react';
 import { PRODUCTS, CATEGORIES, BUSINESS_INFO } from '../constants';
 import { Product, CartItem, User, View } from '../types';
@@ -119,10 +119,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                       Ver tudo
                     </button>
                   </div>
-                  <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x -mx-6 px-6 scroll-px-6">
+                  <div className="flex gap-4 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-hide snap-x -mx-6 px-6 scroll-px-6 lg:mx-0 lg:px-0 lg:grid lg:grid-cols-4 lg:gap-6">
                     {products.map((product) => (
                       <div key={product.id}
-                        className="snap-start shrink-0 w-44 bg-white rounded-2xl overflow-hidden shadow-sm border border-primary/5 flex flex-col relative active:scale-98 transition-all"
+                        className="snap-start shrink-0 w-44 lg:w-full bg-white rounded-2xl overflow-hidden shadow-sm border border-primary/5 flex flex-col relative active:scale-98 transition-all"
                         onClick={() => onProductClick(product)}
                       >
                         <div className="h-36 w-full overflow-hidden relative">

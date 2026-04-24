@@ -2,12 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Facebook, MessageCircle } from 'lucide-react';
 import { SPLASH_IMAGE, BUSINESS_INFO } from '../constants';
+import { View } from '../types';
 
 interface WelcomeScreenProps {
-  onContinue: () => void;
+  onNavigate: (view: View) => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-screen flex flex-col items-center justify-end overflow-hidden bg-primary">
       <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
@@ -25,7 +26,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onContinue }) => {
         </motion.div>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="w-full space-y-6">
-          <button onClick={onContinue}
+          <button onClick={() => onNavigate('home')}
             className="w-full py-4 bg-gold text-primary rounded-2xl font-headline font-black text-sm uppercase tracking-[0.1em] shadow-xl active:scale-95 transition-transform">
             Ver Cardápio
           </button>

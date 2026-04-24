@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Menu, Package } from 'lucide-react';
 import { View, CartItem } from '../types';
 

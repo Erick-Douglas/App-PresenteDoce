@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu, MessageCircle, Phone, HelpCircle, Pencil } from 'lucide-react';
 import { View, CartItem, User } from '../types';
 import { BUSINESS_INFO } from '../constants';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 interface SettingsScreenProps {
   cart: CartItem[];

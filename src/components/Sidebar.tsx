@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Home, User, Package, MapPin, Info, Heart,
   MessageSquare, ShieldCheck, FileText, LogOut, ChevronRight

@@ -2,7 +2,7 @@ import React from 'react';
 import { Menu, ChevronRight } from 'lucide-react';
 import { CATEGORIES } from '../constants';
 import { View, CartItem } from '../types';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 interface CategoriesScreenProps {
   cart: CartItem[];
