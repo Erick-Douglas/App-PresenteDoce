@@ -43,6 +43,10 @@ export default function App() {
   const historyStack = useRef<View[]>(['welcome']);
   const isInternalNavigation = useRef(false);
 
+<<<<<<< HEAD
+=======
+  const { user, isAuthLoading, fetchUserProfile, handleSignIn, handleSignUp, handleSignOut, persistDefaultAddress, handleProfilePicUpload } = useAuth();
+>>>>>>> bf38466be14b3c5f93811c85ffdcc6e4fd49fc0e
   const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart } = useCart();
   const { isGoogleLoaded } = useGoogleMaps();
   const { favorites, toggleFavorite } = useFavorites();
@@ -93,6 +97,29 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+<<<<<<< HEAD
+=======
+  // Load user orders when user changes
+  useEffect(() => {
+    if (user?.id) fetchUserOrders(user.id);
+  }, [user?.id, fetchUserOrders]);
+
+  // Pre-fill address from profile when entering cart
+  useEffect(() => {
+    if (currentView === 'cart' && user) {
+      checkout.prefillAddress(user);
+    }
+  }, [currentView, user]);
+
+  // Redirecionar se já estiver logado e tentar acessar 'register' ou 'welcome'
+  useEffect(() => {
+    if (!isAuthLoading && user && (currentView === 'register' || currentView === 'welcome')) {
+      console.log('[App] Usuário logado detectado, redirecionando para home');
+      setCurrentView('home');
+    }
+  }, [user, isAuthLoading, currentView]);
+
+>>>>>>> bf38466be14b3c5f93811c85ffdcc6e4fd49fc0e
   const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product);
     setCurrentView('product-details');
@@ -165,8 +192,18 @@ export default function App() {
 
   const commonProps = { onNavigate: handleNavigate, onOpenMenu: () => setIsMenuOpen(true) };
 
+  // Se estiver carregando a auth E estiver na tela de welcome, mostramos um loading suave por cima
+  // mas não bloqueamos a renderização total para evitar tela branca/travada
+  const showLoadingOverlay = isAuthLoading && currentView === 'welcome';
+
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
+      {showLoadingOverlay && (
+        <div className="fixed inset-0 z-[100] bg-primary flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+        </div>
+      )}
+      
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
