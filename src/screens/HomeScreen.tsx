@@ -1,13 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, ShoppingCart, Share2, Menu, Instagram, Facebook } from 'lucide-react';
-import { PRODUCTS, CATEGORIES, BUSINESS_INFO } from '../constants';
-import { Product, CartItem, User, View } from '../types';
+import { Heart, ShoppingCart, Share2, Menu } from 'lucide-react';
+import { PRODUCTS, CATEGORIES } from '../constants';
+import { Product, CartItem, View } from '../types';
 
 interface HomeScreenProps {
   cart: CartItem[];
   cartTotal: number;
-  user: User | null;
   favorites: string[];
   activeRecCategory: string;
   onOpenMenu: () => void;
@@ -20,15 +19,17 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
-  cart, cartTotal, user, favorites, activeRecCategory,
+  cart, cartTotal, favorites, activeRecCategory,
   onOpenMenu, homeBgConfig,
   onSetCategory, onProductClick, onToggleFavorite, onToggleCartItem, onNavigate,
 }) => {
-
   const handleShare = async () => {
     if (navigator.share) {
-      try { await navigator.share({ title: 'Presente Doce', text: 'Descubra os melhores doces, bolos, tortas e kits para festas!', url: window.location.href }); }
-      catch { /* cancelled */ }
+      try {
+        await navigator.share({ title: 'Presente Doce', text: 'Descubra os melhores doces, bolos, tortas e kits para festas!', url: window.location.href });
+      } catch {
+        // noop
+      }
     } else {
       navigator.clipboard.writeText(window.location.href);
       alert('Link copiado!');
@@ -38,7 +39,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen pb-32 bg-white">
       <main>
-        {/* Hero Header */}
         <div
           className="px-6 pt-6 pb-24 relative overflow-hidden transition-all duration-700"
           style={{
@@ -48,7 +48,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             backgroundPosition: 'center'
           }}
         >
-          {/* Header Controls */}
           <div className="flex justify-between items-center relative z-20 mb-4">
             <button
               onClick={onOpenMenu}
@@ -67,29 +66,18 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
 
           <div className="w-full flex flex-col items-center gap-2 relative z-10 py-4">
-            {/* Logo Centralizado no Topo */}
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="flex flex-col items-center text-center"
-            >
-              <img
-                src="/logo.png"
-                alt="Presente Doce Logo"
-                className="h-28 w-auto object-contain drop-shadow-2xl brightness-110"
-              />
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="flex flex-col items-center text-center">
+              <img src="/logo.png" alt="Presente Doce Logo" className="h-28 w-auto object-contain drop-shadow-2xl brightness-110" />
             </motion.div>
           </div>
         </div>
 
-        {/* White content area */}
         <div className="-mt-12 bg-white rounded-t-[40px] relative z-20 shadow-[0_-20px_40px_rgba(0,0,0,0.12)] pt-10 min-h-screen">
           <div className="max-w-[1200px] mx-auto space-y-8">
-            {/* Category stories */}
             <section className="px-6">
               <div className="flex justify-between items-start gap-1 overflow-x-auto pb-2 scrollbar-hide">
-                {CATEGORIES.map((cat, idx) => (
-                  <div key={idx}
+                {CATEGORIES.map((cat) => (
+                  <div key={cat.name}
                     className="flex flex-col items-center gap-1.5 cursor-pointer shrink-0 active:scale-90 transition-transform scrollbar-hide"
                     onClick={() => { onSetCategory(cat.name); onNavigate('product-list'); }}
                   >
@@ -104,10 +92,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               </div>
             </section>
 
-            {/* Products by category */}
             {CATEGORIES.map((category) => {
               const products = PRODUCTS.filter(p => p.category === category.name);
               if (products.length === 0) return null;
+
               return (
                 <section key={category.name} className="px-6 space-y-2">
                   <div className="flex justify-between items-end">
@@ -160,4 +148,4 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </main>
     </motion.div>
   );
-}
+};

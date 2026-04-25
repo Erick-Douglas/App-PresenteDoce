@@ -1,37 +1,32 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, Home, User, Package, MapPin, Info, Heart,
-  MessageSquare, ShieldCheck, FileText, LogOut, ChevronRight
-} from 'lucide-react';
-import { View, User as UserType } from '../types';
+import { X, Home, Info, MessageSquare, ChevronRight, Instagram, MessageCircle, Facebook } from 'lucide-react';
+import { View } from '../types';
+import { BUSINESS_INFO } from '../constants';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  user: UserType | null;
   onNavigate: (view: View) => void;
-  onSignOut: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, user, onNavigate, onSignOut }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
   const menuItems = [
     { icon: Home, label: 'Início', view: 'home' as View },
-    { icon: User, label: user ? 'Meu Perfil' : 'Login / Entrar', view: user ? 'profile' as View : 'register' as View },
-    { icon: Package, label: 'Meus Pedidos', view: 'orders' as View },
-    { icon: Heart, label: 'Meus Favoritos', view: 'saved' as View },
-    { icon: MapPin, label: 'Endereços', view: 'address-editor' as View },
-    { icon: Info, label: 'Sobre Nós', view: 'settings' as View },
-    { icon: MessageSquare, label: 'Fale Conosco', view: 'settings' as View },
-    { icon: ShieldCheck, label: 'Política de Privacidade', view: 'settings' as View },
-    { icon: FileText, label: 'Termos de Uso', view: 'settings' as View },
+    { icon: Info, label: 'Sobre nós', view: 'settings' as View },
+    { icon: MessageSquare, label: 'Fale conosco', view: 'contact' as View },
+  ];
+
+  const socialLinks = [
+    { icon: Instagram, label: 'Instagram', href: BUSINESS_INFO.instagram },
+    { icon: MessageCircle, label: 'WhatsApp', href: `https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}` },
+    { icon: Facebook, label: 'Facebook', href: BUSINESS_INFO.facebook },
   ];
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -40,7 +35,6 @@ export function Sidebar({ isOpen, onClose, user, onNavigate, onSignOut }: Sideba
             className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
 
-          {/* Sidebar Panel */}
           <motion.div
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
@@ -56,9 +50,9 @@ export function Sidebar({ isOpen, onClose, user, onNavigate, onSignOut }: Sideba
             </div>
 
             <div className="flex-1 overflow-y-auto py-4">
-              {menuItems.map((item, idx) => (
+              {menuItems.map((item) => (
                 <button
-                  key={idx}
+                  key={item.label}
                   onClick={() => { onNavigate(item.view); onClose(); }}
                   className="w-full flex items-center gap-4 py-4 px-6 hover:bg-primary/5 transition-colors group"
                 >
@@ -73,17 +67,23 @@ export function Sidebar({ isOpen, onClose, user, onNavigate, onSignOut }: Sideba
               ))}
             </div>
 
-            {user && (
-              <div className="p-4 border-t border-gray-100">
-                <button
-                  onClick={() => { onSignOut(); onClose(); }}
-                  className="w-full flex items-center gap-4 py-4 px-2 text-red-500 hover:bg-red-50 transition-colors rounded-xl"
-                >
-                  <LogOut size={20} className="ml-4" />
-                  <span className="font-headline font-black text-sm uppercase tracking-widest">Sair</span>
-                </button>
+            <div className="p-4 border-t border-gray-100 space-y-3">
+              <p className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Redes sociais</p>
+              <div className="grid grid-cols-1 gap-2">
+                {socialLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-primary/10 px-4 py-3 text-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <item.icon size={16} />
+                    <span className="text-[10px] font-bold">{item.label}</span>
+                  </a>
+                ))}
               </div>
-            )}
+            </div>
           </motion.div>
         </>
       )}

@@ -12,18 +12,34 @@ function calcStraightLine(lat1: number, lon1: number, lat2: number, lon2: number
 }
 
 export interface AddressState {
-  address: string; apartment: string; city: string;
-  postal_code: string; reference: string;
-  lat: number | null; lng: number | null;
+  address: string;
+  apartment: string;
+  city: string;
+  postal_code: string;
+  reference: string;
+  lat: number | null;
+  lng: number | null;
+}
+
+export interface GuestCustomerState {
+  name: string;
+  phone: string;
 }
 
 const EMPTY_ADDRESS: AddressState = {
-  address: '', apartment: '', city: '', postal_code: '', reference: '', lat: null, lng: null,
+  address: '',
+  apartment: '',
+  city: '',
+  postal_code: '',
+  reference: '',
+  lat: null,
+  lng: null,
 };
 
 export function useCheckout(isGoogleLoaded: boolean) {
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup' | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'mbway' | 'wise' | null>(null);
+  const [guestCustomer, setGuestCustomer] = useState<GuestCustomerState>({ name: '', phone: '' });
   const [needsChange, setNeedsChange] = useState(false);
   const [changeAmount, setChangeAmount] = useState('');
   const [address, setAddress] = useState<AddressState>(EMPTY_ADDRESS);
@@ -34,27 +50,15 @@ export function useCheckout(isGoogleLoaded: boolean) {
   const [showAddressError, setShowAddressError] = useState(false);
   const [saveAddressAsDefault, setSaveAddressAsDefault] = useState(false);
 
-  // Pre-fill address from user profile
-  const prefillAddress = (data: any) => {
-    setAddress({
-      address: data.address || '',
-      apartment: data.apartment || '',
-      city: data.city || '',
-      postal_code: data.postal_code || '',
-      reference: data.reference || '',
-      lat: null, lng: null,
-    });
-    setIsAddressEditing(!data.address);
-  };
-
-  // Distance calculation
   useEffect(() => {
     if (!address.lat || !address.lng || deliveryMethod !== 'delivery') {
       setDrivingDistance(null);
       return;
     }
+
     const timer = setTimeout(async () => {
       setIsCalculatingRoute(true);
+
       try {
         if (isGoogleLoaded && (window as any).google?.maps?.DistanceMatrixService) {
           const service = new (window as any).google.maps.DistanceMatrixService();
@@ -66,22 +70,26 @@ export function useCheckout(isGoogleLoaded: boolean) {
             setIsCalculatingRoute(false);
             if (status === 'OK' && res?.rows[0]?.elements[0]?.status === 'OK') {
               setDrivingDistance(res.rows[0].elements[0].distance.value / 1000);
-            } else fetchOSRM();
+            } else {
+              fetchOSRM();
+            }
           });
         } else {
           await fetchOSRM();
         }
-      } catch { await fetchOSRM(); }
+      } catch {
+        await fetchOSRM();
+      }
     }, 1000);
 
     async function fetchOSRM() {
       try {
-        const r = await fetch(
+        const response = await fetch(
           `https://router.project-osrm.org/route/v1/driving/${PICKUP_COORDS.lng},${PICKUP_COORDS.lat};${address.lng},${address.lat}?overview=false`
         );
-        const d = await r.json();
-        const dist = d.routes?.[0]?.distance;
-        setDrivingDistance(dist != null ? dist / 1000 : calcStraightLine(PICKUP_COORDS.lat, PICKUP_COORDS.lng, address.lat!, address.lng!));
+        const data = await response.json();
+        const distance = data.routes?.[0]?.distance;
+        setDrivingDistance(distance != null ? distance / 1000 : calcStraightLine(PICKUP_COORDS.lat, PICKUP_COORDS.lng, address.lat!, address.lng!));
       } catch {
         setDrivingDistance(calcStraightLine(PICKUP_COORDS.lat, PICKUP_COORDS.lng, address.lat!, address.lng!));
       } finally {
@@ -94,28 +102,33 @@ export function useCheckout(isGoogleLoaded: boolean) {
 
   const handleLocate = () => {
     if (!navigator.geolocation) return;
+
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
-          const r = await fetch(
+          const response = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&addressdetails=1`
           );
-          const d = await r.json();
-          if (d.address) {
-            const raw = d.address.postcode?.replace(/\D/g, '') ?? '';
+          const data = await response.json();
+
+          if (data.address) {
+            const raw = data.address.postcode?.replace(/\D/g, '') ?? '';
             setAddress({
-              address: `${d.address.road || d.address.street || ''}${d.address.house_number ? `, ${d.address.house_number}` : ''}`,
+              address: `${data.address.road || data.address.street || ''}${data.address.house_number ? `, ${data.address.house_number}` : ''}`,
               apartment: '',
-              city: d.address.city || d.address.town || d.address.village || '',
+              city: data.address.city || data.address.town || data.address.village || '',
               postal_code: raw.length === 7 ? `${raw.slice(0, 4)}-${raw.slice(4)}` : raw,
               reference: '',
               lat: pos.coords.latitude,
               lng: pos.coords.longitude,
             });
             setIsAddressEditing(false);
+            setShowAddressError(false);
           }
-        } finally { setIsLocating(false); }
+        } finally {
+          setIsLocating(false);
+        }
       },
       () => setIsLocating(false),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -128,6 +141,7 @@ export function useCheckout(isGoogleLoaded: boolean) {
   return {
     deliveryMethod, setDeliveryMethod,
     paymentMethod, setPaymentMethod,
+    guestCustomer, setGuestCustomer,
     needsChange, setNeedsChange,
     changeAmount, setChangeAmount,
     address, setAddress,
@@ -135,6 +149,6 @@ export function useCheckout(isGoogleLoaded: boolean) {
     drivingDistance, isCalculatingRoute,
     showAddressError, setShowAddressError,
     saveAddressAsDefault, setSaveAddressAsDefault,
-    currentDeliveryFee, prefillAddress, handleLocate,
+    currentDeliveryFee, handleLocate,
   };
 }

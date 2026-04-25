@@ -12,7 +12,7 @@ export interface Product {
   isNew?: boolean;
 }
 
-export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'profile' | 'categories-list' | 'settings' | 'register' | 'orders' | 'address-editor' | 'admin';
+export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact';
 
 export interface CartItem extends Product {
   cartId: string;
@@ -23,23 +23,4 @@ export interface CartItem extends Product {
   recheio1?: string;
   recheio2?: string;
   adicionais?: string[];
-}
-
-export interface User {
-  id?: string;
-  name: string;
-  email: string;
-  phone?: string;
-  profilePic?: string | null;
-  address?: string;
-  city?: string;
-  postal_code?: string;
-  apartment?: string;
-  reference?: string;
-  birthday?: string;
-  sex?: string;
-  has_default_address?: boolean;
-  hasUsedFirstPurchaseCoupon?: boolean;
-  couponCode?: string;
-  is_admin?: boolean;
 }

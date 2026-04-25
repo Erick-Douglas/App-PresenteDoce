@@ -7,11 +7,13 @@ import { motion } from 'framer-motion';
 interface CategoriesScreenProps {
   cart: CartItem[];
   cartTotal: number;
+  activeCategory: string;
+  onSetCategory: (category: string) => void;
   onOpenMenu: () => void;
   onNavigate: (view: View) => void;
 }
 
-export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ cart, cartTotal, onOpenMenu, onNavigate }) => {
+export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ onOpenMenu, onNavigate, activeCategory, onSetCategory }) => {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="min-h-screen pb-24 bg-white">
       <header className="px-6 py-4 flex items-center sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
@@ -22,11 +24,14 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ cart, cartTo
       </header>
 
       <main className="px-6 py-8 space-y-6 max-w-2xl mx-auto">
-        {CATEGORIES.map((cat, idx) => (
+        {CATEGORIES.map((cat) => (
           <div
-            key={idx}
-            className="flex items-center gap-6 p-4 bg-white rounded-xl shadow-sm cursor-pointer hover:scale-[1.02] transition-transform active:scale-95 border border-primary/5"
-            onClick={() => onNavigate('home')}
+            key={cat.name}
+            className={`flex items-center gap-6 p-4 bg-white rounded-xl shadow-sm cursor-pointer hover:scale-[1.02] transition-transform active:scale-95 border ${activeCategory === cat.name ? 'border-primary shadow-md' : 'border-primary/5'}`}
+            onClick={() => {
+              onSetCategory(cat.name);
+              onNavigate('product-list');
+            }}
           >
             <div className="w-24 h-24 rounded-full overflow-hidden shadow-md border-2 border-gold/20">
               <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
@@ -41,4 +46,4 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ cart, cartTo
       </main>
     </motion.div>
   );
-}
+};
