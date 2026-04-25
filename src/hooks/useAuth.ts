@@ -9,90 +9,98 @@ export function useAuth() {
 
   const fetchUserProfile = useCallback(async (userId: string) => {
     console.log('[Auth] Buscando perfil para:', userId);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
-    if (error) {
-      console.error('[Auth] Erro ao buscar perfil:', error.message);
-      // Mesmo sem perfil, podemos ter o ID do auth
-      setUser({ id: userId, email: '', name: 'Usuário' } as User);
-      return null;
-    }
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      
+      if (error) {
+        console.warn('[Auth] Perfil não encontrado ou erro de RLS:', error.message);
+        // Mesmo sem perfil na tabela, mantemos o estado logado com o ID básico
+        setUser({ id: userId, email: '', name: 'Usuário' } as User);
+        return null;
+      }
 
-    if (data) {
-      console.log('[Auth] Perfil carregado com sucesso');
-      setUser({
-        ...data,
-        profilePic: data.profile_pic ?? null,
-        has_default_address: Boolean(data.address),
-      });
-      return data;
+      if (data) {
+        console.log('[Auth] Perfil carregado com sucesso');
+        setUser({
+          ...data,
+          profilePic: data.profile_pic ?? null,
+          has_default_address: Boolean(data.address),
+        });
+        return data;
+      }
+    } catch (err) {
+      console.error('[Auth] Exceção ao buscar perfil:', err);
     }
     return null;
   }, []);
 
   useEffect(() => {
-    console.log('[Auth] Inicializando listener de autenticação');
+    let mounted = true;
+    console.log('[Auth] Inicializando sistema de autenticação');
     
-    // 1. Verificar sessão inicial
-    const initSession = async () => {
+    const initAuth = async () => {
       try {
+        // 1. Verificar sessão atual imediatamente
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
         
-        if (session?.user) {
-          console.log('[Auth] Sessão inicial encontrada:', session.user.email);
+        if (session?.user && mounted) {
+          console.log('[Auth] Sessão ativa encontrada:', session.user.email);
           await fetchUserProfile(session.user.id);
         } else {
-          console.log('[Auth] Nenhuma sessão inicial encontrada');
+          console.log('[Auth] Nenhuma sessão ativa');
         }
       } catch (err: any) {
-        console.error('[Auth] Erro ao obter sessão inicial:', err.message);
+        console.error('[Auth] Erro na inicialização:', err.message);
       } finally {
-        setIsAuthLoading(false);
+        if (mounted) setIsAuthLoading(false);
       }
     };
 
-    initSession();
+    initAuth();
 
-    // 2. Escutar mudanças no estado de autenticação
+    // 2. Listener para mudanças de estado (login/logout/token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[Auth] Evento de Auth:', event, session?.user?.email);
+      console.log('[Auth] Evento detectado:', event);
       
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+      if (event === 'SIGNED_IN' && session?.user) {
         await fetchUserProfile(session.user.id);
-        setIsAuthLoading(false);
+        if (mounted) setIsAuthLoading(false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
-        setIsAuthLoading(false);
+        if (mounted) setIsAuthLoading(false);
+      } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+        await fetchUserProfile(session.user.id);
       }
     });
 
     return () => {
-      console.log('[Auth] Limpando listener de autenticação');
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [fetchUserProfile]);
 
   const handleSignIn = async (email: string, pass: string): Promise<boolean> => {
-    console.log('[Auth] Tentando login para:', email);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-    
-    if (error) {
-      console.error('[Auth] Erro no login:', error.message);
-      alert(`Erro no login: ${error.message}`);
+    setIsAuthLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+      if (error) throw error;
+      
+      if (data.user) {
+        await fetchUserProfile(data.user.id);
+        return true;
+      }
       return false;
+    } catch (err: any) {
+      alert(`Erro no login: ${err.message}`);
+      return false;
+    } finally {
+      setIsAuthLoading(false);
     }
-    
-    if (data.user) {
-      console.log('[Auth] Login bem-sucedido, buscando perfil...');
-      await fetchUserProfile(data.user.id);
-      return true;
-    }
-    return false;
   };
 
   const handleSignUp = async (
@@ -100,51 +108,44 @@ export function useAuth() {
     pass: string,
     profileData: { name: string; phone: string; birthday: string; sex: string; avatarFile?: File }
   ): Promise<boolean> => {
-    console.log('[Auth] Tentando cadastro para:', email);
-    const { data, error } = await supabase.auth.signUp({ email, password: pass });
-    
-    if (error) {
-      console.error('[Auth] Erro no cadastro:', error.message);
-      alert(`Erro no cadastro: ${error.message}`);
-      return false;
-    }
-    
-    if (!data.user) return false;
+    setIsAuthLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password: pass });
+      if (error) throw error;
+      if (!data.user) return false;
 
-    console.log('[Auth] Cadastro bem-sucedido, ID:', data.user.id);
-
-    let profile_pic: string | null = null;
-    if (profileData.avatarFile) {
-      try {
-        profile_pic = await uploadAvatar(profileData.avatarFile, data.user.id);
-      } catch (e: any) {
-        console.warn('[Auth] Upload de avatar falhou:', e.message);
+      let profile_pic: string | null = null;
+      if (profileData.avatarFile) {
+        try {
+          profile_pic = await uploadAvatar(profileData.avatarFile, data.user.id);
+        } catch (e: any) {
+          console.warn('[Auth] Upload de avatar falhou:', e.message);
+        }
       }
+
+      // Atualizar perfil (criado pelo trigger)
+      const { error: updateError } = await supabase.from('profiles').update({
+        name: profileData.name,
+        phone: profileData.phone,
+        birthday: profileData.birthday,
+        sex: profileData.sex,
+        profile_pic,
+      }).eq('id', data.user.id);
+
+      if (updateError) console.error('[Auth] Erro ao atualizar perfil:', updateError.message);
+
+      await fetchUserProfile(data.user.id);
+      return true;
+    } catch (err: any) {
+      alert(`Erro no cadastro: ${err.message}`);
+      return false;
+    } finally {
+      setIsAuthLoading(false);
     }
-
-    // O perfil é criado automaticamente via trigger no banco de dados.
-    // Aqui apenas atualizamos com os dados adicionais do formulário.
-    console.log('[Auth] Atualizando perfil com dados adicionais...');
-    const { error: updateError } = await supabase.from('profiles').update({
-      name: profileData.name,
-      phone: profileData.phone,
-      birthday: profileData.birthday,
-      sex: profileData.sex,
-      profile_pic,
-    }).eq('id', data.user.id);
-
-    if (updateError) {
-      console.error('[Auth] Erro ao atualizar perfil:', updateError.message);
-    }
-
-    await fetchUserProfile(data.user.id);
-    return true;
   };
 
   const handleSignOut = async () => {
-    console.log('[Auth] Fazendo logout...');
-    const { error } = await supabase.auth.signOut();
-    if (error) console.error('[Auth] Erro no logout:', error.message);
+    await supabase.auth.signOut();
     setUser(null);
   };
 
@@ -161,7 +162,6 @@ export function useAuth() {
     };
     const { error } = await supabase.from('profiles').update(payload).eq('id', user.id);
     if (error) {
-      console.error('[Auth] Erro ao salvar endereço:', error.message);
       alert('Não foi possível guardar o endereço padrão.');
       return;
     }
@@ -176,7 +176,6 @@ export function useAuth() {
       if (error) throw error;
       setUser(prev => prev ? { ...prev, profilePic: url } : prev);
     } catch (err: any) {
-      console.error('[Auth] Erro no upload de foto:', err.message);
       alert(err.message || 'Erro ao enviar foto.');
     }
   };

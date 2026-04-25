@@ -76,6 +76,14 @@ export default function App() {
     }
   }, [currentView, user]);
 
+  // Redirecionar se já estiver logado e tentar acessar 'register' ou 'welcome'
+  useEffect(() => {
+    if (!isAuthLoading && user && (currentView === 'register' || currentView === 'welcome')) {
+      console.log('[App] Usuário logado detectado, redirecionando para home');
+      setCurrentView('home');
+    }
+  }, [user, isAuthLoading, currentView]);
+
   const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product);
     setCurrentView('product-details');
@@ -128,25 +136,20 @@ export default function App() {
     setCurrentView('home');
   };
 
-  // Redirecionar se já estiver logado e tentar acessar 'register' ou 'welcome'
-  useEffect(() => {
-    if (!isAuthLoading && user && (currentView === 'register' || currentView === 'welcome')) {
-      setCurrentView('home');
-    }
-  }, [user, isAuthLoading, currentView]);
-
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
 
-  if (isAuthLoading && currentView === 'welcome') {
-    return (
-      <div className="min-h-screen bg-primary flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
-      </div>
-    );
-  }
+  // Se estiver carregando a auth E estiver na tela de welcome, mostramos um loading suave por cima
+  // mas não bloqueamos a renderização total para evitar tela branca/travada
+  const showLoadingOverlay = isAuthLoading && currentView === 'welcome';
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
+      {showLoadingOverlay && (
+        <div className="fixed inset-0 z-[100] bg-primary flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+        </div>
+      )}
+      
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
