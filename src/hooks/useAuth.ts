@@ -66,15 +66,15 @@ export function useAuth() {
       catch (e: any) { console.warn('Avatar upload falhou:', e.message); }
     }
 
-    await supabase.from('profiles').insert({
-      id: data.user.id,
-      email,
+    // O perfil é criado automaticamente via trigger no banco de dados.
+    // Aqui apenas atualizamos com os dados adicionais do formulário.
+    await supabase.from('profiles').update({
       name: profileData.name,
       phone: profileData.phone,
       birthday: profileData.birthday,
       sex: profileData.sex,
       profile_pic,
-    });
+    }).eq('id', data.user.id);
     await fetchUserProfile(data.user.id);
     return true;
   };

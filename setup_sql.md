@@ -145,3 +145,25 @@ UPDATE profiles SET is_admin = true WHERE email = 'admin@presentedoce.com';
 - A política antiga `"Public profiles are viewable by everyone."` foi **removida** — os perfis são agora privados.
 - As fotos de perfil são guardadas no **Supabase Storage** (URL) e não como Base64 na base de dados.
 - O bucket `avatars` é público para leitura mas apenas o dono pode escrever o seu próprio ficheiro.
+
+## 5. Automação de Perfis (Trigger)
+
+Execute este SQL para garantir que cada novo utilizador registado no Auth tenha automaticamente um registo na tabela `profiles`.
+
+```sql
+-- Função para criar o perfil automaticamente
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email)
+  VALUES (new.id, new.email);
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger para executar a função após a criação de um usuário no Auth
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+```
