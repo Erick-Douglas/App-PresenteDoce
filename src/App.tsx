@@ -46,7 +46,7 @@ export default function App() {
   const [showBottomNav, setShowBottomNav] = useState(true);
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
 
-  const { user, fetchUserProfile, handleSignIn, handleSignUp, handleSignOut, persistDefaultAddress, handleProfilePicUpload } = useAuth();
+  const { user, isAuthLoading, fetchUserProfile, handleSignIn, handleSignUp, handleSignOut, persistDefaultAddress, handleProfilePicUpload } = useAuth();
   const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart } = useCart();
   const { orders, fetchUserOrders } = useOrders();
   const { isGoogleLoaded } = useGoogleMaps();
@@ -128,7 +128,22 @@ export default function App() {
     setCurrentView('home');
   };
 
+  // Redirecionar se já estiver logado e tentar acessar 'register' ou 'welcome'
+  useEffect(() => {
+    if (!isAuthLoading && user && (currentView === 'register' || currentView === 'welcome')) {
+      setCurrentView('home');
+    }
+  }, [user, isAuthLoading, currentView]);
+
   const commonProps = { onNavigate: setCurrentView, onOpenMenu: () => setIsMenuOpen(true) };
+
+  if (isAuthLoading && currentView === 'welcome') {
+    return (
+      <div className="min-h-screen bg-primary flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">

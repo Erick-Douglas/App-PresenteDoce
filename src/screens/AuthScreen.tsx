@@ -59,7 +59,12 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onSignIn, onSignUp, onNa
         avatarFile: avatarFile ?? undefined,
       });
     }
-    if (ok) onNavigate('home');
+    if (ok) {
+      console.log('[AuthScreen] Login/Cadastro bem-sucedido, navegando para home');
+      onNavigate('home');
+    } else {
+      console.error('[AuthScreen] Falha no Login/Cadastro');
+    }
   };
 
   return (

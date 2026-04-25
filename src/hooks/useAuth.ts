@@ -8,12 +8,22 @@ export function useAuth() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const fetchUserProfile = useCallback(async (userId: string) => {
+    console.log('[Auth] Buscando perfil para:', userId);
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single();
-    if (data && !error) {
+    
+    if (error) {
+      console.error('[Auth] Erro ao buscar perfil:', error.message);
+      // Mesmo sem perfil, podemos ter o ID do auth
+      setUser({ id: userId, email: '', name: 'Usuário' } as User);
+      return null;
+    }
+
+    if (data) {
+      console.log('[Auth] Perfil carregado com sucesso');
       setUser({
         ...data,
         profilePic: data.profile_pic ?? null,
@@ -25,29 +35,63 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserProfile(session.user.id).finally(() => setIsAuthLoading(false));
-      } else {
+    console.log('[Auth] Inicializando listener de autenticação');
+    
+    // 1. Verificar sessão inicial
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (session?.user) {
+          console.log('[Auth] Sessão inicial encontrada:', session.user.email);
+          await fetchUserProfile(session.user.id);
+        } else {
+          console.log('[Auth] Nenhuma sessão inicial encontrada');
+        }
+      } catch (err: any) {
+        console.error('[Auth] Erro ao obter sessão inicial:', err.message);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    initSession();
+
+    // 2. Escutar mudanças no estado de autenticação
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[Auth] Evento de Auth:', event, session?.user?.email);
+      
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        await fetchUserProfile(session.user.id);
+        setIsAuthLoading(false);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
         setIsAuthLoading(false);
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        fetchUserProfile(session.user.id);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('[Auth] Limpando listener de autenticação');
+      subscription.unsubscribe();
+    };
   }, [fetchUserProfile]);
 
   const handleSignIn = async (email: string, pass: string): Promise<boolean> => {
+    console.log('[Auth] Tentando login para:', email);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-    if (error) { alert(`Erro no login: ${error.message}`); return false; }
-    if (data.user) { await fetchUserProfile(data.user.id); return true; }
+    
+    if (error) {
+      console.error('[Auth] Erro no login:', error.message);
+      alert(`Erro no login: ${error.message}`);
+      return false;
+    }
+    
+    if (data.user) {
+      console.log('[Auth] Login bem-sucedido, buscando perfil...');
+      await fetchUserProfile(data.user.id);
+      return true;
+    }
     return false;
   };
 
@@ -56,31 +100,51 @@ export function useAuth() {
     pass: string,
     profileData: { name: string; phone: string; birthday: string; sex: string; avatarFile?: File }
   ): Promise<boolean> => {
+    console.log('[Auth] Tentando cadastro para:', email);
     const { data, error } = await supabase.auth.signUp({ email, password: pass });
-    if (error) { alert(`Erro no cadastro: ${error.message}`); return false; }
+    
+    if (error) {
+      console.error('[Auth] Erro no cadastro:', error.message);
+      alert(`Erro no cadastro: ${error.message}`);
+      return false;
+    }
+    
     if (!data.user) return false;
+
+    console.log('[Auth] Cadastro bem-sucedido, ID:', data.user.id);
 
     let profile_pic: string | null = null;
     if (profileData.avatarFile) {
-      try { profile_pic = await uploadAvatar(profileData.avatarFile, data.user.id); }
-      catch (e: any) { console.warn('Avatar upload falhou:', e.message); }
+      try {
+        profile_pic = await uploadAvatar(profileData.avatarFile, data.user.id);
+      } catch (e: any) {
+        console.warn('[Auth] Upload de avatar falhou:', e.message);
+      }
     }
 
     // O perfil é criado automaticamente via trigger no banco de dados.
     // Aqui apenas atualizamos com os dados adicionais do formulário.
-    await supabase.from('profiles').update({
+    console.log('[Auth] Atualizando perfil com dados adicionais...');
+    const { error: updateError } = await supabase.from('profiles').update({
       name: profileData.name,
       phone: profileData.phone,
       birthday: profileData.birthday,
       sex: profileData.sex,
       profile_pic,
     }).eq('id', data.user.id);
+
+    if (updateError) {
+      console.error('[Auth] Erro ao atualizar perfil:', updateError.message);
+    }
+
     await fetchUserProfile(data.user.id);
     return true;
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    console.log('[Auth] Fazendo logout...');
+    const { error } = await supabase.auth.signOut();
+    if (error) console.error('[Auth] Erro no logout:', error.message);
     setUser(null);
   };
 
@@ -96,7 +160,11 @@ export function useAuth() {
       reference: address.reference || null,
     };
     const { error } = await supabase.from('profiles').update(payload).eq('id', user.id);
-    if (error) { alert('Não foi possível guardar o endereço padrão.'); return; }
+    if (error) {
+      console.error('[Auth] Erro ao salvar endereço:', error.message);
+      alert('Não foi possível guardar o endereço padrão.');
+      return;
+    }
     setUser(prev => prev ? { ...prev, ...payload, has_default_address: Boolean(address.address) } : prev);
   };
 
@@ -105,8 +173,10 @@ export function useAuth() {
     try {
       const url = await uploadAvatar(file, user.id);
       const { error } = await supabase.from('profiles').update({ profile_pic: url }).eq('id', user.id);
-      if (!error) setUser(prev => prev ? { ...prev, profilePic: url } : prev);
+      if (error) throw error;
+      setUser(prev => prev ? { ...prev, profilePic: url } : prev);
     } catch (err: any) {
+      console.error('[Auth] Erro no upload de foto:', err.message);
       alert(err.message || 'Erro ao enviar foto.');
     }
   };
