@@ -42,11 +42,7 @@ export default function App() {
   const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
   const historyStack = useRef<View[]>(['welcome']);
   const isInternalNavigation = useRef(false);
-
-<<<<<<< HEAD
-=======
   const { user, isAuthLoading, fetchUserProfile, handleSignIn, handleSignUp, handleSignOut, persistDefaultAddress, handleProfilePicUpload } = useAuth();
->>>>>>> bf38466be14b3c5f93811c85ffdcc6e4fd49fc0e
   const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart } = useCart();
   const { isGoogleLoaded } = useGoogleMaps();
   const { favorites, toggleFavorite } = useFavorites();
@@ -97,8 +93,6 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-<<<<<<< HEAD
-=======
   // Load user orders when user changes
   useEffect(() => {
     if (user?.id) fetchUserOrders(user.id);
@@ -119,7 +113,6 @@ export default function App() {
     }
   }, [user, isAuthLoading, currentView]);
 
->>>>>>> bf38466be14b3c5f93811c85ffdcc6e4fd49fc0e
   const handleProductClick = useCallback((product: Product) => {
     setSelectedProduct(product);
     setCurrentView('product-details');
