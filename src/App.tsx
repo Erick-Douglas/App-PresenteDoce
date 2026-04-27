@@ -79,6 +79,7 @@ export default function App() {
       window.history.pushState({ view }, '', `#${view}`);
     }
     setCurrentView(view);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentView]);
 
   const handleProductClick = useCallback((product: Product) => {

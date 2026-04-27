@@ -197,7 +197,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         {/* ── Formulário ── */}
         <div className="flex-1 md:overflow-y-auto md:h-screen">
-          <div className="relative -mt-5 md:mt-0 rounded-t-[28px] md:rounded-none overflow-hidden bg-white shadow-xl md:shadow-none pb-36">
+          <div className="relative mt-6 md:mt-0 rounded-t-[28px] md:rounded-none overflow-hidden bg-white shadow-xl md:shadow-none pb-36">
 
             {/* Cabeçalho: nome, descrição, preço */}
             <div className="px-6 pt-7 pb-5 bg-white border-b border-black/[0.06]">

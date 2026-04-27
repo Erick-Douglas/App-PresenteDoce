@@ -10,7 +10,7 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-screen flex flex-col items-center justify-end overflow-hidden bg-primary">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-screen flex flex-col items-center justify-center overflow-hidden bg-primary">
       <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
         style={{ backgroundImage: `url('${SPLASH_IMAGE}')` }} />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
