@@ -190,17 +190,17 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         {/* ── Imagem ── */}
         <div className="md:sticky md:top-0 md:h-screen md:w-[42%] shrink-0">
-          <div className="h-[64vw] max-h-[70vh] md:h-screen w-full">
+          <div className="h-[80vw] max-h-[85vh] md:h-screen w-full">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           </div>
         </div>
 
         {/* ── Formulário ── */}
         <div className="flex-1 md:overflow-y-auto md:h-screen">
-          <div className="relative mt-6 md:mt-0 rounded-t-[28px] md:rounded-none overflow-hidden bg-white shadow-xl md:shadow-none pb-36">
+          <div className="relative -mt-10 md:mt-0 rounded-t-[24px] md:rounded-none overflow-hidden bg-white shadow-xl md:shadow-none pb-36">
 
             {/* Cabeçalho: nome, descrição, preço */}
-            <div className="px-6 pt-7 pb-5 bg-white border-b border-black/[0.06]">
+            <div className="px-6 pt-4 pb-3 bg-white border-b border-black/[0.06]">
               <div className="flex gap-2 mb-2 flex-wrap">
                 {product.isNew && (
                   <span className="bg-gold/20 text-primary font-headline font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Novo ✨</span>

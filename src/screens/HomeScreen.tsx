@@ -38,7 +38,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       <main>
         {/* ── Hero (fundo bordô, full-width) ── */}
         <div
-          className="relative overflow-hidden transition-all duration-700 pb-24 pt-6"
+          className="relative overflow-hidden transition-all duration-700 pb-10 pt-6"
           style={{
             backgroundColor: homeBgConfig.type === 'color' ? homeBgConfig.value : undefined,
             backgroundImage: homeBgConfig.type === 'image' ? `url(${homeBgConfig.value})` : undefined,
@@ -75,7 +75,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         </div>
 
         {/* ── Conteúdo branco (full-width com curva no topo) ── */}
-        <div className="-mt-12 bg-white rounded-t-[40px] relative z-20 shadow-[0_-20px_40px_rgba(0,0,0,0.12)] pt-10 min-h-screen">
+        <div className="-mt-16 bg-white rounded-t-[40px] relative z-20 shadow-[0_-20px_40px_rgba(0,0,0,0.12)] pt-10 min-h-screen">
           <div className="max-w-[1200px] mx-auto space-y-8">
 
             {/* Categorias */}
@@ -92,7 +92,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </div>
                     </div>
-                    <span className="font-headline font-black text-[12px] text-on-surface tracking-tight">{cat.name}</span>
+                    <span className="font-headline font-black text-[10px] text-on-surface tracking-tight text-center max-w-[64px] leading-tight">{cat.name}</span>
                   </div>
                 ))}
               </div>
