@@ -1,0 +1,161 @@
+import { IMG_BOLO } from './constants';
+import { Product } from './types';
+
+
+export const PRODUCTS: Product[] = [
+    // ── KIT FESTAS ─────────────────────────────────────────────────────────────
+    {
+        id: '7',
+        name: 'Cupcake Colorido',
+        description: 'Mini bolinho com cobertura divertida para crianças.',
+        price: 3.50,
+        category: 'Kit Festas',
+        image: 'https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?auto=format&fit=crop&q=80&w=800',
+        isNew: true,
+    },
+    {
+        id: '8',
+        name: 'Donut de Morango',
+        description: 'Rosquinha macia com cobertura de morango e granulado.',
+        price: 4.00,
+        category: 'Kit Festas',
+        image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=800',
+    },
+
+    // ── CASEIROS ───────────────────────────────────────────────────────────────
+    {
+        id: 'bc-1',
+        name: 'Bolo de Iogurte com Limão',
+        description: 'Bolo fofinho de iogurte com raspas de limão fresco, levinho e refrescante. Ideal para qualquer hora do dia.',
+        price: 12.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+    },
+    {
+        id: 'bc-2',
+        name: 'Bolo de Banana',
+        description: 'Bolo caseiro feito com bananas maduras, com textura úmida e sabor adocicado natural.',
+        price: 12.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+    },
+    {
+        id: 'bc-3',
+        name: 'Bolo de Milho com Queijo e Goiabada',
+        description: 'Combinação irresistível do milho cremoso com queijo derretido e goiabada, puro conforto.',
+        price: 13.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+    },
+    {
+        id: 'bc-4',
+        name: 'Bolo de Cenoura com Chocolate',
+        description: 'Clássico bolo de cenoura fofinho coberto com uma generosa camada de ganache de chocolate.',
+        price: 18.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+        topSeller: 1,
+    },
+    {
+        id: 'bc-5',
+        name: 'Bolo Amanteigado com Doce de Leite',
+        description: 'Massa rica e amanteigada recheada e coberta com doce de leite artesanal.',
+        price: 20.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+    },
+    {
+        id: 'bc-6',
+        name: 'Bolo de Nido com Morango',
+        description: 'Bolo suave com creme de Leite Ninho e morangos frescos, delicioso e visualmente lindo.',
+        price: 20.00,
+        category: 'Caseiros',
+        image: '/products/bc-6.jpg',
+        simples: true,
+        topSeller: 2,
+    },
+    {
+        id: 'bc-7',
+        name: 'Bolo de Chocolate',
+        description: 'O favorito de todos! Massa de chocolate intensa com recheio e cobertura de brigadeiro.',
+        price: 20.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+    },
+    {
+        id: 'bc-8',
+        name: 'Bolo Pudim',
+        description: 'A incrível fusão do bolo de massa fofinha com o pudim cremoso numa única forma.',
+        price: 25.00,
+        category: 'Caseiros',
+        image: IMG_BOLO,
+        simples: true,
+        topSeller: 3,
+    },
+
+    // ── BOLOS TEMÁTICOS ────────────────────────────────────────────────────────
+    {
+        id: 'bt-1',
+        name: 'Bolo Temático Personalizado',
+        description: 'Monte o seu bolo de sonho! Escolha a massa, o recheio e o tamanho. Feito sob encomenda com carinho e atenção ao detalhe.',
+        price: 19.99,
+        category: 'Bolos Temáticos',
+        image: IMG_BOLO,
+        configuravel: true,
+    },
+
+    // ── DOCES ──────────────────────────────────────────────────────────────────
+    {
+        id: '1',
+        name: 'Croissant de Amêndoas',
+        description: 'Massa folhada com creme de amêndoas doce.',
+        price: 4.50,
+        category: 'Doces',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBrIHvVGhcjxJGjk3vt_6n9CSZCLWjpxVeO1i6uvYjXXOc5aCvkeLPWuv2wH9gExyb7NZpNT9Y5OusYbplD4OQyeI8QZ07vWhEhuq6qchsEKO8lZ5-NX6_eRx9X03-_aBYOG1OFE3eJuUeMi1MwejM3FooMxTVwI9_7DYnNP126vnX2iA-ExsdBBDSN94lRWECpbnwnv66Cn0uaeTzqtvt5eKQlZKxYQdDzTyMKoC6AlCeC0gPra84aLEM0gZM1NY7MHNdmq9FCbUA',
+        isNew: true,
+        rating: 4.9,
+        reviewsCount: 128,
+    },
+    {
+        id: '5',
+        name: 'Pain au Chocolat',
+        description: 'Chocolate amargo envolto em camadas de massa folhada.',
+        price: 5.00,
+        category: 'Doces',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCS3VafYPUvIwtjje4WTWIwEtK6f32GrAtaUywFMqEO3kheTLtVdRJYkxMt3WDau33iGK5DSRvcaYANbOZ4pcRtErw3YCVwM81m0KuH9SuyvpQuNN6ki4zyZSfvTco0P-NrgZFaBOKVEIri6ZsuoXoBG35ot2e3mhrbtr7xOiK4lE91-E3NN_eD5oNI-pMhVkxcLCBhzN1zuGQHIlIKb_Zb_dvojzdqKrYlgIcpNn_HLK5Jwr6y572naBglOEmnT9wGjIDf10xJ8Zk',
+        isNew: true,
+    },
+    {
+        id: '6',
+        name: 'Torta de Amêndoas',
+        description: 'Massa doce recheada com frangipane e amêndoas torradas.',
+        price: 6.50,
+        category: 'Doces',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDZAh69U3c9PWb1vT495GgHEyCWArOMolQPd-zvcKZBynZeF6OYbS5rJ_S56Qd_mgCxeTqfUgQUVgDzvvxyf1dl2grcJ-PwG0l0jInsVR5B_2MwrB-4KMs4FYiXMZBzLy8SQtnE2aYpWCSYxaHJJsAV-_nVQG7seLbbuRfNa7jhROYweUJjy5lmr5UyRpWh_4WyS4ObDvrn6voKmOwSovSHFfHMHlaf7yNe4fk6UDx_wYJe9NcAS6efvZHjr1Gps3OtwUUU77SQjr0',
+    },
+
+    // ── SALGADOS ───────────────────────────────────────────────────────────────
+    {
+        id: '3',
+        name: 'Croissant Clássico',
+        description: 'Perfeição folhada e amanteigada, assada fresca todas as manhãs.',
+        price: 4.50,
+        category: 'Salgados',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDjJ-tB4ttNAdLqSbI7-6b2yk_adT8LhCexPB71d6QDpjdQrDnVJ5P9e08zkIofc_6dcEOLHo9wCQPMXnAGhVQp2gjdZ8LsUSzWSTrmrMIl8MeWycetTbYyQBlU2oNPSpmMhU6h2vyTHZ1LjNchbtCXE7w0qJ_aWB87PVBJ8Aa-z1j_MOJLh5csonZE1CcxL_D64uoArSZ5bfla-z6T-B_8EBViGczOj1QAyNH2SUehSsOc5nDE-bkfHuFT_Lk3x1qTDoUCoulygek',
+        isNew: true,
+    },
+    {
+        id: '4',
+        name: 'Pão Italiano Rústico',
+        description: 'Fermentação natural com miolo macio e crosta crocante.',
+        price: 8.00,
+        category: 'Salgados',
+        image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDvCNYzg5gH5SnS23S3-eTJkp00TsEkVOQS11VAObs6aDdrMC98JUWzhidm5z4XCO2r2CidKjRfHVDABrxgN63kAA1pAjYOQQ_2tx_2BJFfIxgkxWDiYtnNBXgeWsP05U352TXX5gRONrq7VCFvyHz-kYFXQfa8xwI_bqSy4aBQYTN6aToeEFVJfBgHIjBBuvUJ-00BW_dJp3ndsZoJusN3wUjvHKnG4Wol5q9CHblXPuFWVUXA9LNCKfeJQ3OQiKr7pETi6Upk8ok',
+    },
+];

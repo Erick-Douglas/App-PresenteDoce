@@ -1,4 +1,4 @@
-export type Category = 'Bolos' | 'Doces' | 'Salgados' | 'Kit Festa';
+export type Category = 'Bolos Caseiros' | 'Bolos Temáticos' | 'Doces' | 'Salgados' | 'Kit Festa';
 
 export interface Product {
   id: string;
@@ -10,6 +10,9 @@ export interface Product {
   rating?: number;
   reviewsCount?: number;
   isNew?: boolean;
+  topSeller?: 1 | 2 | 3;
+  configuravel?: boolean; // Produto com personalização obrigatória (Bolos Temáticos)
+  simples?: boolean;      // Produto sem nenhuma customização (Bolos Caseiros)
 }
 
 export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact';
@@ -23,4 +26,6 @@ export interface CartItem extends Product {
   recheio1?: string;
   recheio2?: string;
   adicionais?: string[];
+  tamanho?: string;   // Para Bolos Temáticos
+  tema?: string;      // Descrição do tema do bolo
 }

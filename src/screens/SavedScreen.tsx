@@ -1,12 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart } from 'lucide-react';
-import { PRODUCTS } from '../constants';
+import { PRODUCTS } from '../PRODUCTS';
 import { Product, CartItem, View } from '../types';
 
 interface SavedScreenProps {
   cart: CartItem[];
-  cartTotal: number;
   favorites: string[];
   onProductClick: (product: Product) => void;
   onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
@@ -16,7 +15,7 @@ interface SavedScreenProps {
 }
 
 export const SavedScreen: React.FC<SavedScreenProps> = ({
-  cart, cartTotal, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu, onNavigate,
+  cart, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu, onNavigate,
 }) => {
   const favoriteProducts = PRODUCTS.filter(p => favorites.includes(p.id));
 

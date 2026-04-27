@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const PICKUP_COORDS = { lat: 38.6186, lng: -9.0976 };
 

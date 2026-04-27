@@ -60,9 +60,11 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
   if (cart.length === 0) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen pb-32 bg-white">
-        <header className="px-6 py-4 flex items-center sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
-          <button onClick={() => onNavigate('home')} className="p-2 -ml-2 text-black/40"><ArrowLeft size={18} /></button>
-          <h1 className="font-headline font-black text-sm text-primary flex-1 text-center pr-8 tracking-widest">Carrinho</h1>
+        <header className="px-6 py-4 sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
+          <div className="max-w-[1200px] mx-auto flex items-center">
+            <button onClick={() => onNavigate('home')} className="p-2 -ml-2 text-black/40"><ArrowLeft size={18} /></button>
+            <h1 className="font-headline font-black text-sm text-primary flex-1 text-center pr-8 tracking-widest">Carrinho</h1>
+          </div>
         </header>
         <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 m-4 bg-white rounded-2xl border border-primary/5 shadow-xl">
           <div className="p-6 bg-primary/5 rounded-full text-primary/20"><ShoppingCart size={48} /></div>
@@ -76,9 +78,11 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="min-h-screen pb-32 bg-white">
-      <header className="px-6 py-4 flex items-center sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
-        <button onClick={() => onNavigate('home')} className="p-2 -ml-2 text-black/40"><ArrowLeft size={18} /></button>
-        <h1 className="font-headline font-black text-sm text-primary flex-1 text-center pr-8 tracking-widest">Carrinho</h1>
+      <header className="px-6 py-4 sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
+        <div className="max-w-[1200px] mx-auto flex items-center">
+          <button onClick={() => onNavigate('home')} className="p-2 -ml-2 text-black/40"><ArrowLeft size={18} /></button>
+          <h1 className="font-headline font-black text-sm text-primary flex-1 text-center pr-8 tracking-widest">Carrinho</h1>
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto p-4 lg:p-10 lg:grid lg:grid-cols-12 lg:gap-10 lg:items-start">

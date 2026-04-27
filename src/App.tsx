@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 
@@ -28,21 +28,22 @@ const EMPTY_ADDRESS = {
   city: '',
   postal_code: '',
   reference: '',
-  lat: null,
-  lng: null,
+  lat: null as null,
+  lng: null as null,
 };
 
 export default function App() {
   const [currentView, setCurrentView] = useState<View>('welcome');
+  const [previousView, setPreviousView] = useState<View>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [activeRecCategory, setActiveRecCategory] = useState('Bolos');
+  const [activeRecCategory, setActiveRecCategory] = useState('Caseiros');
   const [orderCounter, setOrderCounter] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [homeBgConfig, setHomeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
-  const [hasScrolledOnce, setHasScrolledOnce] = useState(false);
+  const [homeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
+
   const historyStack = useRef<View[]>(['welcome']);
   const isInternalNavigation = useRef(false);
-  const { user, isAuthLoading, fetchUserProfile, handleSignIn, handleSignUp, handleSignOut, persistDefaultAddress, handleProfilePicUpload } = useAuth();
+
   const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart } = useCart();
   const { isGoogleLoaded } = useGoogleMaps();
   const { favorites, toggleFavorite } = useFavorites();
@@ -51,32 +52,27 @@ export default function App() {
   const grandTotal = cartTotal + checkout.currentDeliveryFee;
 
   // Handle browser back button
-  useEffect(() => {
+  React.useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
       if (isInternalNavigation.current) {
         isInternalNavigation.current = false;
         return;
       }
-      
-      // Prevent going back beyond the first page
       if (historyStack.current.length > 1) {
         e.preventDefault();
-        historyStack.current.pop(); // Remove current view
+        historyStack.current.pop();
         const previousView = historyStack.current[historyStack.current.length - 1];
         setCurrentView(previousView);
       } else {
-        // Allow natural back behavior on first page
         historyStack.current = ['welcome'];
       }
     };
-
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Custom navigation that updates history
   const handleNavigate = useCallback((view: View) => {
-    // Don't add duplicate consecutive views
     if (view !== currentView) {
       historyStack.current.push(view);
       isInternalNavigation.current = true;
@@ -85,38 +81,11 @@ export default function App() {
     setCurrentView(view);
   }, [currentView]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) setHasScrolledOnce(true);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Load user orders when user changes
-  useEffect(() => {
-    if (user?.id) fetchUserOrders(user.id);
-  }, [user?.id, fetchUserOrders]);
-
-  // Pre-fill address from profile when entering cart
-  useEffect(() => {
-    if (currentView === 'cart' && user) {
-      checkout.prefillAddress(user);
-    }
-  }, [currentView, user]);
-
-  // Redirecionar se já estiver logado e tentar acessar 'register' ou 'welcome'
-  useEffect(() => {
-    if (!isAuthLoading && user && (currentView === 'register' || currentView === 'welcome')) {
-      console.log('[App] Usuário logado detectado, redirecionando para home');
-      setCurrentView('home');
-    }
-  }, [user, isAuthLoading, currentView]);
-
   const handleProductClick = useCallback((product: Product) => {
+    setPreviousView(currentView);
     setSelectedProduct(product);
     setCurrentView('product-details');
-  }, []);
+  }, [currentView]);
 
   const resetCheckoutState = () => {
     checkout.setGuestCustomer({ name: '', phone: '' });
@@ -145,7 +114,7 @@ export default function App() {
     }
 
     if (!checkout.deliveryMethod) {
-      alert('Por favor, selecione o metodo de entrega.');
+      alert('Por favor, selecione o método de entrega.');
       return;
     }
 
@@ -160,20 +129,29 @@ export default function App() {
     }
 
     const deliveryInfo = checkout.deliveryMethod === 'delivery'
-      ? `\nEndereco: ${checkout.address.address}${checkout.address.apartment ? `, ${checkout.address.apartment}` : ''}${checkout.address.city ? ` (${checkout.address.city})` : ''}\nCEP: ${checkout.address.postal_code || '-'}\nEntrega: € ${checkout.currentDeliveryFee.toFixed(2)}`
+      ? `\nEndereço: ${checkout.address.address}${checkout.address.apartment ? `, ${checkout.address.apartment}` : ''}${checkout.address.city ? ` (${checkout.address.city})` : ''}\nCEP: ${checkout.address.postal_code || '-'}\nEntrega: € ${checkout.currentDeliveryFee.toFixed(2)}`
       : `\nRecolha no local: ${BUSINESS_INFO.address}`;
 
-    const labels = { cash: 'Dinheiro', mbway: 'MB WAY', wise: 'Wise' };
+    const labels: Record<string, string> = { cash: 'Dinheiro', mbway: 'MB WAY', wise: 'Wise' };
     const paymentLabel = checkout.paymentMethod === 'cash' && checkout.needsChange
       ? `${labels.cash} (Troco para € ${checkout.changeAmount})`
       : labels[checkout.paymentMethod];
 
     const orderId = String(orderCounter).padStart(4, '0');
     const itemsList = cart
-      .map((item) => `- ${item.quantity}x ${item.name} (€ ${(item.price * item.quantity).toFixed(2)})`)
+      .map((item) => {
+        let line = `- ${item.quantity}x ${item.name} (€ ${(item.price * item.quantity).toFixed(2)})`;
+        if (item.tamanho) line += `\n  📏 Tamanho: ${item.tamanho}`;
+        if (item.massa) line += `\n  🍰 Massa: ${item.massa}`;
+        if (item.recheio1) line += `\n  🍫 Recheio 1: ${item.recheio1}`;
+        if (item.recheio2 && item.recheio2 !== item.recheio1) line += `\n  🍫 Recheio 2: ${item.recheio2}`;
+        if (item.tema) line += `\n  🎨 Tema: ${item.tema}`;
+        if (item.observations) line += `\n  📝 Obs: ${item.observations}`;
+        return line;
+      })
       .join('\n');
 
-    const message = `*Pedido #${orderId} - Presente Doce*\n\n*Cliente:* ${customerName}\n*Telemovel:* ${customerPhone}\n\n*Metodo:* ${checkout.deliveryMethod === 'delivery' ? 'Entrega' : 'Recolha'}${deliveryInfo}\n*Pagamento:* ${paymentLabel}\n\n*Artigos:*\n${itemsList}\n\n*Total:* € ${grandTotal.toFixed(2)}`;
+    const message = `*Pedido #${orderId} - Presente Doce*\n\n*Cliente:* ${customerName}\n*Telemóvel:* ${customerPhone}\n\n*Método:* ${checkout.deliveryMethod === 'delivery' ? 'Entrega' : 'Recolha'}${deliveryInfo}\n*Pagamento:* ${paymentLabel}\n\n*Artigos:*\n${itemsList}\n\n*Total:* € ${grandTotal.toFixed(2)}`;
 
     setOrderCounter((prev) => prev + 1);
     window.open(`https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
@@ -185,18 +163,8 @@ export default function App() {
 
   const commonProps = { onNavigate: handleNavigate, onOpenMenu: () => setIsMenuOpen(true) };
 
-  // Se estiver carregando a auth E estiver na tela de welcome, mostramos um loading suave por cima
-  // mas não bloqueamos a renderização total para evitar tela branca/travada
-  const showLoadingOverlay = isAuthLoading && currentView === 'welcome';
-
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
-      {showLoadingOverlay && (
-        <div className="fixed inset-0 z-[100] bg-primary flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold"></div>
-        </div>
-      )}
-      
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
@@ -212,9 +180,7 @@ export default function App() {
               <HomeScreen
                 key="home"
                 cart={cart}
-                cartTotal={cartTotal}
                 favorites={favorites}
-                activeRecCategory={activeRecCategory}
                 homeBgConfig={homeBgConfig}
                 {...commonProps}
                 onSetCategory={setActiveRecCategory}
@@ -228,7 +194,6 @@ export default function App() {
               <ProductListScreen
                 key="product-list"
                 cart={cart}
-                cartTotal={cartTotal}
                 favorites={favorites}
                 activeRecCategory={activeRecCategory}
                 {...commonProps}
@@ -247,7 +212,8 @@ export default function App() {
                 favorites={favorites}
                 onAddToCart={addToCart}
                 onToggleFavorite={toggleFavorite}
-                onNavigate={setCurrentView}
+                onNavigate={handleNavigate}
+                onBack={() => handleNavigate(previousView)}
               />
             )}
 
@@ -262,7 +228,7 @@ export default function App() {
                 onUpdateQuantity={updateQuantity}
                 onRemoveFromCart={removeFromCart}
                 onCheckout={handleFinalCheckout}
-                onNavigate={setCurrentView}
+                onNavigate={handleNavigate}
                 onSetDeliveryMethod={checkout.setDeliveryMethod}
                 onSetPaymentMethod={checkout.setPaymentMethod}
                 onSetGuestCustomer={checkout.setGuestCustomer}
@@ -279,8 +245,6 @@ export default function App() {
             {currentView === 'settings' && (
               <SettingsScreen
                 key="settings"
-                cart={cart}
-                cartTotal={cartTotal}
                 mode="about"
                 {...commonProps}
               />
@@ -289,8 +253,6 @@ export default function App() {
             {currentView === 'contact' && (
               <SettingsScreen
                 key="contact"
-                cart={cart}
-                cartTotal={cartTotal}
                 mode="contact"
                 {...commonProps}
               />
@@ -299,8 +261,6 @@ export default function App() {
             {currentView === 'categories-list' && (
               <CategoriesScreen
                 key="categories"
-                cart={cart}
-                cartTotal={cartTotal}
                 activeCategory={activeRecCategory}
                 onSetCategory={setActiveRecCategory}
                 {...commonProps}
@@ -311,7 +271,6 @@ export default function App() {
               <SavedScreen
                 key="saved"
                 cart={cart}
-                cartTotal={cartTotal}
                 favorites={favorites}
                 onProductClick={handleProductClick}
                 onToggleFavorite={toggleFavorite}

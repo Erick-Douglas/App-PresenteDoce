@@ -1,12 +1,10 @@
 import React from 'react';
 import { Menu, MessageCircle, Phone, Instagram, MapPin } from 'lucide-react';
-import { View, CartItem } from '../types';
+import { View } from '../types';
 import { BUSINESS_INFO } from '../constants';
 import { motion } from 'framer-motion';
 
 interface SettingsScreenProps {
-  cart: CartItem[];
-  cartTotal: number;
   mode: 'about' | 'contact';
   onOpenMenu: () => void;
   onNavigate: (view: View) => void;
@@ -34,13 +32,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
         </h1>
       </header>
 
-      <main className="max-w-lg mx-auto p-4 space-y-6">
+      <main className="p-4 space-y-6">
         {mode === 'about' && (
           <section className="space-y-3">
             <h3 className="font-headline font-black text-[10px] text-black/40 pl-2 tracking-wider">Sobre a Presente Doce</h3>
             <div className="bg-white rounded-2xl p-1 shadow-xl shadow-black/5 border border-primary/5 divide-y divide-primary/5">
               {aboutItems.map((item) => (
-                <div key={item.label} className="flex items-start gap-4 py-4 px-4 group">
+                <div key={item.label} className="flex items-start gap-4 py-4 px-4">
                   <div className="bg-primary/5 p-2.5 rounded-xl text-primary shrink-0">
                     <MapPin size={16} />
                   </div>

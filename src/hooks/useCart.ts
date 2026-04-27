@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Product, CartItem } from '../types';
 
 export function useCart() {
@@ -12,10 +12,11 @@ export function useCart() {
     options: {
       sauce?: string; observations?: string; quantity?: number;
       massa?: string; recheio1?: string; recheio2?: string; adicionais?: string[];
+      tamanho?: string; tema?: string;
     } = {}
   ) => {
-    const { sauce, observations, quantity = 1, massa, recheio1, recheio2, adicionais = [] } = options;
-    const cartId = [product.id, sauce, observations, massa, recheio1, recheio2, adicionais.join(',')]
+    const { sauce, observations, quantity = 1, massa, recheio1, recheio2, adicionais = [], tamanho, tema } = options;
+    const cartId = [product.id, sauce, tamanho, massa, recheio1, recheio2, adicionais.join(',')]
       .map(v => v || 'none').join('-');
 
     setCart(prev => {
@@ -23,7 +24,7 @@ export function useCart() {
       if (existing) {
         return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity + quantity } : i);
       }
-      return [...prev, { ...product, cartId, quantity, selectedSauce: sauce, observations, massa, recheio1, recheio2, adicionais }];
+      return [...prev, { ...product, cartId, quantity, selectedSauce: sauce, observations, massa, recheio1, recheio2, adicionais, tamanho, tema }];
     });
 
     setShowSuccessToast(true);
