@@ -36,6 +36,7 @@ interface CartScreenProps {
   onSetSaveAddressAsDefault: (v: boolean) => void;
   onUpdateQuantity: (cartId: string, qty: number) => void;
   onRemoveFromCart: (cartId: string) => void;
+  onEditItem: (item: CartItem) => void;
   onLocate: () => void;
   onCheckout: () => void;
   onNavigate: (view: View) => void;
@@ -43,8 +44,8 @@ interface CartScreenProps {
 
 const PAYMENT_METHODS = [
   { id: 'cash', label: 'Dinheiro', img: 'https://cdn-icons-png.flaticon.com/512/2331/2331941.png' },
-  { id: 'mbway', label: 'MB WAY', img: '/mbway.svg' },
-  { id: 'wise', label: 'Wise', img: '/wise.svg' },
+  { id: 'mbway', label: 'MB WAY', img: '/mb.jpeg' },
+  { id: 'wise', label: 'Wise', img: '/wise.webp' },
 ] as const;
 
 export const CartScreen: React.FC<CartScreenProps> = (props) => {
@@ -54,7 +55,7 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
     isLocating, isAddressEditing, showAddressError, isGoogleLoaded,
     onSetDeliveryMethod, onSetPaymentMethod, onSetGuestCustomer, onSetAddress, onSetNeedsChange,
     onSetChangeAmount, onSetAddressEditing, onSetShowAddressError,
-    onUpdateQuantity, onRemoveFromCart, onLocate, onCheckout, onNavigate,
+    onUpdateQuantity, onRemoveFromCart, onEditItem, onLocate, onCheckout, onNavigate,
   } = props;
 
   if (cart.length === 0) {
@@ -119,22 +120,41 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
               <AnimatePresence initial={false}>
                 {cart.map((item) => (
                   <motion.div key={item.cartId} layout initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}
-                    className="p-4 flex gap-4 items-center">
+                    className="p-4 flex gap-4 items-center cursor-pointer hover:bg-black/5 transition-colors"
+                    onClick={() => onEditItem(item)}>
                     <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-primary/5">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-headline font-bold text-xs text-black leading-tight">{item.name}</h3>
                       <p className="font-headline font-black text-sm text-primary">€ {item.price.toFixed(2)}</p>
+
+                      {/* Mostrar as opções selecionadas como resumo se for configurável */}
+                      {(item.tamanho || item.massa || item.recheio1 || item.variant || (item.selectedFlavors && item.selectedFlavors.length > 0)) && (
+                        <div className="text-[9px] text-black/50 leading-tight mt-1 truncate">
+                          {item.category === 'Brigadeiros' ? (
+                            <>
+                              {item.variant && <span className="mr-2">Cx: {item.variant.replace('Caixa com ', '')}</span>}
+                              {item.selectedFlavors && item.selectedFlavors.length > 0 && <span>S: {item.selectedFlavors.join(', ')}</span>}
+                            </>
+                          ) : (
+                            <>
+                              {item.tamanho && <span className="mr-2">T: {item.tamanho}</span>}
+                              {item.massa && <span className="mr-2">M: {item.massa}</span>}
+                              {item.recheio1 && <span>R: {item.recheio1}</span>}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-col items-center gap-3 shrink-0">
-                      <button onClick={() => onRemoveFromCart(item.cartId)} className="p-1 text-primary/40 hover:text-red-500 transition-colors">
+                      <button onClick={(e) => { e.stopPropagation(); onRemoveFromCart(item.cartId); }} className="p-1 text-primary/40 hover:text-red-500 transition-colors">
                         <Trash2 size={18} />
                       </button>
                       <div className="flex items-center rounded-lg border border-primary/10 p-0.5">
-                        <button onClick={() => onUpdateQuantity(item.cartId, item.quantity - 1)} className="w-7 h-7 flex items-center justify-center text-primary/40 hover:text-primary"><Minus size={12} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); onUpdateQuantity(item.cartId, item.quantity - 1); }} className="w-7 h-7 flex items-center justify-center text-primary/40 hover:text-primary"><Minus size={12} /></button>
                         <span className="w-6 text-center font-headline font-bold text-xs">{item.quantity}</span>
-                        <button onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)} className="w-7 h-7 flex items-center justify-center text-primary/40 hover:text-primary"><Plus size={12} /></button>
+                        <button onClick={(e) => { e.stopPropagation(); onUpdateQuantity(item.cartId, item.quantity + 1); }} className="w-7 h-7 flex items-center justify-center text-primary/40 hover:text-primary"><Plus size={12} /></button>
                       </div>
                     </div>
                   </motion.div>

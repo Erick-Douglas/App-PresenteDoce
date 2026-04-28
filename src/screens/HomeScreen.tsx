@@ -80,19 +80,19 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
             {/* Categorias */}
             <section className="px-6">
-              <div className="flex justify-around items-start gap-2 sm:gap-4 pb-2">
+              <div className="flex items-start gap-4 md:gap-6 pb-4 overflow-x-auto scrollbar-hide snap-x -mx-6 px-6 md:mx-0 md:px-0 md:justify-center">
                 {CATEGORIES.map((cat) => (
                   <div
                     key={cat.name}
-                    className="flex flex-col items-center gap-1.5 cursor-pointer active:scale-90 transition-transform"
+                    className="flex flex-col items-center gap-2 cursor-pointer active:scale-90 transition-transform shrink-0 snap-center"
                     onClick={() => { onSetCategory(cat.name); onNavigate('product-list'); }}
                   >
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full p-[2px] bg-gradient-to-tr from-gold to-primary border-2 border-white shadow-md">
-                      <div className="w-full h-full rounded-full border border-white overflow-hidden">
+                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-gradient-to-tr from-gold to-primary border-2 border-white shadow-md">
+                      <div className="w-full h-full rounded-full border-[1.5px] border-white overflow-hidden">
                         <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                       </div>
                     </div>
-                    <span className="font-headline font-black text-[10px] text-on-surface tracking-tight text-center max-w-[64px] leading-tight">{cat.name}</span>
+                    <span className="font-headline font-black text-[11px] md:text-[13px] text-on-surface tracking-tight text-center max-w-[80px] leading-tight">{cat.name}</span>
                   </div>
                 ))}
               </div>
@@ -109,7 +109,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               return (
                 <section className="space-y-3">
                   {/* Título — mesmo padrão das outras categorias */}
-                  <div className="px-6 flex justify-between items-end">
+                  <div className="px-4 flex justify-between items-end">
                     <div>
                       <h3 className="font-headline font-black text-base text-black tracking-tighter">
                         Mais pedidos da semana 🔥
@@ -127,7 +127,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         className="snap-start shrink-0 w-48 md:w-full bg-white rounded-2xl overflow-hidden shadow-sm border border-black/[0.06] cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
                       >
                         {/* Imagem sem badge de número */}
-                        <div className="relative h-36 md:h-44 w-full overflow-hidden">
+                        <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
                           <img
                             src={product.image}
                             alt={product.name}
@@ -182,7 +182,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         className="snap-start shrink-0 w-44 md:w-full bg-white rounded-2xl overflow-hidden shadow-sm border border-primary/5 flex flex-col relative cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
                         onClick={() => onProductClick(product)}
                       >
-                        <div className="h-36 md:h-44 w-full overflow-hidden relative">
+                        <div className="aspect-square w-full overflow-hidden relative bg-stone-100">
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                           <div className="absolute top-2 right-2">
                             <button
@@ -196,7 +196,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                         <div className="p-3 flex-1 flex flex-col gap-1.5">
                           <h4 className="font-headline font-semibold text-xs text-on-surface leading-tight line-clamp-2">{product.name}</h4>
                           <div className="flex justify-between items-center mt-auto pt-1">
-                            <span className="font-headline font-bold text-sm text-black">€ {product.price.toFixed(2)}</span>
+                            <span className="font-headline font-black text-sm text-primary">€ {product.price.toFixed(2)}</span>
                             <motion.button
                               whileTap={{ scale: 0.95 }}
                               className={`${cart.some(i => i.id === product.id) ? 'bg-gold text-primary' : 'bg-primary text-cream'} p-2 rounded-lg shadow-md transition-all flex items-center justify-center`}

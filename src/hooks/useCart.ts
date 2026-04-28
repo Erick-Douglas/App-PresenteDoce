@@ -13,10 +13,11 @@ export function useCart() {
       sauce?: string; observations?: string; quantity?: number;
       massa?: string; recheio1?: string; recheio2?: string; adicionais?: string[];
       tamanho?: string; tema?: string;
+      variant?: string; selectedFlavors?: string[];
     } = {}
   ) => {
-    const { sauce, observations, quantity = 1, massa, recheio1, recheio2, adicionais = [], tamanho, tema } = options;
-    const cartId = [product.id, sauce, tamanho, massa, recheio1, recheio2, adicionais.join(',')]
+    const { sauce, observations, quantity = 1, massa, recheio1, recheio2, adicionais = [], tamanho, tema, variant, selectedFlavors = [] } = options;
+    const cartId = [product.id, sauce, tamanho, massa, recheio1, recheio2, adicionais.join(','), variant, selectedFlavors.join(',')]
       .map(v => v || 'none').join('-');
 
     setCart(prev => {
@@ -24,7 +25,7 @@ export function useCart() {
       if (existing) {
         return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity + quantity } : i);
       }
-      return [...prev, { ...product, cartId, quantity, selectedSauce: sauce, observations, massa, recheio1, recheio2, adicionais, tamanho, tema }];
+      return [...prev, { ...product, cartId, quantity, selectedSauce: sauce, observations, massa, recheio1, recheio2, adicionais, tamanho, tema, variant, selectedFlavors }];
     });
 
     setShowSuccessToast(true);
@@ -37,6 +38,33 @@ export function useCart() {
       if (item && item.quantity > 1) return prev.map(i => i.cartId === cartId ? { ...i, quantity: i.quantity - 1 } : i);
       return prev.filter(i => i.cartId !== cartId);
     });
+  }, []);
+
+  const updateCartItem = useCallback((
+    oldCartId: string,
+    product: Product,
+    options: {
+      sauce?: string; observations?: string; quantity?: number;
+      massa?: string; recheio1?: string; recheio2?: string; adicionais?: string[];
+      tamanho?: string; tema?: string;
+      variant?: string; selectedFlavors?: string[];
+    } = {}
+  ) => {
+    const { sauce, observations, quantity = 1, massa, recheio1, recheio2, adicionais = [], tamanho, tema, variant, selectedFlavors = [] } = options;
+    const newCartId = [product.id, sauce, tamanho, massa, recheio1, recheio2, adicionais.join(','), variant, selectedFlavors.join(',')]
+      .map(v => v || 'none').join('-');
+
+    setCart(prev => {
+      const index = prev.findIndex(i => i.cartId === oldCartId);
+      if (index === -1) return prev; // old item not found
+      
+      const newCart = [...prev];
+      newCart[index] = { ...product, cartId: newCartId, quantity, selectedSauce: sauce, observations, massa, recheio1, recheio2, adicionais, tamanho, tema, variant, selectedFlavors };
+      return newCart;
+    });
+
+    setShowSuccessToast(true);
+    setTimeout(() => setShowSuccessToast(false), 3000);
   }, []);
 
   const updateQuantity = useCallback((cartId: string, qty: number) => {
@@ -54,5 +82,5 @@ export function useCart() {
 
   const clearCart = useCallback(() => setCart([]), []);
 
-  return { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart };
+  return { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart, updateCartItem };
 }

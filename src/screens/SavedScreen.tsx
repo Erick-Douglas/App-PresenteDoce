@@ -43,7 +43,7 @@ export const SavedScreen: React.FC<SavedScreenProps> = ({
                 className="bg-white rounded-2xl overflow-hidden shadow-sm border border-primary/5 flex flex-col relative active:scale-95 transition-all"
                 onClick={() => onProductClick(product)}
               >
-                <div className="h-40 w-full overflow-hidden relative">
+                <div className="aspect-square w-full overflow-hidden relative bg-stone-100">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                   <div className="absolute top-2 right-2">
                     <button onClick={(e) => onToggleFavorite(product.id, e)} className="p-2 bg-white/90 backdrop-blur-md rounded-full shadow-md text-primary">

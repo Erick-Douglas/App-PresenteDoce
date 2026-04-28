@@ -10,7 +10,15 @@ interface ProductDetailScreenProps {
     sauce?: string; observations?: string; quantity?: number;
     massa?: string; recheio1?: string; recheio2?: string; adicionais?: string[];
     tamanho?: string; tema?: string;
+    variant?: string; selectedFlavors?: string[];
   }) => void;
+  onUpdateCartItem?: (oldCartId: string, product: Product, options: {
+    sauce?: string; observations?: string; quantity?: number;
+    massa?: string; recheio1?: string; recheio2?: string; adicionais?: string[];
+    tamanho?: string; tema?: string;
+    variant?: string; selectedFlavors?: string[];
+  }) => void;
+  editingItem?: CartItem | null;
   onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
   favorites: string[];
   onNavigate: (view: View) => void;
@@ -109,16 +117,42 @@ function Section({ title, done, optional, hint, children }: {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
-  product, cart, onAddToCart, onToggleFavorite, favorites, onNavigate, onBack,
+  product, cart, onAddToCart, onUpdateCartItem, editingItem, onToggleFavorite, favorites, onNavigate, onBack,
 }) => {
-  const [quantity, setQuantity] = useState(1);
-  const [observations, setObservations] = useState('');
-  const [tamanho, setTamanho] = useState('');
-  const [massa, setMassa] = useState('');
-  const [recheio1, setRecheio1] = useState('');
-  const [recheio2, setRecheio2] = useState('');
-  const [tema, setTema] = useState('');
+  const [quantity, setQuantity] = useState(editingItem?.quantity || 1);
+  const [observations, setObservations] = useState(editingItem?.observations || '');
+  const [tamanho, setTamanho] = useState(editingItem?.tamanho || '');
+  const [massa, setMassa] = useState(editingItem?.massa || '');
+  const [recheio1, setRecheio1] = useState(editingItem?.recheio1 || '');
+  const [recheio2, setRecheio2] = useState(editingItem?.recheio2 || '');
+  const [tema, setTema] = useState(editingItem?.tema || '');
+  const [variant, setVariant] = useState(editingItem?.variant || '');
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>(editingItem?.selectedFlavors || []);
   const [sauce] = useState('');
+
+  React.useEffect(() => {
+    if (editingItem) {
+      setQuantity(editingItem.quantity);
+      setObservations(editingItem.observations || '');
+      setTamanho(editingItem.tamanho || '');
+      setMassa(editingItem.massa || '');
+      setRecheio1(editingItem.recheio1 || '');
+      setRecheio2(editingItem.recheio2 || '');
+      setTema(editingItem.tema || '');
+      setVariant(editingItem.variant || '');
+      setSelectedFlavors(editingItem.selectedFlavors || []);
+    } else {
+      setQuantity(1);
+      setObservations('');
+      setTamanho('');
+      setMassa('');
+      setRecheio1('');
+      setRecheio2('');
+      setTema('');
+      setVariant('');
+      setSelectedFlavors([]);
+    }
+  }, [editingItem]);
 
   const isFav = favorites.includes(product.id);
   const isSimples = product.simples === true;
@@ -127,12 +161,18 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   // Preço calculado dinamicamente
   const calculatedPrice = useMemo(() => {
     if (!isConfiguravel) return product.price * quantity;
+    
+    if (product.category === 'Brigadeiros' && product.variants) {
+      const vPrice = product.variants.find(v => v.label === variant)?.price ?? 0;
+      return vPrice * quantity;
+    }
+
     const basePrice = TAMANHOS.find(t => t.label === tamanho)?.price ?? 0;
     const massaExtra = MASSAS_BT.find(m => m.label === massa)?.extra ?? 0;
     const r1Extra = RECHEIOS_BT.find(r => r.label === recheio1)?.extra ?? 0;
     const r2Extra = recheio2 && recheio2 !== recheio1 ? (RECHEIOS_BT.find(r => r.label === recheio2)?.extra ?? 0) : 0;
     return (basePrice + massaExtra + r1Extra + r2Extra) * quantity;
-  }, [isConfiguravel, product.price, quantity, tamanho, massa, recheio1, recheio2]);
+  }, [isConfiguravel, product.price, quantity, tamanho, massa, recheio1, recheio2, variant, product.category, product.variants]);
 
   // Lógica: 1º clique = seleciona, 2º no mesmo = duplica ("só esse"), 3º = cancela
   const handleRecheioSelect = (r: string) => {
@@ -151,17 +191,29 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     }
   };
 
-  const canAdd = !isConfiguravel || (tamanho !== '' && massa !== '' && recheio1 !== '');
+  const canAdd = !isConfiguravel || 
+    (product.category === 'Brigadeiros' ? variant !== '' : (tamanho !== '' && massa !== '' && recheio1 !== ''));
 
   const handleAdd = () => {
     if (!canAdd) return;
-    if (isConfiguravel) {
-      const unit = calculatedPrice / quantity;
-      onAddToCart({ ...product, price: unit }, { massa, recheio1, recheio2, observations, quantity, tamanho, tema });
+    const options = product.category === 'Brigadeiros' 
+      ? { variant, selectedFlavors, observations, quantity }
+      : { massa, recheio1, recheio2, observations, quantity, tamanho, tema };
+    
+    if (editingItem && onUpdateCartItem) {
+      if (isConfiguravel) {
+        onUpdateCartItem(editingItem.cartId, { ...product, price: calculatedPrice / quantity }, options);
+      } else {
+        onUpdateCartItem(editingItem.cartId, product, { sauce, observations, quantity });
+      }
     } else {
-      onAddToCart(product, { sauce, observations, quantity });
+      if (isConfiguravel) {
+        onAddToCart({ ...product, price: calculatedPrice / quantity }, options);
+      } else {
+        onAddToCart(product, { sauce, observations, quantity });
+      }
     }
-    onNavigate('home');
+    onNavigate('cart');
   };
 
   const fmtExtra = (extra: number) => extra > 0 ? `+${extra.toFixed(2)} €` : '+0,00 €';
@@ -190,8 +242,8 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         {/* ── Imagem ── */}
         <div className="md:sticky md:top-0 md:h-screen md:w-[42%] shrink-0">
-          <div className="h-[80vw] max-h-[85vh] md:h-screen w-full">
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <div className="aspect-square md:h-screen md:w-full w-full bg-stone-100">
+            <img src={product.image} alt={product.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
           </div>
         </div>
 
@@ -214,8 +266,8 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
               {/* Preço total — bem visível */}
               <div className="flex items-baseline gap-2">
-                {isConfiguravel && !tamanho ? (
-                  <span className="font-body text-[13px] text-black/40">Selecione o tamanho para ver o preço</span>
+                {isConfiguravel && ((product.category === 'Brigadeiros' && !variant) || (product.category !== 'Brigadeiros' && !tamanho)) ? (
+                  <span className="font-body text-[13px] text-black/40">Selecione uma opção para ver o preço</span>
                 ) : (
                   <>
                     <span className="font-headline font-black text-[28px] text-primary leading-none">
@@ -224,7 +276,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                     {quantity > 1 && (
                       <span className="font-body text-[12px] text-black/40">{quantity}x</span>
                     )}
-                    {isConfiguravel && tamanho && (
+                    {isConfiguravel && ((product.category === 'Brigadeiros' && variant) || (product.category !== 'Brigadeiros' && tamanho)) && (
                       <span className="font-body text-[12px] text-black/40">estimado</span>
                     )}
                   </>
@@ -232,8 +284,59 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               </div>
             </div>
 
+            {/* ── BRIGADEIROS ── */}
+            {isConfiguravel && product.category === 'Brigadeiros' && (
+              <div className="divide-y divide-black/[0.06]">
+                {/* Tamanho da Caixa */}
+                <Section title="Selecione o tamanho da caixa" done={!!variant}>
+                  {product.variants?.map(v => (
+                    <RadioRow
+                      key={v.label}
+                      label={v.label}
+                      priceLabel={`${v.price.toFixed(2)} €`}
+                      selected={variant === v.label}
+                      onClick={() => setVariant(v.label)}
+                    />
+                  ))}
+                </Section>
+
+                {/* Sabores */}
+                {product.flavors && product.flavors.length > 0 && (
+                  <Section title="Escolha os sabores" optional hint="Selecione os sabores desejados. Pode detalhar as quantidades nas observações.">
+                    {product.flavors.map(f => {
+                      const sel = selectedFlavors.includes(f);
+                      return (
+                        <CheckRow
+                          key={f}
+                          label={f}
+                          selected={sel}
+                          onClick={() => {
+                            if (sel) {
+                              setSelectedFlavors(selectedFlavors.filter(x => x !== f));
+                            } else {
+                              setSelectedFlavors([...selectedFlavors, f]);
+                            }
+                          }}
+                        />
+                      );
+                    })}
+                  </Section>
+                )}
+
+                {/* Observações */}
+                <Section title="Observações" optional hint="Ex: Quero 10 de Ninho e 15 de Brigadeiro">
+                  <textarea
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Especifique quantidades ou outros detalhes aqui..."
+                    className="w-full h-24 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
+                  />
+                </Section>
+              </div>
+            )}
+
             {/* ── BOLOS TEMÁTICOS ── */}
-            {isConfiguravel && (
+            {isConfiguravel && product.category !== 'Brigadeiros' && (
               <div className="divide-y divide-black/[0.06]">
 
                 {/* Tamanho */}
@@ -364,7 +467,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           >
             <div className="flex items-center gap-2">
               <ShoppingCart size={16} />
-              <span>{isConfiguravel ? 'Adicionar encomenda' : 'Adicionar'}</span>
+              <span>{editingItem ? 'Atualizar Produto' : (isConfiguravel ? 'Adicionar encomenda' : 'Adicionar')}</span>
             </div>
             {calculatedPrice > 0 && (
               <span className={`font-black text-[15px] ${canAdd ? 'text-gold' : 'text-black/30'}`}>

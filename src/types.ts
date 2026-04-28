@@ -1,4 +1,4 @@
-export type Category = 'Bolos Caseiros' | 'Bolos Temáticos' | 'Doces' | 'Salgados' | 'Kit Festa';
+export type Category = 'Bolos Caseiros' | 'Bolos Temáticos' | 'Doces' | 'Salgados' | 'Boxes Surpresa';
 
 export interface Product {
   id: string;
@@ -13,6 +13,8 @@ export interface Product {
   topSeller?: 1 | 2 | 3;
   configuravel?: boolean; // Produto com personalização obrigatória (Bolos Temáticos)
   simples?: boolean;      // Produto sem nenhuma customização (Bolos Caseiros)
+  variants?: { label: string; price: number; maxFlavors?: number }[]; // Ex: Caixa com 6 (5€)
+  flavors?: string[];     // Sabores disponíveis
 }
 
 export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact';
@@ -28,4 +30,6 @@ export interface CartItem extends Product {
   adicionais?: string[];
   tamanho?: string;   // Para Bolos Temáticos
   tema?: string;      // Descrição do tema do bolo
+  selectedFlavors?: string[]; // Sabores escolhidos
+  variant?: string;   // Variante escolhida (Ex: Caixa com 6)
 }

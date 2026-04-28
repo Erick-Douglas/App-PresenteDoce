@@ -8,7 +8,7 @@ import { useFavorites } from './hooks/useFavorites';
 import { useGoogleMaps } from './hooks/useGoogleMaps';
 
 import { BUSINESS_INFO } from './constants';
-import { Product, View } from './types';
+import { Product, View, CartItem } from './types';
 
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { HomeScreen } from './screens/HomeScreen';
@@ -36,46 +36,39 @@ export default function App() {
   const [currentView, setCurrentView] = useState<View>('welcome');
   const [previousView, setPreviousView] = useState<View>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
   const [activeRecCategory, setActiveRecCategory] = useState('Caseiros');
-  const [orderCounter, setOrderCounter] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [homeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
 
   const historyStack = useRef<View[]>(['welcome']);
   const isInternalNavigation = useRef(false);
 
-  const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart } = useCart();
+  const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart, updateCartItem } = useCart();
   const { isGoogleLoaded } = useGoogleMaps();
   const { favorites, toggleFavorite } = useFavorites();
   const checkout = useCheckout(isGoogleLoaded);
 
   const grandTotal = cartTotal + checkout.currentDeliveryFee;
 
-  // Handle browser back button
+  // Handle browser back button natively
   React.useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
-      if (isInternalNavigation.current) {
-        isInternalNavigation.current = false;
-        return;
-      }
-      if (historyStack.current.length > 1) {
-        e.preventDefault();
-        historyStack.current.pop();
-        const previousView = historyStack.current[historyStack.current.length - 1];
-        setCurrentView(previousView);
-      } else {
-        historyStack.current = ['welcome'];
-      }
+      const view = e.state?.view || window.location.hash.replace('#', '') || 'welcome';
+      setCurrentView(view as View);
     };
     window.addEventListener('popstate', handlePopState);
+    
+    // Initialize state
+    if (!window.history.state?.view) {
+      window.history.replaceState({ view: 'welcome' }, '', '#welcome');
+    }
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Custom navigation that updates history
   const handleNavigate = useCallback((view: View) => {
     if (view !== currentView) {
-      historyStack.current.push(view);
-      isInternalNavigation.current = true;
       window.history.pushState({ view }, '', `#${view}`);
     }
     setCurrentView(view);
@@ -85,8 +78,16 @@ export default function App() {
   const handleProductClick = useCallback((product: Product) => {
     setPreviousView(currentView);
     setSelectedProduct(product);
-    setCurrentView('product-details');
-  }, [currentView]);
+    setEditingCartItem(null);
+    handleNavigate('product-details');
+  }, [currentView, handleNavigate]);
+
+  const handleEditCartItem = useCallback((item: CartItem) => {
+    setPreviousView(currentView);
+    setSelectedProduct(item);
+    setEditingCartItem(item);
+    handleNavigate('product-details');
+  }, [currentView, handleNavigate]);
 
   const resetCheckoutState = () => {
     checkout.setGuestCustomer({ name: '', phone: '' });
@@ -138,7 +139,6 @@ export default function App() {
       ? `${labels.cash} (Troco para € ${checkout.changeAmount})`
       : labels[checkout.paymentMethod];
 
-    const orderId = String(orderCounter).padStart(4, '0');
     const itemsList = cart
       .map((item) => {
         let line = `- ${item.quantity}x ${item.name} (€ ${(item.price * item.quantity).toFixed(2)})`;
@@ -147,15 +147,21 @@ export default function App() {
         if (item.recheio1) line += `\n  🍫 Recheio 1: ${item.recheio1}`;
         if (item.recheio2 && item.recheio2 !== item.recheio1) line += `\n  🍫 Recheio 2: ${item.recheio2}`;
         if (item.tema) line += `\n  🎨 Tema: ${item.tema}`;
+        if (item.category === 'Brigadeiros') {
+          if (item.variant) line += `\n  📦 ${item.variant}`;
+          if (item.selectedFlavors && item.selectedFlavors.length > 0) line += `\n  🍬 Sabores: ${item.selectedFlavors.join(', ')}`;
+        }
         if (item.observations) line += `\n  📝 Obs: ${item.observations}`;
         return line;
       })
-      .join('\n');
+      .join('\n\n');
 
-    const message = `*Pedido #${orderId} - Presente Doce*\n\n*Cliente:* ${customerName}\n*Telemóvel:* ${customerPhone}\n\n*Método:* ${checkout.deliveryMethod === 'delivery' ? 'Entrega' : 'Recolha'}${deliveryInfo}\n*Pagamento:* ${paymentLabel}\n\n*Artigos:*\n${itemsList}\n\n*Total:* € ${grandTotal.toFixed(2)}`;
+    const text = `🛒 *NOVO PEDIDO*\n\n👤 *Cliente:* ${customerName}\n📱 *Contato:* ${customerPhone}\n\n*ITENS:*\n${itemsList}\n${deliveryInfo}\n\n💳 *Pagamento:* ${paymentLabel}\n💰 *Total da Encomenda: € ${grandTotal.toFixed(2)}*`;
 
-    setOrderCounter((prev) => prev + 1);
-    window.open(`https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+    const encodedText = encodeURIComponent(text);
+    const waUrl = `https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}?text=${encodedText}`;
+    
+    window.open(waUrl, '_blank');
 
     clearCart();
     resetCheckoutState();
@@ -212,9 +218,14 @@ export default function App() {
                 cart={cart}
                 favorites={favorites}
                 onAddToCart={addToCart}
+                onUpdateCartItem={updateCartItem}
+                editingItem={editingCartItem}
                 onToggleFavorite={toggleFavorite}
                 onNavigate={handleNavigate}
-                onBack={() => handleNavigate(previousView)}
+                onBack={() => {
+                  setEditingCartItem(null);
+                  handleNavigate(previousView);
+                }}
               />
             )}
 
@@ -228,6 +239,7 @@ export default function App() {
                 isGoogleLoaded={isGoogleLoaded}
                 onUpdateQuantity={updateQuantity}
                 onRemoveFromCart={removeFromCart}
+                onEditItem={handleEditCartItem}
                 onCheckout={handleFinalCheckout}
                 onNavigate={handleNavigate}
                 onSetDeliveryMethod={checkout.setDeliveryMethod}

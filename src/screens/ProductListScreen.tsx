@@ -71,8 +71,8 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
                 data-active={isActive ? 'true' : 'false'}
                 onClick={() => onSetCategory(cat.name)}
                 className={`shrink-0 px-4 py-2 rounded-t-xl font-headline font-black text-[11px] tracking-wide transition-all whitespace-nowrap relative ${isActive
-                    ? 'text-primary bg-primary/5'
-                    : 'text-black/40 hover:text-black/70'
+                  ? 'text-primary bg-primary/5'
+                  : 'text-black/40 hover:text-black/70'
                   }`}
               >
                 <span className="mr-1">{cat.emoji}</span>
@@ -128,7 +128,7 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
                 onClick={() => onProductClick(product)}
               >
                 {/* Imagem */}
-                <div className="h-40 w-full overflow-hidden relative">
+                <div className="aspect-square w-full overflow-hidden relative bg-stone-100">
                   <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
 
                   {/* Badges */}

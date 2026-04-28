@@ -23,30 +23,31 @@ export const COUNTRY_CODES = [
 // ── CATEGORIAS — Kit Festas primeiro ──────────────────────────────────────────
 export const CATEGORIES = [
   {
-    name: 'Caseiros',
+    name: 'Boxes Surpresa',
+    emoji: '🎁',
+    image: '/products/kt-1.jpg',
+  },
+  {
+    name: 'Caseirinhos',
     emoji: '🍰',
-    image: IMG_BOLO,
+    image: '/products/bc-7.jpg',
   },
   {
     name: 'Bolos Temáticos',
     emoji: '🎂',
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=800',
+    image: '/products/bt-1.jpg',
   },
   {
-    name: 'Doces',
+    name: 'Brigadeiros',
     emoji: '🍩',
-    image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=800',
+    image: '/products/br-1.jpg',
   },
   {
     name: 'Salgados',
     emoji: '🥐',
-    image: 'https://images.unsplash.com/photo-1541288097308-7b8e3f58c4c6?auto=format&fit=crop&q=80&w=800',
+    image: '/products/sl-1.jpg',
   },
-  {
-    name: 'Kit Festas',
-    emoji: '🎉',
-    image: 'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?auto=format&fit=crop&q=80&w=800',
-  },
+
 ];
 
 export const SPLASH_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDcU-bD-fW5kjdaZ4fWds3h_Co6Ti_Y6UraFJ-2fZ4WV9DfqU6eXpvjsQ-e7SrNsDA6B-AGTogZJxVLO-ADQOCSrb2YvTBclYi-Spj0TV4N2qw1oArzgbGjeI1JLubwUiAVkkvOp8nWqVDqUlxq8myCQtUSwln3qTW4bB6B1fuCKY5l02tDQmBX05KrqYk1ugAiblD1HvPaofZmtrcjpBiR1X7Dqr0CuFf9SfzQ_MBQNfXJOyCZjsQqvMQ4WH34IRJgz9yTWcKfRfM';
