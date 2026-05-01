@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Facebook, MessageCircle } from 'lucide-react';
-import { SPLASH_IMAGE, BUSINESS_INFO } from '../constants';
-import { View } from '../types';
+import { SPLASH_IMAGE, BUSINESS_INFO } from '../config/constants';
+import { View } from '../config/types';
 
 interface WelcomeScreenProps {
   onNavigate: (view: View) => void;

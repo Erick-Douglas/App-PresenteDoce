@@ -1,7 +1,7 @@
 import React from 'react';
 import { Menu, ChevronRight } from 'lucide-react';
-import { CATEGORIES } from '../constants';
-import { View } from '../types';
+import { CATEGORIES } from '../config/constants';
+import { View } from '../config/types';
 import { motion } from 'framer-motion';
 
 interface CategoriesScreenProps {

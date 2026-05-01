@@ -1,7 +1,7 @@
 import React from 'react';
 import { Menu, MessageCircle, Phone, Instagram, MapPin } from 'lucide-react';
-import { View } from '../types';
-import { BUSINESS_INFO } from '../constants';
+import { View } from '../config/types';
+import { BUSINESS_INFO } from '../config/constants';
 import { motion } from 'framer-motion';
 
 interface SettingsScreenProps {

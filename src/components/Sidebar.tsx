@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Home, Info, MessageSquare, ChevronRight, Instagram, MessageCircle, Facebook } from 'lucide-react';
-import { View } from '../types';
-import { BUSINESS_INFO } from '../constants';
+import { View } from '../config/types';
+import { BUSINESS_INFO } from '../config/constants';
 
 interface SidebarProps {
   isOpen: boolean;

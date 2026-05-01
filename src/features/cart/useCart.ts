@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Product, CartItem } from '../types';
+import { Product, CartItem } from '../../config/types';
 
 export function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { uploadAvatar } from '../lib/storage';
-import { User } from '../types';
+import { User } from '../config/types';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);

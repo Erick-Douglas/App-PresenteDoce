@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Minus, Plus, ShoppingCart, Clock, Check } from 'lucide-react';
-import { Product, CartItem, View } from '../types';
+import { Product, CartItem, View } from '../config/types';
 
 interface ProductDetailScreenProps {
   product: Product;
@@ -71,8 +71,8 @@ function RadioRow({ label, priceLabel, selected, onClick }: {
       onClick={onClick}
       className="w-full flex items-center gap-3 py-3.5 border-b border-black/[0.05] last:border-0 active:bg-black/[0.02] transition-colors text-left"
     >
-      <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-primary' : 'border-black/25'}`}>
-        {selected && <div className="w-[11px] h-[11px] rounded-full bg-primary" />}
+      <div className={`w-[22px] h-[22px] rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? 'border-primary shadow-[0_0_0_4px_rgba(128,0,0,0.1)]' : 'border-black/20'}`}>
+        {selected && <div className="w-[12px] h-[12px] rounded-full bg-primary" />}
       </div>
       <span className="flex-1 font-body text-[14px] text-black leading-snug">{label}</span>
       {priceLabel && <span className="font-bold text-[14px] text-primary shrink-0">{priceLabel}</span>}
@@ -89,8 +89,8 @@ function CheckRow({ label, priceLabel, selected, onClick }: {
       onClick={onClick}
       className="w-full flex items-center gap-3 py-3.5 border-b border-black/[0.05] last:border-0 active:bg-black/[0.02] transition-colors text-left"
     >
-      <div className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${selected ? 'border-primary bg-primary' : 'border-black/25'}`}>
-        {selected && <Check size={11} strokeWidth={3} className="text-white" />}
+      <div className={`w-[22px] h-[22px] rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? 'border-primary bg-primary shadow-[0_0_0_4px_rgba(128,0,0,0.1)]' : 'border-black/20'}`}>
+        {selected && <Check size={12} strokeWidth={3} className="text-white" />}
       </div>
       <span className="flex-1 font-body text-[14px] text-black leading-snug">{label}</span>
       {priceLabel && <span className="font-bold text-[14px] text-primary shrink-0">{priceLabel}</span>}
@@ -249,10 +249,10 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         {/* ── Formulário ── */}
         <div className="flex-1 md:overflow-y-auto md:h-screen">
-          <div className="relative -mt-10 md:mt-0 rounded-t-[24px] md:rounded-none overflow-hidden bg-white shadow-xl md:shadow-none pb-36">
+          <div className="relative -mt-12 md:mt-0 rounded-t-[32px] md:rounded-t-none overflow-hidden bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.06)] md:shadow-none pb-36">
 
             {/* Cabeçalho: nome, descrição, preço */}
-            <div className="px-6 pt-4 pb-3 bg-white border-b border-black/[0.06]">
+            <div className="px-6 pt-6 pb-4 bg-white border-b border-black/[0.04]">
               <div className="flex gap-2 mb-2 flex-wrap">
                 {product.isNew && (
                   <span className="bg-gold/20 text-primary font-headline font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Novo ✨</span>
@@ -446,8 +446,8 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       </div>
 
       {/* ── Barra de ação fixa ── */}
-      <div className="fixed bottom-0 inset-x-0 bg-white border-t border-black/[0.07] shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-50">
-        <div className="max-w-[1100px] mx-auto px-4 py-3 flex items-center gap-3">
+      <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-lg border-t border-black/[0.04] shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
+        <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center gap-4">
           {/* Quantidade */}
           <div className="flex items-center bg-stone-100 rounded-full h-12 px-2 shrink-0 gap-1">
             <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center text-black/40 hover:text-primary transition-colors rounded-full">

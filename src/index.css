@@ -27,8 +27,17 @@
   }
 
   body {
-    @apply bg-stone-50 text-on-surface font-body antialiased overflow-x-hidden;
+    background-color: #fafaf9; /* bg-stone-50 */
+    color: var(--color-on-surface);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
     color-scheme: light;
+  }
+  
+  body::-webkit-scrollbar {
+    display: none;
   }
 }
 

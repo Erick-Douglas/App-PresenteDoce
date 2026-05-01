@@ -1,9 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
-import { CATEGORIES } from '../constants';
-import { PRODUCTS } from '../PRODUCTS';
-import { Product, CartItem, View } from '../types';
+import { CATEGORIES } from '../config/constants';
+import { PRODUCTS } from '../features/products/data';
+import { Product, CartItem, View } from '../config/types';
 
 interface ProductListScreenProps {
   cart: CartItem[];
@@ -41,26 +41,29 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
   const activeCategory = CATEGORIES.find(c => c.name === activeRecCategory);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen pb-32 bg-white">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen pb-32 bg-stone-50">
 
       {/* ── Header fixo ── */}
-      <header className="sticky top-0 bg-white/95 backdrop-blur-md z-50 border-b border-primary/5 shadow-sm">
-        <div className="max-w-[1200px] mx-auto px-6 pt-4 pb-0 flex items-center gap-3">
-          <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary shrink-0">
+      <header className="sticky top-0 bg-white/85 backdrop-blur-lg z-50 border-b border-primary/5 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-5 pb-1 flex items-center gap-4">
+          <button 
+            onClick={onOpenMenu} 
+            className="p-2.5 rounded-full bg-white border border-black/5 text-primary shadow-sm active:scale-95 transition-all hover:bg-stone-50 shrink-0 flex items-center justify-center"
+          >
             <Menu size={20} />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="font-headline font-black text-base text-primary truncate leading-tight">
-              {activeCategory?.emoji} {activeRecCategory === 'all' ? 'Cardápio completo' : activeRecCategory}
+            <p className="font-headline font-extrabold text-lg md:text-xl text-black tracking-tight truncate leading-tight flex items-center gap-2">
+              <span className="text-xl">{activeCategory?.emoji}</span> {activeRecCategory === 'all' ? 'Cardápio Completo' : activeRecCategory}
             </p>
-            <p className="text-[10px] text-black/30 font-body">{products.length} {products.length === 1 ? 'produto' : 'produtos'}</p>
+            <p className="text-[12px] text-black/40 font-body font-medium mt-0.5">{products.length} {products.length === 1 ? 'opção deliciosa' : 'opções deliciosas'}</p>
           </div>
         </div>
 
         {/* ── Tabs horizontais estilo iFood ── */}
         <div
           ref={tabsRef}
-          className="flex overflow-x-auto scrollbar-hide px-4 gap-1 pt-3 pb-0"
+          className="flex overflow-x-auto scrollbar-hide px-4 gap-2 pt-4 pb-1"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {CATEGORIES.map(cat => {
@@ -70,18 +73,18 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
                 key={cat.name}
                 data-active={isActive ? 'true' : 'false'}
                 onClick={() => onSetCategory(cat.name)}
-                className={`shrink-0 px-4 py-2 rounded-t-xl font-headline font-black text-[11px] tracking-wide transition-all whitespace-nowrap relative ${isActive
+                className={`shrink-0 px-4 py-2 rounded-t-2xl font-headline font-bold text-[13px] tracking-wide transition-all whitespace-nowrap relative ${isActive
                   ? 'text-primary bg-primary/5'
-                  : 'text-black/40 hover:text-black/70'
+                  : 'text-black/50 hover:text-black hover:bg-stone-100/50'
                   }`}
               >
-                <span className="mr-1">{cat.emoji}</span>
+                <span className="mr-1.5 opacity-90">{cat.emoji}</span>
                 {cat.name}
                 {/* Underline ativo */}
                 {isActive && (
                   <motion.div
                     layoutId="activeTabUnderline"
-                    className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-primary rounded-full"
+                    className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary rounded-t-full"
                   />
                 )}
               </button>
@@ -89,7 +92,7 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
           })}
         </div>
         {/* Linha base das tabs */}
-        <div className="h-[2.5px] bg-primary/5 mx-0" />
+        <div className="h-[1px] bg-black/5 mx-0" />
       </header>
 
       {/* ── Banner 48h — só aparece em Bolos Temáticos ── */}
@@ -120,64 +123,65 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
             <p className="font-headline font-bold text-sm text-black/30">Nenhum produto nesta categoria ainda.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {products.map((product) => (
-              <div
+              <motion.div
                 key={product.id}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-primary/5 flex flex-col relative cursor-pointer hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200"
+                whileTap={{ scale: 0.98 }}
+                className="bg-white rounded-3xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.02)] border border-black/[0.03] flex flex-col relative cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-300 group"
                 onClick={() => onProductClick(product)}
               >
                 {/* Imagem */}
-                <div className="aspect-square w-full overflow-hidden relative bg-stone-100">
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <div className="aspect-[4/3] w-full overflow-hidden relative bg-stone-100">
+                  <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" />
 
                   {/* Badges */}
-                  <div className="absolute top-2 left-2 flex flex-col gap-1">
+                  <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                     {product.isNew && (
-                      <span className="bg-gold text-primary text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm uppercase">Novo</span>
+                      <span className="bg-gold text-primary text-[9px] font-black px-2 py-1 rounded-full shadow-sm uppercase tracking-wider">Novo</span>
                     )}
                     {product.configuravel && (
-                      <span className="bg-primary text-cream text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm uppercase">Personalizável</span>
+                      <span className="bg-primary text-cream text-[9px] font-black px-2 py-1 rounded-full shadow-sm uppercase tracking-wider">Personalizável</span>
                     )}
                   </div>
 
                   {/* Favorito */}
                   <button
-                    className={`absolute top-2 right-2 p-1.5 rounded-full shadow-md backdrop-blur-md transition-transform active:scale-125 ${favorites.includes(product.id) ? 'bg-primary text-cream' : 'bg-white/80 text-primary'}`}
+                    className={`absolute top-3 right-3 p-2 rounded-full shadow-md backdrop-blur-md transition-transform active:scale-110 ${favorites.includes(product.id) ? 'bg-primary text-cream' : 'bg-white/90 text-primary hover:bg-white'}`}
                     onClick={(e) => onToggleFavorite(product.id, e)}
                   >
-                    <Heart size={12} className={favorites.includes(product.id) ? 'fill-cream' : ''} />
+                    <Heart size={14} className={favorites.includes(product.id) ? 'fill-cream' : ''} />
                   </button>
                 </div>
 
                 {/* Info */}
-                <div className="p-3 flex-1 flex flex-col gap-1">
-                  <h4 className="font-headline font-semibold text-xs text-on-surface leading-tight line-clamp-2">{product.name}</h4>
-                  <div className="flex justify-between items-center mt-auto pt-1">
+                <div className="p-4 flex-1 flex flex-col gap-2 bg-white">
+                  <h4 className="font-headline font-bold text-[13px] text-on-surface leading-snug line-clamp-2">{product.name}</h4>
+                  <div className="flex justify-between items-center mt-auto pt-2">
                     <div>
                       {product.configuravel
-                        ? <span className="font-body text-[9px] text-black/40">a partir de</span>
+                        ? <span className="font-body text-[10px] text-black/40 font-medium">a partir de</span>
                         : null}
-                      <span className="font-headline font-bold text-sm text-primary block leading-tight">
+                      <span className="font-headline font-black text-base md:text-lg text-primary block leading-tight">
                         € {product.price.toFixed(2)}
                       </span>
                     </div>
                     {product.configuravel ? (
-                      <div className="bg-primary/10 text-primary p-1.5 rounded-lg">
-                        <ChevronRight size={14} />
+                      <div className="bg-stone-100 text-primary p-2.5 rounded-xl shadow-black/5 shadow-sm group-hover:bg-primary group-hover:text-white transition-colors">
+                        <ChevronRight size={16} />
                       </div>
                     ) : (
                       <motion.button
                         whileTap={{ scale: 0.9 }}
-                        className={`${cart.some(i => i.id === product.id) ? 'bg-gold text-primary' : 'bg-primary text-cream'} p-2 rounded-lg shadow-md transition-all flex items-center justify-center`}
+                        className={`${cart.some(i => i.id === product.id) ? 'bg-gold text-primary shadow-gold/30' : 'bg-stone-100 text-primary hover:bg-primary hover:text-white shadow-black/5'} p-2.5 rounded-xl shadow-md transition-all duration-300 flex items-center justify-center`}
                         onClick={(e) => onToggleCartItem(product, e)}
                       >
-                        <ShoppingCart size={14} />
+                        <ShoppingCart size={16} className={cart.some(i => i.id === product.id) ? 'fill-primary' : ''} />
                       </motion.button>
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

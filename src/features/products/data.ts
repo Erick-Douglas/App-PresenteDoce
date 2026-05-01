@@ -1,5 +1,5 @@
-import { IMG_BOLO } from './constants';
-import { Product } from './types';
+import { IMG_BOLO } from '../../config/constants';
+import { Product } from '../../config/types';
 
 
 export const PRODUCTS: Product[] = [

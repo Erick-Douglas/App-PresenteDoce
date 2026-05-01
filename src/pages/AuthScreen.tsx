@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Eye, Pencil, User as UserIcon } from 'lucide-react';
-import { View } from '../types';
-import { COUNTRY_CODES } from '../constants';
+import { View } from '../config/types';
+import { COUNTRY_CODES } from '../config/constants';
 
 interface AuthScreenProps {
   onSignIn: (email: string, pass: string) => Promise<boolean>;

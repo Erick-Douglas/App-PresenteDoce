@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
-import { View, CartItem } from '../types';
+import { View, CartItem } from '../config/types';
 
 interface FloatingCartProps {
   cart: CartItem[];

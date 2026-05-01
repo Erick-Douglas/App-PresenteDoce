@@ -2,25 +2,27 @@ import React, { useState, useCallback, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 
-import { useCart } from './hooks/useCart';
-import { useCheckout } from './hooks/useCheckout';
-import { useFavorites } from './hooks/useFavorites';
-import { useGoogleMaps } from './hooks/useGoogleMaps';
+import { useCart } from './features/cart/useCart';
+import { useCheckout } from './features/checkout/useCheckout';
+import { useFavorites } from './features/products/useFavorites';
+import { useGoogleMaps } from './services/maps/useGoogleMaps';
 
-import { BUSINESS_INFO } from './constants';
-import { Product, View, CartItem } from './types';
+import { BUSINESS_INFO } from './config/constants';
+import { Product, View, CartItem } from './config/types';
+import { generateWhatsAppOrderLink } from './services/whatsapp/whatsappService';
 
-import { WelcomeScreen } from './screens/WelcomeScreen';
-import { HomeScreen } from './screens/HomeScreen';
-import { ProductListScreen } from './screens/ProductListScreen';
-import { ProductDetailScreen } from './screens/ProductDetailScreen';
-import { CartScreen } from './screens/CartScreen';
-import { SavedScreen } from './screens/SavedScreen';
-import { SettingsScreen } from './screens/SettingsScreen';
-import { CategoriesScreen } from './screens/CategoriesScreen';
+import { WelcomeScreen } from './pages/WelcomeScreen';
+import { HomeScreen } from './pages/HomeScreen';
+import { ProductListScreen } from './pages/ProductListScreen';
+import { ProductDetailScreen } from './pages/ProductDetailScreen';
+import { CartScreen } from './pages/CartScreen';
+import { SavedScreen } from './pages/SavedScreen';
+import { SettingsScreen } from './pages/SettingsScreen';
+import { CategoriesScreen } from './pages/CategoriesScreen';
 
 import { Sidebar } from './components/Sidebar';
 import { FloatingCart } from './components/FloatingCart';
+import { ExitIntentModal } from './components/ExitIntentModal';
 
 const EMPTY_ADDRESS = {
   address: '',
@@ -51,19 +53,50 @@ export default function App() {
 
   const grandTotal = cartTotal + checkout.currentDeliveryFee;
 
-  // Handle browser back button natively
+  const [showExitModal, setShowExitModal] = useState(false);
+  const hasTrappedExit = useRef(false);
+  const currentViewRef = useRef(currentView);
+
+  React.useEffect(() => {
+    currentViewRef.current = currentView;
+  }, [currentView]);
+
+  // Handle browser back button natively & Exit Intent
   React.useEffect(() => {
     const handlePopState = (e: PopStateEvent) => {
+      if (e.state?.exitIntent) {
+        if (!hasTrappedExit.current) {
+          hasTrappedExit.current = true;
+          window.history.pushState({ view: currentViewRef.current }, '', `#${currentViewRef.current}`);
+          setShowExitModal(true);
+        } else {
+          window.history.back();
+        }
+        return;
+      }
       const view = e.state?.view || window.location.hash.replace('#', '') || 'welcome';
       setCurrentView(view as View);
     };
     window.addEventListener('popstate', handlePopState);
-    
+
+    const handleMouseLeave = (e: MouseEvent) => {
+      if (e.clientY <= 0 && !hasTrappedExit.current) {
+        hasTrappedExit.current = true;
+        setShowExitModal(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+
     // Initialize state
-    if (!window.history.state?.view) {
-      window.history.replaceState({ view: 'welcome' }, '', '#welcome');
+    if (!window.history.state) {
+      window.history.replaceState({ exitIntent: true }, '');
+      window.history.pushState({ view: 'welcome' }, '', '#welcome');
     }
-    return () => window.removeEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+    };
   }, []);
 
   // Custom navigation that updates history
@@ -130,39 +163,19 @@ export default function App() {
       return;
     }
 
-    const deliveryInfo = checkout.deliveryMethod === 'delivery'
-      ? `\nEndereço: ${checkout.address.address}${checkout.address.apartment ? `, ${checkout.address.apartment}` : ''}${checkout.address.city ? ` (${checkout.address.city})` : ''}\nCEP: ${checkout.address.postal_code || '-'}\nEntrega: € ${checkout.currentDeliveryFee.toFixed(2)}`
-      : `\nRecolha no local: ${BUSINESS_INFO.address}`;
+    const waUrl = generateWhatsAppOrderLink({
+      customerName,
+      customerPhone,
+      deliveryMethod: checkout.deliveryMethod,
+      address: checkout.address,
+      paymentMethod: checkout.paymentMethod,
+      needsChange: checkout.needsChange,
+      changeAmount: checkout.changeAmount,
+      currentDeliveryFee: checkout.currentDeliveryFee,
+      cart,
+      grandTotal
+    });
 
-    const labels: Record<string, string> = { cash: 'Dinheiro', mbway: 'MB WAY', wise: 'Wise' };
-    const paymentLabel = checkout.paymentMethod === 'cash' && checkout.needsChange
-      ? `${labels.cash} (Troco para € ${checkout.changeAmount})`
-      : labels[checkout.paymentMethod];
-
-    const itemsList = cart
-      .map((item) => {
-        let line = `- ${item.quantity}x ${item.name} (€ ${(item.price * item.quantity).toFixed(2)})`;
-        if (item.tamanho) line += `\n  📏 Tamanho: ${item.tamanho}`;
-        if (item.massa) line += `\n  🍰 Massa: ${item.massa}`;
-        if (item.recheio1) line += `\n  🍫 Recheio 1: ${item.recheio1}`;
-        if (item.recheio2 && item.recheio2 !== item.recheio1) line += `\n  🍫 Recheio 2: ${item.recheio2}`;
-        if (item.tema) line += `\n  🎨 Tema: ${item.tema}`;
-        if (['Brigadeiros', 'Salgados'].includes(item.category)) {
-          if (item.variant) line += `\n  📦 ${item.variant}`;
-          if (item.selectedFlavors && item.selectedFlavors.length > 0) {
-            line += `\n  ${item.category === 'Salgados' ? '🥟 Opções' : '🍬 Sabores'}: ${item.selectedFlavors.join(', ')}`;
-          }
-        }
-        if (item.observations) line += `\n  📝 Obs: ${item.observations}`;
-        return line;
-      })
-      .join('\n\n');
-
-    const text = `🛒 *NOVO PEDIDO*\n\n👤 *Cliente:* ${customerName}\n📱 *Contato:* ${customerPhone}\n\n*ITENS:*\n${itemsList}\n${deliveryInfo}\n\n💳 *Pagamento:* ${paymentLabel}\n💰 *Total da Encomenda: € ${grandTotal.toFixed(2)}*`;
-
-    const encodedText = encodeURIComponent(text);
-    const waUrl = `https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}?text=${encodedText}`;
-    
     window.open(waUrl, '_blank');
 
     clearCart();
@@ -179,6 +192,15 @@ export default function App() {
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
           onNavigate={handleNavigate}
+        />
+
+        <ExitIntentModal 
+          isOpen={showExitModal} 
+          onClose={() => setShowExitModal(false)}
+          onConfirmExit={() => {
+            setShowExitModal(false);
+            window.history.back();
+          }} 
         />
 
         <main className="min-h-screen flex flex-col">

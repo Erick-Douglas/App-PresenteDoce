@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart } from 'lucide-react';
-import { PRODUCTS } from '../PRODUCTS';
-import { Product, CartItem, View } from '../types';
+import { PRODUCTS } from '../features/products/data';
+import { Product, CartItem, View } from '../config/types';
 
 interface SavedScreenProps {
   cart: CartItem[];
