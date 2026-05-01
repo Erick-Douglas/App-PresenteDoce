@@ -67,19 +67,19 @@ export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
               ))}
             </div>
 
-            <div className="p-4 border-t border-gray-100 space-y-3">
+            <div className="p-4 pb-12 border-t border-gray-100 space-y-3">
               <p className="px-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Redes sociais</p>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="flex justify-between items-center gap-2 mt-2">
                 {socialLinks.map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-primary/10 px-4 py-3 text-primary hover:bg-primary/5 transition-colors"
+                    className="flex-1 flex flex-col items-center justify-center gap-1 rounded-2xl bg-black/5 aspect-square text-primary hover:bg-primary/10 transition-colors shadow-sm"
                   >
-                    <item.icon size={16} />
-                    <span className="text-[10px] font-bold">{item.label}</span>
+                    <item.icon size={22} />
+                    <span className="text-[9px] font-bold tracking-wide mt-1">{item.label}</span>
                   </a>
                 ))}
               </div>

@@ -158,11 +158,27 @@ export const PRODUCTS: Product[] = [
     {
         id: 'sl-1',
         name: 'Salgados Fritos',
-        description: 'Perfeição folhada e amanteigada, assada fresca todas as manhãs.',
-        price: 19.99,
+        description: 'Deliciosos salgados fritos na hora. Escolha o tamanho e as opções (ou tudo misturado).',
+        price: 0,
         category: 'Salgados',
         image: '/products/sl-1.jpg',
         isNew: true,
+        configuravel: true,
+        variants: [
+            { label: '25 unidades', price: 14.99 },
+            { label: '50 unidades', price: 24.99 },
+            { label: '100 unidades', price: 39.99 },
+        ],
+        flavors: [
+            'Tudo misturado',
+            'Bolinha de queijo',
+            'Croquete de carne',
+            'Risole de carne',
+            'Risole de camarão',
+            'Coxinha de frango',
+            'Kibe',
+            'Enroladinho de salsicha'
+        ],
     },
 
 ];

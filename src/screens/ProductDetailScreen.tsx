@@ -162,7 +162,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const calculatedPrice = useMemo(() => {
     if (!isConfiguravel) return product.price * quantity;
     
-    if (product.category === 'Brigadeiros' && product.variants) {
+    if (['Brigadeiros', 'Salgados'].includes(product.category) && product.variants) {
       const vPrice = product.variants.find(v => v.label === variant)?.price ?? 0;
       return vPrice * quantity;
     }
@@ -192,11 +192,11 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   };
 
   const canAdd = !isConfiguravel || 
-    (product.category === 'Brigadeiros' ? variant !== '' : (tamanho !== '' && massa !== '' && recheio1 !== ''));
+    (['Brigadeiros', 'Salgados'].includes(product.category) ? variant !== '' : (tamanho !== '' && massa !== '' && recheio1 !== ''));
 
   const handleAdd = () => {
     if (!canAdd) return;
-    const options = product.category === 'Brigadeiros' 
+    const options = ['Brigadeiros', 'Salgados'].includes(product.category) 
       ? { variant, selectedFlavors, observations, quantity }
       : { massa, recheio1, recheio2, observations, quantity, tamanho, tema };
     
@@ -266,7 +266,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
               {/* Preço total — bem visível */}
               <div className="flex items-baseline gap-2">
-                {isConfiguravel && ((product.category === 'Brigadeiros' && !variant) || (product.category !== 'Brigadeiros' && !tamanho)) ? (
+                {isConfiguravel && ((['Brigadeiros', 'Salgados'].includes(product.category) && !variant) || (!['Brigadeiros', 'Salgados'].includes(product.category) && !tamanho)) ? (
                   <span className="font-body text-[13px] text-black/40">Selecione uma opção para ver o preço</span>
                 ) : (
                   <>
@@ -276,7 +276,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                     {quantity > 1 && (
                       <span className="font-body text-[12px] text-black/40">{quantity}x</span>
                     )}
-                    {isConfiguravel && ((product.category === 'Brigadeiros' && variant) || (product.category !== 'Brigadeiros' && tamanho)) && (
+                    {isConfiguravel && ((['Brigadeiros', 'Salgados'].includes(product.category) && variant) || (!['Brigadeiros', 'Salgados'].includes(product.category) && tamanho)) && (
                       <span className="font-body text-[12px] text-black/40">estimado</span>
                     )}
                   </>
@@ -284,11 +284,11 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               </div>
             </div>
 
-            {/* ── BRIGADEIROS ── */}
-            {isConfiguravel && product.category === 'Brigadeiros' && (
+            {/* ── BRIGADEIROS / SALGADOS ── */}
+            {isConfiguravel && ['Brigadeiros', 'Salgados'].includes(product.category) && (
               <div className="divide-y divide-black/[0.06]">
-                {/* Tamanho da Caixa */}
-                <Section title="Selecione o tamanho da caixa" done={!!variant}>
+                {/* Tamanho da Caixa / Quantidade */}
+                <Section title={product.category === 'Salgados' ? 'Selecione a quantidade' : 'Selecione o tamanho da caixa'} done={!!variant}>
                   {product.variants?.map(v => (
                     <RadioRow
                       key={v.label}
@@ -300,9 +300,9 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                   ))}
                 </Section>
 
-                {/* Sabores */}
+                {/* Sabores / Opções */}
                 {product.flavors && product.flavors.length > 0 && (
-                  <Section title="Escolha os sabores" optional hint="Selecione os sabores desejados. Pode detalhar as quantidades nas observações.">
+                  <Section title={product.category === 'Salgados' ? 'Escolha as opções' : 'Escolha os sabores'} optional hint="Selecione as opções desejadas. Pode detalhar as quantidades exatas nas observações.">
                     {product.flavors.map(f => {
                       const sel = selectedFlavors.includes(f);
                       return (
@@ -314,7 +314,11 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                             if (sel) {
                               setSelectedFlavors(selectedFlavors.filter(x => x !== f));
                             } else {
-                              setSelectedFlavors([...selectedFlavors, f]);
+                              if (f === 'Tudo misturado') {
+                                setSelectedFlavors(['Tudo misturado']);
+                              } else {
+                                setSelectedFlavors([...selectedFlavors.filter(x => x !== 'Tudo misturado'), f]);
+                              }
                             }
                           }}
                         />
@@ -336,7 +340,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
             )}
 
             {/* ── BOLOS TEMÁTICOS ── */}
-            {isConfiguravel && product.category !== 'Brigadeiros' && (
+            {isConfiguravel && !['Brigadeiros', 'Salgados'].includes(product.category) && (
               <div className="divide-y divide-black/[0.06]">
 
                 {/* Tamanho */}

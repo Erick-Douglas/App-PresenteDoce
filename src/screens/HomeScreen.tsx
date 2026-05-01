@@ -68,7 +68,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* Logo centralizada */}
             <div className="flex flex-col items-center relative z-10 py-6">
               <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-                <img src="/logo.png" alt="Presente Doce Logo" className="h-28 md:h-36 w-auto object-contain drop-shadow-2xl brightness-110" />
+                <button onClick={() => onNavigate('home')} className="outline-none active:scale-95 transition-transform cursor-pointer">
+                  <img src="/logo.png" alt="Presente Doce Logo" className="h-28 md:h-36 w-auto object-contain drop-shadow-2xl brightness-110" />
+                </button>
               </motion.div>
             </div>
           </div>

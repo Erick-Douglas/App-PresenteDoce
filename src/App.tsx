@@ -147,9 +147,11 @@ export default function App() {
         if (item.recheio1) line += `\n  🍫 Recheio 1: ${item.recheio1}`;
         if (item.recheio2 && item.recheio2 !== item.recheio1) line += `\n  🍫 Recheio 2: ${item.recheio2}`;
         if (item.tema) line += `\n  🎨 Tema: ${item.tema}`;
-        if (item.category === 'Brigadeiros') {
+        if (['Brigadeiros', 'Salgados'].includes(item.category)) {
           if (item.variant) line += `\n  📦 ${item.variant}`;
-          if (item.selectedFlavors && item.selectedFlavors.length > 0) line += `\n  🍬 Sabores: ${item.selectedFlavors.join(', ')}`;
+          if (item.selectedFlavors && item.selectedFlavors.length > 0) {
+            line += `\n  ${item.category === 'Salgados' ? '🥟 Opções' : '🍬 Sabores'}: ${item.selectedFlavors.join(', ')}`;
+          }
         }
         if (item.observations) line += `\n  📝 Obs: ${item.observations}`;
         return line;

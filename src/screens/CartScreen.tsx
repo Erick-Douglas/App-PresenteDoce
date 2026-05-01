@@ -132,10 +132,10 @@ export const CartScreen: React.FC<CartScreenProps> = (props) => {
                       {/* Mostrar as opções selecionadas como resumo se for configurável */}
                       {(item.tamanho || item.massa || item.recheio1 || item.variant || (item.selectedFlavors && item.selectedFlavors.length > 0)) && (
                         <div className="text-[9px] text-black/50 leading-tight mt-1 truncate">
-                          {item.category === 'Brigadeiros' ? (
+                          {['Brigadeiros', 'Salgados'].includes(item.category) ? (
                             <>
-                              {item.variant && <span className="mr-2">Cx: {item.variant.replace('Caixa com ', '')}</span>}
-                              {item.selectedFlavors && item.selectedFlavors.length > 0 && <span>S: {item.selectedFlavors.join(', ')}</span>}
+                              {item.variant && <span className="mr-2">{item.category === 'Salgados' ? 'Qtd' : 'Cx'}: {item.variant.replace('Caixa com ', '').replace(' unidades', '')}</span>}
+                              {item.selectedFlavors && item.selectedFlavors.length > 0 && <span>{item.category === 'Salgados' ? 'Op' : 'S'}: {item.selectedFlavors.join(', ')}</span>}
                             </>
                           ) : (
                             <>
