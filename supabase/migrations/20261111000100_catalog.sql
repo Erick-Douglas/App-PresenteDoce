@@ -1,12 +1,12 @@
 begin;
 
-create schema if not exists private;
-revoke all on schema private from public, anon, authenticated;
+create schema presente_doce_private;
+revoke all on schema presente_doce_private from public, anon, authenticated;
 
-create table private.catalog_admins (
+create table presente_doce_private.catalog_admins (
   user_id uuid primary key references auth.users (id) on delete cascade
 );
-alter table private.catalog_admins enable row level security;
+alter table presente_doce_private.catalog_admins enable row level security;
 
 create function public.is_catalog_admin()
 returns boolean
@@ -16,7 +16,7 @@ security definer
 set search_path = ''
 as $$
   select exists (
-    select 1 from private.catalog_admins where user_id = (select auth.uid())
+    select 1 from presente_doce_private.catalog_admins where user_id = (select auth.uid())
   );
 $$;
 revoke all on function public.is_catalog_admin() from public, anon, authenticated;
@@ -52,7 +52,7 @@ create table public.catalog_products (
   )
 );
 
-create function private.set_catalog_version()
+create function presente_doce_private.set_catalog_version()
 returns trigger
 language plpgsql
 set search_path = ''
@@ -66,7 +66,7 @@ $$;
 
 create trigger set_catalog_version
 before update on public.catalog_products
-for each row execute function private.set_catalog_version();
+for each row execute function presente_doce_private.set_catalog_version();
 
 alter table public.catalog_products enable row level security;
 revoke all on public.catalog_products from public, anon, authenticated;

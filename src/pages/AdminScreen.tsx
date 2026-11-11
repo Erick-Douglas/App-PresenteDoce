@@ -25,6 +25,7 @@ function ProductForm({ row, token, onSaved, onCancel }: {
   onCancel: () => void;
 }) {
   const data = row?.details;
+  const [productId] = useState(() => row?.id ?? crypto.randomUUID());
   const [category, setCategory] = useState(data?.category ?? CATEGORIES[0].name);
   const [variants, setVariants] = useState<Variant[]>((data?.variants ?? []).map(option => ({
     label: option.label,
@@ -91,7 +92,7 @@ function ProductForm({ row, token, onSaved, onCancel }: {
         variants: options.length ? options : undefined,
         flavors: flavors.length ? flavors : undefined,
       };
-      const saved = await saveProduct({ id: row?.id ?? crypto.randomUUID(), details, published }, row?.version ?? null, token);
+      const saved = await saveProduct({ id: productId, details, published }, row?.version ?? null, token);
       onSaved(saved);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível guardar.');

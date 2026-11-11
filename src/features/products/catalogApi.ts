@@ -26,6 +26,7 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   if (!response.ok) {
     if (response.status === 401) throw new Error('Sessão ou credenciais inválidas. Confirme o acesso e volte a entrar.');
     if (response.status === 403) throw new Error('A sua conta não tem permissão para esta ação.');
+    if (response.status === 409) throw new Error('O produto pode já ter sido guardado. Atualize a lista antes de tentar novamente.');
     if (response.status === 429) throw new Error('Demasiadas tentativas. Aguarde e tente novamente.');
     throw new Error('Não foi possível concluir a operação. Verifique os dados e tente novamente.');
   }

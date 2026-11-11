@@ -24,7 +24,7 @@ A raiz abre o catálogo. A rota /admin abre o painel. Sem configuração de Supa
 2. No Supabase Auth, desative o cadastro público e crie a conta administrativa de Gabriela por um canal gerenciado. Use uma palavra-passe única e forte. Copie o UUID dessa conta do painel do Supabase e autorize-o no SQL Editor do projeto com este comando, substituindo o marcador pelo UUID verificado.
    
    ~~~sql
-   insert into private.catalog_admins (user_id)
+   insert into presente_doce_private.catalog_admins (user_id)
    values ('UUID_DA_CONTA_AUTORIZADA'::uuid)
    on conflict do nothing;
    ~~~
