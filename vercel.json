@@ -1,6 +1,6 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "npm audit --json > /tmp/pd-audit.json; npm audit fix --package-lock-only --ignore-scripts --no-fund --json > /tmp/pd-audit-fix.json; node -e 'const f=require(\"node:fs\"),z=require(\"node:zlib\");for(const n of [\"audit\",\"audit-fix\"]){const a=JSON.parse(f.readFileSync(\"/tmp/pd-\"+n+\".json\",\"utf8\"));const d=a.audit||a;console.log(\"PD_\"+n+\" \"+JSON.stringify(Object.fromEntries(Object.entries(d.vulnerabilities||{}).map(([k,v])=>[k,{severity:v.severity,range:v.range,fixAvailable:v.fixAvailable,via:v.via.map(x=>typeof x===\"string\"?x:{title:x.title,url:x.url,range:x.range})}]))));} const b=z.gzipSync(f.readFileSync(\"package-lock.json\")).toString(\"base64\");for(let i=0;i<b.length;i+=600)console.log(\"PD_LOCK \"+String(i/600).padStart(3,\"0\")+\" \"+b.slice(i,i+600));' && npm run lint && npm test && npm run build",
+  "buildCommand": "node scripts/audit-preview.mjs && npm run lint && npm test && npm run build",
   "headers": [
     {
       "source": "/(.*)",
