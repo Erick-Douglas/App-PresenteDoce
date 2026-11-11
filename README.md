@@ -16,7 +16,7 @@ npm test
 npm run build
 ~~~
 
-A raiz abre o catálogo. A rota /admin abre o painel. Sem configuração de Supabase, a loja usa o catálogo inicial em código para desenvolvimento e preview. A rota administrativa indica que precisa de configuração. Com qualquer configuração de Supabase presente, erros de carregamento aparecem na loja para evitar voltar a apresentar produtos que Gabriela retirou do catálogo.
+A raiz abre o catálogo. A rota /admin abre o painel. O catálogo inicial em código fica ativo até selecionar explicitamente o catálogo do Supabase no ambiente. A rota administrativa indica quando precisa de configuração. Com o catálogo Supabase ativo, erros de carregamento aparecem na loja para evitar voltar a apresentar produtos que Gabriela retirou do catálogo.
 
 ## Conectar o catálogo persistente
 
@@ -28,7 +28,7 @@ A raiz abre o catálogo. A rota /admin abre o painel. Sem configuração de Supa
    values ('UUID_DA_CONTA_AUTORIZADA'::uuid)
    on conflict do nothing;
    ~~~
-3. Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY conforme .env.example. A URL é a do projeto em supabase.co e a chave começa com sb_publishable_. O navegador recebe somente essa chave pública. Chaves secretas, service-role e dados de clientes ficam fora do frontend e do repositório.
+3. Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY conforme .env.example. A URL é a do projeto em supabase.co e a chave começa com sb_publishable_. O navegador recebe somente essa chave pública. Chaves secretas, service-role e dados de clientes ficam fora do frontend e do repositório. Depois de aplicar as migrações e conferir os dados, defina VITE_CATALOG_SOURCE=supabase no ambiente correspondente.
 4. Configure o ambiente Preview da Vercel com o projeto de teste e faça uma nova build. Confira leitura anônima de produtos publicados, escrita com a conta administrativa e ausência de acesso administrativo para uma conta comum. Teste criar, editar, fotografar, publicar e despublicar um produto fictício pelo celular. Confira o catálogo em outra sessão.
 5. Depois da validação, configure o ambiente Production com o projeto de produção, aplique as migrações nele e confira o catálogo antes de publicar. A Vercel roda TypeScript, testes de checkout e build no deploy. Registre a versão e a cópia de recuperação da base antes da migração.
 

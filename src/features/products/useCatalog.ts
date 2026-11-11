@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { PRODUCTS } from './data';
-import { catalogConfigurationPresent, listCatalog, toProduct } from './catalogApi';
+import { catalogEnabled, listCatalog, toProduct } from './catalogApi';
 import type { Product } from '../../config/types';
 
 export function useCatalog() {
-  const [products, setProducts] = useState<Product[]>(catalogConfigurationPresent ? [] : PRODUCTS);
-  const [status, setStatus] = useState<'ready' | 'loading' | 'error'>(catalogConfigurationPresent ? 'loading' : 'ready');
+  const [products, setProducts] = useState<Product[]>(catalogEnabled ? [] : PRODUCTS);
+  const [status, setStatus] = useState<'ready' | 'loading' | 'error'>(catalogEnabled ? 'loading' : 'ready');
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (!catalogConfigurationPresent) return;
+    if (!catalogEnabled) return;
     const controller = new AbortController();
     setStatus('loading');
     listCatalog(undefined, controller.signal).then(rows => {

@@ -3,8 +3,8 @@ import type { Product } from '../../config/types';
 const configuredUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
 const serviceUrl = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(configuredUrl) ? configuredUrl.replace(/\/$/, '') : '';
-export const catalogConfigured = !!(serviceUrl && publicKey.startsWith('sb_publishable_'));
-export const catalogConfigurationPresent = !!(configuredUrl || publicKey);
+export const catalogEnabled = import.meta.env.VITE_CATALOG_SOURCE === 'supabase';
+export const catalogConfigured = catalogEnabled && !!(serviceUrl && publicKey.startsWith('sb_publishable_'));
 
 const productsPath = '/rest/v1/catalog_products';
 const bucketPath = '/storage/v1/object/catalog-images/';
