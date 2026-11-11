@@ -1,5 +1,6 @@
 import React from 'react';
 import { Share2, Menu } from 'lucide-react';
+import { BUSINESS_INFO } from '../config/constants';
 
 interface HeaderProps {
   onOpenMenu: () => void;
@@ -11,13 +12,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
       try {
         await navigator.share({
           title: 'Presente Doce',
-          text: 'Descubra os melhores doces, bolos, tortas e kits para festas!',
-          url: window.location.href,
+          text: 'Confeitaria artesanal por encomenda.',
+          url: BUSINESS_INFO.website,
         });
       } catch { /* noop */ }
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copiado!');
+      try {
+        await navigator.clipboard.writeText(BUSINESS_INFO.website);
+        alert('Link copiado!');
+      } catch {
+        alert(BUSINESS_INFO.website);
+      }
     }
   };
 
@@ -29,6 +34,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
           <img src="/logo.png" alt="Presente Doce" className="object-contain h-12 drop-shadow-2xl brightness-110" />
         </div>
         <button
+          aria-label="Abrir menu"
           onClick={onOpenMenu}
           className="p-2 transition-all active:scale-95 flex items-center justify-center text-white hover:text-white/80"
         >
@@ -36,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
         </button>
 
         <button
+          aria-label="Partilhar catálogo"
           onClick={handleShare}
           className="p-2 transition-all active:scale-95 flex items-center gap-2 text-white hover:text-white/80"
         >

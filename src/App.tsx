@@ -1,15 +1,12 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 
 import { useCart } from './features/cart/useCart';
-import { useCheckout } from './features/checkout/useCheckout';
+import { useCatalog } from './features/products/useCatalog';
 import { useFavorites } from './features/products/useFavorites';
-import { useGoogleMaps } from './services/maps/useGoogleMaps';
 
-import { BUSINESS_INFO } from './config/constants';
 import { Product, View, CartItem } from './config/types';
-import { generateWhatsAppOrderLink } from './services/whatsapp/whatsappService';
 
 import { WelcomeScreen } from './pages/WelcomeScreen';
 import { HomeScreen } from './pages/HomeScreen';
@@ -22,84 +19,39 @@ import { CategoriesScreen } from './pages/CategoriesScreen';
 
 import { Sidebar } from './components/Sidebar';
 import { FloatingCart } from './components/FloatingCart';
-import { ExitIntentModal } from './components/ExitIntentModal';
 
-const EMPTY_ADDRESS = {
-  address: '',
-  apartment: '',
-  city: '',
-  postal_code: '',
-  reference: '',
-  lat: null as null,
-  lng: null as null,
-};
+const views: View[] = ['welcome', 'home', 'product-list', 'product-details', 'cart', 'saved', 'categories-list', 'settings', 'contact'];
+
+function locationView(): View {
+  const hash = window.location.hash.slice(1) as View;
+  return views.includes(hash) && hash !== 'product-details' ? hash : 'home';
+}
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<View>('welcome');
+  const [currentView, setCurrentView] = useState<View>(locationView);
   const [previousView, setPreviousView] = useState<View>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
-  const [activeRecCategory, setActiveRecCategory] = useState('Caseiros');
+  const [activeRecCategory, setActiveRecCategory] = useState('all');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [homeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
 
-  const historyStack = useRef<View[]>(['welcome']);
-  const isInternalNavigation = useRef(false);
-
-  const { cart, cartTotal, showSuccessToast, addToCart, removeFromCart, updateQuantity, toggleCartItem, clearCart, updateCartItem } = useCart();
-  const { isGoogleLoaded } = useGoogleMaps();
+  const { cart, cartTotal, showSuccessToast, addToCart, updateQuantity, toggleCartItem, updateCartItem } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
-  const checkout = useCheckout(isGoogleLoaded);
+  const { products, status, reload } = useCatalog();
 
-  const grandTotal = cartTotal + checkout.currentDeliveryFee;
-
-  const [showExitModal, setShowExitModal] = useState(false);
-  const hasTrappedExit = useRef(false);
-  const currentViewRef = useRef(currentView);
-
-  React.useEffect(() => {
-    currentViewRef.current = currentView;
-  }, [currentView]);
-
-  // Handle browser back button natively & Exit Intent
-  React.useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
-      if (e.state?.exitIntent) {
-        if (!hasTrappedExit.current) {
-          hasTrappedExit.current = true;
-          window.history.pushState({ view: currentViewRef.current }, '', `#${currentViewRef.current}`);
-          setShowExitModal(true);
-        } else {
-          window.history.back();
-        }
-        return;
-      }
-      const view = e.state?.view || window.location.hash.replace('#', '') || 'welcome';
-      setCurrentView(view as View);
+  useEffect(() => {
+    const syncLocation = () => {
+      const view = window.history.state?.view;
+      setCurrentView(view === 'product-details' && selectedProduct ? view : locationView());
     };
-    window.addEventListener('popstate', handlePopState);
-
-    const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !hasTrappedExit.current) {
-        hasTrappedExit.current = true;
-        setShowExitModal(true);
-      }
-    };
-    document.addEventListener('mouseleave', handleMouseLeave);
-
-    // Initialize state
-    if (!window.history.state) {
-      window.history.replaceState({ exitIntent: true }, '');
-      window.history.pushState({ view: 'welcome' }, '', '#welcome');
-    }
-
+    window.addEventListener('popstate', syncLocation);
+    window.addEventListener('hashchange', syncLocation);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
-      document.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('popstate', syncLocation);
+      window.removeEventListener('hashchange', syncLocation);
     };
-  }, []);
-
-  // Custom navigation that updates history
+  }, [selectedProduct]);
   const handleNavigate = useCallback((view: View) => {
     if (view !== currentView) {
       window.history.pushState({ view }, '', `#${view}`);
@@ -122,65 +74,13 @@ export default function App() {
     handleNavigate('product-details');
   }, [currentView, handleNavigate]);
 
-  const resetCheckoutState = () => {
-    checkout.setGuestCustomer({ name: '', phone: '' });
-    checkout.setDeliveryMethod(null);
-    checkout.setPaymentMethod(null);
-    checkout.setNeedsChange(false);
-    checkout.setChangeAmount('');
-    checkout.setAddress(EMPTY_ADDRESS);
-    checkout.setIsAddressEditing(true);
-    checkout.setShowAddressError(false);
-    checkout.setSaveAddressAsDefault(false);
-  };
-
-  const handleFinalCheckout = () => {
-    const customerName = checkout.guestCustomer.name.trim();
-    const customerPhone = checkout.guestCustomer.phone.trim();
-
-    if (!customerName) {
-      alert('Por favor, informe o seu nome.');
+  const selectOrConfigure = (product: Product, event?: React.MouseEvent) => {
+    if (product.configuravel && !cart.some(item => item.id === product.id)) {
+      event?.stopPropagation();
+      handleProductClick(product);
       return;
     }
-
-    if (!customerPhone) {
-      alert('Por favor, informe o seu telefone.');
-      return;
-    }
-
-    if (!checkout.deliveryMethod) {
-      alert('Por favor, selecione o método de entrega.');
-      return;
-    }
-
-    if (checkout.deliveryMethod === 'delivery' && !checkout.address.address.trim()) {
-      checkout.setShowAddressError(true);
-      return;
-    }
-
-    if (!checkout.paymentMethod) {
-      alert('Por favor, selecione uma forma de pagamento.');
-      return;
-    }
-
-    const waUrl = generateWhatsAppOrderLink({
-      customerName,
-      customerPhone,
-      deliveryMethod: checkout.deliveryMethod,
-      address: checkout.address,
-      paymentMethod: checkout.paymentMethod,
-      needsChange: checkout.needsChange,
-      changeAmount: checkout.changeAmount,
-      currentDeliveryFee: checkout.currentDeliveryFee,
-      cart,
-      grandTotal
-    });
-
-    window.open(waUrl, '_blank');
-
-    clearCart();
-    resetCheckoutState();
-    handleNavigate('home');
+    toggleCartItem(product, event);
   };
 
   const commonProps = { onNavigate: handleNavigate, onOpenMenu: () => setIsMenuOpen(true) };
@@ -194,15 +94,12 @@ export default function App() {
           onNavigate={handleNavigate}
         />
 
-        <ExitIntentModal 
-          isOpen={showExitModal} 
-          onClose={() => setShowExitModal(false)}
-          onConfirmExit={() => {
-            setShowExitModal(false);
-            window.history.back();
-          }} 
-        />
-
+        {status !== 'ready' && (
+          <div className="flex items-center justify-center gap-3 bg-amber-50 p-3 text-sm text-stone-800" role="status">
+            {status === 'loading' ? 'A carregar o catálogo…' : 'Catálogo temporariamente indisponível.'}
+            {status === 'error' && <button type="button" onClick={reload} className="font-bold text-primary underline">Tentar novamente</button>}
+          </div>
+        )}
         <main className="min-h-screen flex flex-col">
           <AnimatePresence mode="wait">
             {currentView === 'welcome' && <WelcomeScreen key="welcome" onNavigate={handleNavigate} />}
@@ -210,6 +107,7 @@ export default function App() {
             {currentView === 'home' && (
               <HomeScreen
                 key="home"
+                products={products}
                 cart={cart}
                 favorites={favorites}
                 homeBgConfig={homeBgConfig}
@@ -217,13 +115,14 @@ export default function App() {
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
                 onToggleFavorite={toggleFavorite}
-                onToggleCartItem={toggleCartItem}
+                onToggleCartItem={selectOrConfigure}
               />
             )}
 
             {currentView === 'product-list' && (
               <ProductListScreen
                 key="product-list"
+                products={products}
                 cart={cart}
                 favorites={favorites}
                 activeRecCategory={activeRecCategory}
@@ -231,7 +130,7 @@ export default function App() {
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
                 onToggleFavorite={toggleFavorite}
-                onToggleCartItem={toggleCartItem}
+                onToggleCartItem={selectOrConfigure}
               />
             )}
 
@@ -256,26 +155,10 @@ export default function App() {
             {currentView === 'cart' && (
               <CartScreen
                 key="cart"
-                {...checkout}
                 cart={cart}
-                cartTotal={cartTotal}
-                grandTotal={grandTotal}
-                isGoogleLoaded={isGoogleLoaded}
                 onUpdateQuantity={updateQuantity}
-                onRemoveFromCart={removeFromCart}
                 onEditItem={handleEditCartItem}
-                onCheckout={handleFinalCheckout}
                 onNavigate={handleNavigate}
-                onSetDeliveryMethod={checkout.setDeliveryMethod}
-                onSetPaymentMethod={checkout.setPaymentMethod}
-                onSetGuestCustomer={checkout.setGuestCustomer}
-                onSetAddress={checkout.setAddress}
-                onSetNeedsChange={checkout.setNeedsChange}
-                onSetChangeAmount={checkout.setChangeAmount}
-                onSetAddressEditing={checkout.setIsAddressEditing}
-                onSetShowAddressError={checkout.setShowAddressError}
-                onSetSaveAddressAsDefault={checkout.setSaveAddressAsDefault}
-                onLocate={checkout.handleLocate}
               />
             )}
 
@@ -307,11 +190,12 @@ export default function App() {
             {currentView === 'saved' && (
               <SavedScreen
                 key="saved"
+                products={products}
                 cart={cart}
                 favorites={favorites}
                 onProductClick={handleProductClick}
                 onToggleFavorite={toggleFavorite}
-                onToggleCartItem={toggleCartItem}
+                onToggleCartItem={selectOrConfigure}
                 {...commonProps}
               />
             )}

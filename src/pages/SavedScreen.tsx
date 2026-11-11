@@ -1,10 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart } from 'lucide-react';
-import { PRODUCTS } from '../features/products/data';
 import { Product, CartItem, View } from '../config/types';
 
 interface SavedScreenProps {
+  products: Product[];
   cart: CartItem[];
   favorites: string[];
   onProductClick: (product: Product) => void;
@@ -15,9 +15,9 @@ interface SavedScreenProps {
 }
 
 export const SavedScreen: React.FC<SavedScreenProps> = ({
-  cart, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu, onNavigate,
+  products, cart, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu, onNavigate,
 }) => {
-  const favoriteProducts = PRODUCTS.filter(p => favorites.includes(p.id));
+  const favoriteProducts = products.filter(p => favorites.includes(p.id));
 
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-screen pb-32 bg-white">

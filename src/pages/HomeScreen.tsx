@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ShoppingCart, Search } from 'lucide-react';
 import { CATEGORIES } from '../config/constants';
-import { PRODUCTS } from '../features/products/data';
 import { Product, CartItem, View } from '../config/types';
 import { Header } from '../components/Header';
+import { BusinessOrdersLink } from '../components/BusinessOrdersLink';
 
 interface HomeScreenProps {
+  products: Product[];
   cart: CartItem[];
   favorites: string[];
   onOpenMenu: () => void;
@@ -19,12 +20,12 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
-  cart, favorites,
+  products, cart, favorites,
   onOpenMenu, homeBgConfig,
   onSetCategory, onProductClick, onToggleFavorite, onToggleCartItem, onNavigate,
 }) => {
   const topSellersImages = useMemo(() => [1, 2, 3]
-    .map(pos => PRODUCTS.find(p => p.topSeller === pos)?.image)
+    .map(pos => products.find(p => p.topSeller === pos)?.image)
     .filter(Boolean) as string[], []);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -41,8 +42,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return null;
     const query = searchQuery.toLowerCase();
-    return PRODUCTS.filter(p => p.name.toLowerCase().includes(query) || p.description?.toLowerCase().includes(query));
-  }, [searchQuery]);
+    return products.filter(p => [p.name, p.description, ...(p.tags ?? [])].some(value => value.toLowerCase().includes(query)));
+  }, [products, searchQuery]);
 
   // Função auxiliar para renderizar os cards de forma consistente
   const renderProductCard = (product: Product, isTopSeller = false) => (
@@ -121,6 +122,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* ── Conteúdo principal ── */}
         <div className="-mt-8 bg-stone-50 rounded-t-[32px] md:rounded-t-[48px] relative z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] pt-8 min-h-screen">
           <div className="max-w-[1200px] mx-auto space-y-6">
+            <div className="flex justify-center px-4">
+              <BusinessOrdersLink />
+            </div>
 
             {/* Renderização condicional baseada na busca */}
             {filteredProducts ? (
@@ -176,7 +180,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <div className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2 md:grid md:grid-cols-3">
                 {/* Banner 1: Bolos Temáticos */}
                 <div onClick={() => { onSetCategory('Bolos Temáticos'); onNavigate('product-list'); }} className="snap-center shrink-0 w-full h-[160px] md:h-[190px] rounded-2xl overflow-hidden relative shadow-[0_4px_20px_rgba(0,0,0,0.05)] cursor-pointer group">
-                  <img src={PRODUCTS.find(p => p.category === 'Bolos Temáticos')?.image || ''} alt="Bolos Temáticos" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+                  <img src={products.find(p => p.category === 'Bolos Temáticos')?.image || '/logo.png'} alt="Bolos Temáticos" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex items-center p-6">
                     <div>
                       <h3 className="text-white font-headline font-black text-xl md:text-2xl leading-tight uppercase tracking-wide">Bolos<br/>Incríveis</h3>
@@ -186,7 +190,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 {/* Banner 2: Boxes Surpresa */}
                 <div onClick={() => { onSetCategory('Boxes Surpresa'); onNavigate('product-list'); }} className="snap-center shrink-0 w-full h-[160px] md:h-[190px] rounded-2xl overflow-hidden relative shadow-[0_4px_20px_rgba(0,0,0,0.05)] cursor-pointer group">
-                  <img src={PRODUCTS.find(p => p.category === 'Boxes Surpresa')?.image || ''} alt="Boxes Surpresa" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+                  <img src={products.find(p => p.category === 'Boxes Surpresa')?.image || '/logo.png'} alt="Boxes Surpresa" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/50 to-transparent flex items-center p-6">
                     <div>
                       <h3 className="text-white font-headline font-black text-xl md:text-2xl leading-tight uppercase tracking-wide">Surpreenda<br/>Alguém</h3>
@@ -196,7 +200,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 </div>
                 {/* Banner 3: Pronta Entrega */}
                 <div onClick={() => onNavigate('product-list')} className="snap-center shrink-0 w-full h-[160px] md:h-[190px] rounded-2xl overflow-hidden relative shadow-[0_4px_20px_rgba(0,0,0,0.05)] cursor-pointer group">
-                  <img src={PRODUCTS.find(p => p.category === 'Brigadeiros')?.image || ''} alt="Pronta Entrega" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
+                  <img src={products.find(p => p.category === 'Brigadeiros')?.image || '/logo.png'} alt="Pronta Entrega" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" referrerPolicy="no-referrer" />
                   <div className="absolute inset-0 bg-gradient-to-r from-gold/90 via-gold/50 to-transparent flex items-center p-6">
                     <div>
                       <h3 className="text-primary font-headline font-black text-lg md:text-xl leading-tight uppercase tracking-wide">Pronta<br/>Entrega</h3>
@@ -210,8 +214,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* ── Destaques da Semana ── */}
             {(() => {
               const topSellers = [1, 2, 3]
-                .map(pos => PRODUCTS.find(p => p.topSeller === pos))
-                .filter(Boolean) as typeof PRODUCTS;
+                .map(pos => products.find(p => p.topSeller === pos))
+                .filter(Boolean) as typeof products;
 
               if (topSellers.length === 0) return null;
 
@@ -236,8 +240,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
             {/* Produtos por categoria */}
             {CATEGORIES.map((category) => {
-              const products = PRODUCTS.filter(p => p.category === category.name);
-              if (products.length === 0) return null;
+              const categoryProducts = products.filter(p => p.category === category.name);
+              if (categoryProducts.length === 0) return null;
 
               return (
                 <section key={category.name} className="space-y-4 pt-4">
@@ -253,7 +257,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
                   {/* Mobile: scroll horizontal | Desktop: grid */}
                   <div className="flex gap-4 overflow-x-auto md:overflow-visible pb-4 pt-1 md:pb-0 scrollbar-hide snap-x px-6 md:px-10 scroll-px-6 md:scroll-px-10 md:grid md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-                    {products.map((product) => renderProductCard(product))}
+                    {categoryProducts.map((product) => renderProductCard(product))}
                   </div>
                 </section>
               );
