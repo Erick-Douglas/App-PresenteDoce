@@ -267,7 +267,16 @@ export default function AdminScreen() {
         passwordMode ? (
           <section className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
             <h2 className="font-headline text-lg font-bold">{recovering ? 'Redefinir senha' : 'Ativar acesso'}</h2>
+            {recovering && !passwordSession && (
+              <form onSubmit={sendRecovery} className="space-y-3 rounded-xl bg-stone-50 p-3">
+                <h3 className="font-semibold">1. Peça o e-mail de recuperação</h3>
+                <label className="block space-y-1"><span>E-mail da conta</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
+                <button type="submit" className={secondary} disabled={busy}>Enviar e-mail de recuperação</button>
+                {recoveryNotice && <p role="status" className="text-sm">{recoveryNotice}</p>}
+              </form>
+            )}
             <form onSubmit={changePassword} className="space-y-4">
+              {recovering && <h3 className="font-semibold">2. Escolha a nova senha</h3>}
               {!passwordSession && (
                 <>
                   <p className="text-sm text-stone-600">No e-mail {recovering ? 'de recuperação' : 'de convite'} do Supabase, copie o endereço do botão sem abrir o link. Cole-o aqui.</p>
@@ -282,16 +291,6 @@ export default function AdminScreen() {
                 <button type="button" className={secondary} disabled={busy || !!passwordSession} onClick={() => { setError(''); backToLogin(); }}>Voltar</button>
               </div>
             </form>
-            {recovering && !passwordSession && (
-              <details className="border-t border-stone-200 pt-4">
-                <summary className="cursor-pointer font-semibold text-primary">Ainda não recebeu o e-mail?</summary>
-                <form onSubmit={sendRecovery} className="mt-3 space-y-3">
-                  <label className="block space-y-1"><span>E-mail cadastrado</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
-                  <button type="submit" className={secondary} disabled={busy}>Enviar e-mail de recuperação</button>
-                  {recoveryNotice && <p role="status" className="text-sm">{recoveryNotice}</p>}
-                </form>
-              </details>
-            )}
           </section>
         ) : (
           <form onSubmit={login} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
