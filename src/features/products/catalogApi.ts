@@ -1,5 +1,6 @@
 import type { Product } from '../../config/types';
 import { readManualRecoveryToken } from './adminLink';
+import { AuthRateLimitError, authRetryAfter } from './authRateLimit';
 
 const configuredUrl = String(import.meta.env.VITE_CATALOG_SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
@@ -28,7 +29,7 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
     if (response.status === 401) throw new Error('Sessão ou credenciais inválidas. Confirme o acesso e volte a entrar.');
     if (response.status === 403) throw new Error('A sua conta não tem permissão para esta ação.');
     if (response.status === 409) throw new Error('O produto pode já ter sido guardado. Atualize a lista antes de tentar novamente.');
-    if (response.status === 429) throw new Error('Demasiadas tentativas. Aguarde e tente novamente.');
+    if (response.status === 429) throw new AuthRateLimitError(authRetryAfter(response.headers.get('retry-after')));
     throw new Error('Não foi possível concluir a operação. Verifique os dados e tente novamente.');
   }
   if (response.status === 204 || response.headers.get('content-length') === '0') return undefined as T;
@@ -40,10 +41,14 @@ export interface CatalogSession {
   expiresAt: number;
 }
 
-export async function signIn(email: string, password: string): Promise<CatalogSession> {
+function captchaProof(token?: string) {
+  return token ? { gotrue_meta_security: { captcha_token: token } } : {};
+}
+
+export async function signIn(email: string, password: string, captchaToken?: string): Promise<CatalogSession> {
   const result = await request<{ access_token: string; expires_in: number }>('/auth/v1/token?grant_type=password', {
     method: 'POST',
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, password, ...captchaProof(captchaToken) }),
   });
   await assertCatalogAdmin(result.access_token);
   return { token: result.access_token, expiresAt: Date.now() + result.expires_in * 1000 };
@@ -71,9 +76,9 @@ export async function redeemManualRecoveryLink(link: string) {
   return result.access_token;
 }
 
-export async function requestAdminRecovery(email: string, redirectTo: string) {
+export async function requestAdminRecovery(email: string, redirectTo: string, captchaToken?: string) {
   const query = new URLSearchParams({ redirect_to: redirectTo });
-  await request('/auth/v1/recover?' + query, { method: 'POST', body: JSON.stringify({ email }) });
+  await request('/auth/v1/recover?' + query, { method: 'POST', body: JSON.stringify({ email, ...captchaProof(captchaToken) }) });
 }
 
 export async function setAdminPassword(token: string, password: string) {

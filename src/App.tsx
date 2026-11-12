@@ -289,6 +289,7 @@ export default function App() {
                 cart={cart}
                 favorites={favorites}
                 onProductClick={handleProductClick}
+                onEditProduct={openProductEditor}
                 onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
                 {...commonProps}

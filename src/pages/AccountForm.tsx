@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { AuthChallenge, challengeSiteKey } from '../components/AuthChallenge';
 import { BUSINESS_INFO } from '../config/constants';
 import type { RecoveryCallback } from '../features/products/adminLink';
+import { AuthRateLimitError } from '../features/products/authRateLimit';
 import {
   catalogConfigured, redeemManualRecoveryLink, requestAdminRecovery, setAdminPassword,
   signIn, signOut, type CatalogSession,
@@ -14,6 +16,7 @@ const field = 'mt-1 block w-full rounded-xl border border-stone-300 bg-white px-
 const label = 'block text-sm font-semibold text-stone-700';
 
 type Step = 'login' | 'request' | 'sent' | 'manual' | 'reset';
+type AuthStep = 'login' | 'request';
 
 export default function AccountForm({ initialRecovery, callback, onLogin, onRecoveryComplete }: {
   initialRecovery: boolean;
@@ -28,47 +31,83 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
   const [error, setError] = useState(callback && 'invalid' in callback ? 'Este link expirou ou já foi usado. Peça outro e-mail.' : '');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [challengeVersion, setChallengeVersion] = useState(0);
+  const [blocked, setBlocked] = useState<Record<AuthStep, number>>({ login: 0, request: 0 });
+  const [now, setNow] = useState(Date.now);
+  const authInFlight = useRef(false);
   const active = useRef(false);
+  const authStep: AuthStep = step === 'request' ? 'request' : 'login';
+  const retrySeconds = Math.max(0, Math.ceil((blocked[authStep] - now) / 1000));
+  const submitDisabled = busy || retrySeconds > 0 || Boolean(challengeSiteKey && !captchaToken);
 
   useEffect(() => {
     active.current = true;
     return () => { active.current = false; };
   }, []);
 
+  useEffect(() => {
+    const until = Math.max(blocked.login, blocked.request);
+    if (until <= now) return;
+    const timer = window.setTimeout(() => setNow(Date.now()), Math.min(1000, until - now));
+    return () => window.clearTimeout(timer);
+  }, [blocked, now]);
+
+  function rotateChallenge() {
+    setCaptchaToken('');
+    setChallengeVersion(value => value + 1);
+  }
+
+  function applyRateLimit(cause: unknown, operation: AuthStep) {
+    if (!(cause instanceof AuthRateLimitError)) return false;
+    const timestamp = Date.now();
+    setNow(timestamp);
+    setBlocked(current => ({ ...current, [operation]: timestamp + cause.retryAfter * 1000 }));
+    setError(cause.message);
+    return true;
+  }
+
   function show(next: Step) {
     setError('');
     setNotice('');
     setStep(next);
+    setCaptchaToken('');
   }
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (submitDisabled || authInFlight.current) return;
+    authInFlight.current = true;
     setBusy(true);
     setError('');
     const password = new FormData(event.currentTarget).get('password');
     try {
-      const session = await signIn(email.trim(), String(password ?? ''));
+      const session = await signIn(email.trim(), String(password ?? ''), captchaToken);
       if (active.current) onLogin(session);
       else void signOut(session.token).catch(() => {});
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível entrar.');
+      if (!applyRateLimit(cause, 'login')) setError(cause instanceof Error ? cause.message : 'Não foi possível entrar.');
     } finally {
+      authInFlight.current = false;
+      rotateChallenge();
       setBusy(false);
     }
   }
 
   async function sendRecovery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (submitDisabled || authInFlight.current) return;
+    authInFlight.current = true;
     setBusy(true);
     setError('');
     try {
-      await requestAdminRecovery(email.trim(), recoveryUrl);
+      await requestAdminRecovery(email.trim(), recoveryUrl, captchaToken);
       show('sent');
-    } catch {
-      setError('Não foi possível pedir outro e-mail agora. Aguarde e tente novamente.');
+    } catch (cause) {
+      if (!applyRateLimit(cause, 'request')) setError('Não foi possível pedir outro e-mail agora. Aguarde e tente novamente.');
     } finally {
+      authInFlight.current = false;
+      rotateChallenge();
       setBusy(false);
     }
   }
@@ -114,6 +153,10 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
     </label>
   );
   const feedback = error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>;
+  const authCheck = <>
+    {retrySeconds === 0 && <AuthChallenge key={authStep + ':' + challengeVersion} onToken={setCaptchaToken} />}
+    {retrySeconds > 0 && <p className="text-sm text-stone-700">Nova tentativa em {retrySeconds} s.</p>}
+  </>;
 
   if (!catalogConfigured) return <p role="status">O acesso fica disponível quando a base de dados estiver ligada.</p>;
 
@@ -122,8 +165,9 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       <p className="text-sm text-stone-600">Indique o e-mail da sua conta para receber um link de recuperação.</p>
       {emailField}
       {feedback}
+      {authCheck}
       <div className="flex flex-wrap items-center gap-x-4">
-        <button type="submit" className={primary} disabled={busy}>{busy ? 'A enviar…' : 'Enviar link'}</button>
+        <button type="submit" className={primary} disabled={submitDisabled}>{busy ? 'A enviar…' : 'Enviar link'}</button>
         <button type="button" className={secondary} disabled={busy} onClick={() => show('login')}>Voltar a entrar</button>
       </div>
     </form>
@@ -170,8 +214,9 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       <label className={label}>Senha<input name="password" type="password" required autoComplete="current-password" className={field} /></label>
       {notice && <p role="status" className="text-sm text-stone-700">{notice}</p>}
       {feedback}
+      {authCheck}
       <div className="flex flex-wrap items-center gap-x-4">
-        <button type="submit" className={primary} disabled={busy}>{busy ? 'A entrar…' : 'Entrar'}</button>
+        <button type="submit" className={primary} disabled={submitDisabled}>{busy ? 'A entrar…' : 'Entrar'}</button>
         <button type="button" className={secondary} disabled={busy} onClick={() => show('request')}>Esqueci a senha</button>
       </div>
     </form>

@@ -1,11 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readManualRecoveryToken, readRecoveryCallback } from '../src/features/products/adminLink.ts';
+import { authRetryAfter } from '../src/features/products/authRateLimit.ts';
 
 const project = 'https://exemplo.supabase.co';
 const store = 'https://presente-doce.vercel.app';
 const manualToken = 'token-ficticio-de-teste-123';
 const sessionToken = 'cabecalho.conteudo.assinatura';
+
+test('respeita o intervalo de nova tentativa do servidor', () => {
+  const now = Date.UTC(2026, 10, 12, 13, 0, 0);
+  assert.equal(authRetryAfter('8', now), 8);
+  assert.equal(authRetryAfter('Thu, 12 Nov 2026 13:00:30 GMT', now), 30);
+  assert.equal(authRetryAfter('0', now), 1);
+  assert.equal(authRetryAfter('999999', now), 3600);
+  assert.equal(authRetryAfter(null, now), 60);
+  assert.equal(authRetryAfter('inválido', now), 60);
+});
 
 test('reconhece uma sessão de recuperação apenas no fragmento das rotas da loja', () => {
   const hash = '#type=recovery&access_token=' + sessionToken + '&refresh_token=nao-ler';
