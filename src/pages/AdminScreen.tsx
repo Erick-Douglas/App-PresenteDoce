@@ -1,25 +1,60 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { CATEGORIES } from '../config/constants';
-import type { Product } from '../config/types';
+import { THEMED_CAKE_SIZES } from '../config/constants';
+import type { CatalogCategory, Product } from '../config/types';
 import {
-  deleteProduct, getCatalogProduct, imageUrl, listCatalog, saveProduct, uploadProductImage, type CatalogRow,
+  createCatalogCategory, deleteProduct, getCatalogProduct, imageUrl, listCatalog, saveProduct, uploadProductImage, type CatalogRow,
 } from '../features/products/catalogApi';
-import { formatEuros } from '../features/checkout/order';
+import { formatCatalogPrice, parseCatalogPrice } from '../features/products/catalogFields';
+import { currencySymbol, formatEuros } from '../features/checkout/order';
 
 const primary = 'rounded-xl bg-primary px-4 py-3 text-center font-bold text-white disabled:opacity-50';
 const secondary = 'rounded-xl border border-stone-300 px-4 py-3 font-semibold disabled:opacity-50';
 const field = 'w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base';
+const chip = 'rounded-full border border-primary/15 px-3 py-1.5 text-sm text-primary';
 type Variant = { label: string; price: string; maxFlavors: string };
+const optionFields = new Map([
+  ['Bolos Temáticos', { title: 'Tamanhos do bolo', label: 'Tamanho', example: 'Pequeno (1,5 kg)', add: 'Adicionar tamanho' }],
+  ['Brigadeiros', { title: 'Tamanhos da caixa', label: 'Caixa', example: 'Caixa com 12', add: 'Adicionar caixa' }],
+  ['Salgados', { title: 'Quantidades disponíveis', label: 'Quantidade', example: '25 unidades', add: 'Adicionar quantidade' }],
+]);
 const parseList = (value: string) => [...new Set(value.split('\n').map(item => item.trim()).filter(Boolean))];
 const searchText = (value: string) => value.trim().toLocaleLowerCase('pt-PT').normalize('NFD').replace(/\p{Diacritic}/gu, '');
 
 function priceFrom(value: string) {
-  const normalized = value.trim().replace(',', '.');
-  if (!/^\d{1,5}(\.\d{1,2})?$/.test(normalized)) throw new Error('Indique um preço válido com até duas casas decimais.');
-  return Number(normalized);
+  const price = parseCatalogPrice(value);
+  if (price === null) throw new Error('Indique um preço válido com até duas casas decimais.');
+  return price;
 }
 
-function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
+function PriceInput({ label, value, onChange, required }: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <label className="block space-y-1">
+      <span>{label}</span>
+      <span className="relative block">
+        <input className={field + ' pr-9 tabular-nums'} value={value} onChange={event => onChange(event.target.value)}
+          onBlur={() => {
+            const price = parseCatalogPrice(value);
+            if (price !== null) onChange(formatCatalogPrice(price));
+          }}
+          inputMode="decimal" maxLength={8} placeholder="0,00" required={required} />
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-stone-500">{currencySymbol}</span>
+      </span>
+    </label>
+  );
+}
+
+type CategoryFields = {
+  categories: CatalogCategory[];
+  products: Product[];
+  onCategoryCreated: (name: string) => void;
+};
+
+function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, products, onCategoryCreated }: CategoryFields & {
   row: CatalogRow | null;
   token: string;
   onSaved: (row: CatalogRow) => void;
@@ -28,16 +63,90 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
 }) {
   const data = row?.details;
   const [productId] = useState(() => row?.id ?? crypto.randomUUID());
-  const [category, setCategory] = useState(data?.category ?? CATEGORIES[0].name);
-  const [variants, setVariants] = useState<Variant[]>((data?.variants ?? []).map(option => ({
-    label: option.label,
-    price: String(option.price),
-    maxFlavors: option.maxFlavors == null ? '' : String(option.maxFlavors),
-  })));
+  const [category, setCategory] = useState(data?.category ?? categories[0]?.name ?? '');
+  const [categoryDraft, setCategoryDraft] = useState<string | null>(null);
+  const [categoryError, setCategoryError] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [price, setPrice] = useState(data ? formatCatalogPrice(data.price) : '');
+  const [tags, setTags] = useState(data?.tags ?? []);
+  const [topic, setTopic] = useState('');
+  const [topicError, setTopicError] = useState('');
+  const [variantDrafts, setVariantDrafts] = useState<Record<string, Variant[]>>(() => {
+    if (!data) return {};
+    const savedOptions = data.variants ?? [];
+    const options: NonNullable<Product['variants']> =
+      !savedOptions.length && data.category === 'Bolos Temáticos' && row?.published ? THEMED_CAKE_SIZES : savedOptions;
+    return { [data.category]: options.map(option => ({
+      label: option.label,
+      price: formatCatalogPrice(option.price),
+      maxFlavors: option.maxFlavors == null ? '' : String(option.maxFlavors),
+    })) };
+  });
+  const [flavorDrafts, setFlavorDrafts] = useState(() => new Map(data ? [[data.category, data.flavors?.join('\n') ?? '']] : []));
   const [image, setImage] = useState(data?.image ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const optionFieldsForCategory = optionFields.get(category);
+  const isThemedCake = category === 'Bolos Temáticos';
+  const variants = optionFieldsForCategory ? variantDrafts[category] ?? [] : [];
+  const optionPrices = variants.map(option => parseCatalogPrice(option.price));
+  const lowestPrice = optionPrices.length && optionPrices.every(value => value !== null)
+    ? Math.min(...optionPrices) : null;
+  const suggestedTopics = new Map<string, string>();
+  for (const product of products) {
+    if (product.category !== category) continue;
+    for (const item of product.tags ?? []) {
+      const key = searchText(item);
+      if (key && !suggestedTopics.has(key)) suggestedTopics.set(key, item.trim());
+    }
+  }
+  const selectedTopicKeys = new Set(tags.map(searchText));
+  const availableTopics = [...suggestedTopics].filter(([key]) => !selectedTopicKeys.has(key));
+
+  async function addCategory() {
+    if (busy || creatingCategory) return;
+    const name = (categoryDraft ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+    setCategoryError('');
+    if (!name || name.length > 60 || name.toLocaleLowerCase('pt-PT') === 'all') {
+      setCategoryError('Escreva um nome de categoria válido com até 60 caracteres.');
+      return;
+    }
+    const existing = categories.find(item => item.name.toLocaleLowerCase('pt-PT') === name.toLocaleLowerCase('pt-PT'));
+    if (existing) {
+      setCategory(existing.name);
+      setCategoryDraft(null);
+      return;
+    }
+    setCreatingCategory(true);
+    try {
+      const created = await createCatalogCategory(name, token);
+      onCategoryCreated(created.name);
+      setCategory(created.name);
+      setCategoryDraft(null);
+    } catch (cause) {
+      setCategoryError(cause instanceof Error ? cause.message : 'Não foi possível criar a categoria.');
+    } finally {
+      setCreatingCategory(false);
+    }
+  }
+
+  function tagsWith(value: string) {
+    const key = searchText(value);
+    if (!key || selectedTopicKeys.has(key)) return tags;
+    if (tags.length >= 20 || value.trim().length > 80) throw new Error('Use até 20 tópicos, com até 80 caracteres cada.');
+    return [...tags, suggestedTopics.get(key) ?? value.trim()];
+  }
+
+  function addTopic(value: string) {
+    setTopicError('');
+    try {
+      setTags(tagsWith(value));
+      setTopic('');
+    } catch (cause) {
+      setTopicError(cause instanceof Error ? cause.message : 'Não foi possível adicionar o tópico.');
+    }
+  }
 
   async function remove() {
     if (!row || busy) return;
@@ -53,13 +162,21 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
     }
   }
 
+  function setVariants(next: Variant[]) {
+    setVariantDrafts(current => ({ ...current, [category]: next }));
+  }
+
   function updateVariant(index: number, value: Partial<Variant>) {
-    setVariants(current => current.map((option, i) => i === index ? { ...option, ...value } : option));
+    setVariants(variants.map((option, i) => i === index ? { ...option, ...value } : option));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || creatingCategory) return;
+    if (categoryDraft !== null) {
+      setCategoryError('Crie a categoria ou cancele antes de guardar o produto.');
+      return;
+    }
     setBusy(true);
     setError('');
     const formElement = event.currentTarget;
@@ -70,12 +187,12 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
     const published = form.get('published') === 'on';
     try {
       if (!name || !description) throw new Error('Preencha o nome e a descrição.');
-      const configurable = ['Bolos Temáticos', 'Brigadeiros', 'Salgados'].includes(category);
-      const isThemedCake = category === 'Bolos Temáticos';
+      if (!category) throw new Error('Escolha uma categoria.');
+      const configurable = !!optionFieldsForCategory;
       const options = configurable ? variants.map(option => {
         const label = option.label.trim();
         if (!label) throw new Error('Indique o nome de cada opção.');
-        const maxFlavors = option.maxFlavors === '' ? undefined : Number(option.maxFlavors);
+        const maxFlavors = isThemedCake || option.maxFlavors === '' ? undefined : Number(option.maxFlavors);
         if (maxFlavors != null && (!Number.isInteger(maxFlavors) || maxFlavors < 1 || maxFlavors > 100)) {
           throw new Error('O limite de sabores deve estar entre 1 e 100.');
         }
@@ -85,12 +202,12 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
         throw new Error('Dê um nome diferente a cada opção.');
       }
       if (published && configurable && !options.length) throw new Error('Adicione pelo menos uma opção antes de publicar.');
-      const price = options.length ? Math.min(...options.map(option => option.price)) : priceFrom(text('price') || '0');
-      if (published && (price <= 0 || options.some(option => option.price <= 0))) throw new Error('Os preços publicados devem ser superiores a zero.');
-      const tags = parseList(text('tags'));
-      const flavors = configurable && !isThemedCake ? parseList(text('flavors')) : [];
-      if (tags.length > 20 || flavors.length > 50 || [...tags, ...flavors].some(value => value.length > 80)) {
-        throw new Error('Use até 20 tópicos e 50 sabores, com até 80 caracteres por linha.');
+      const productPrice = options.length ? Math.min(...options.map(option => option.price)) : priceFrom(configurable ? '0' : price);
+      if (published && productPrice <= 0) throw new Error('Os preços publicados devem ser superiores a zero.');
+      const topics = tagsWith(topic);
+      const flavors = configurable && !isThemedCake ? parseList(flavorDrafts.get(category) ?? '') : [];
+      if (topics.length > 20 || flavors.length > 50 || [...topics, ...flavors].some(value => value.length > 80)) {
+        throw new Error('Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres cada.');
       }
 
       const file = form.get('image');
@@ -103,7 +220,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
       }
       if (published && !nextImage) throw new Error('Adicione uma imagem antes de publicar.');
       const details: Omit<Product, 'id'> = {
-        ...data, name, description, category, price, tags, image: nextImage,
+        ...data, name, description, category, price: productPrice, tags: topics, image: nextImage,
         configuravel: configurable,
         simples: !configurable,
         variants: options.length ? options : undefined,
@@ -118,37 +235,92 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
     }
   }
 
-  const configurable = ['Bolos Temáticos', 'Brigadeiros', 'Salgados'].includes(category);
-
   return (
     <form onSubmit={submit}>
-      <fieldset disabled={busy} className="space-y-4">
+      <fieldset disabled={busy || creatingCategory} className="space-y-4">
         <label className="block space-y-1"><span>Nome</span><input name="name" required maxLength={100} defaultValue={data?.name} className={field} /></label>
-        <label className="block space-y-1"><span>Descrição</span><textarea name="description" rows={4} required maxLength={3000} defaultValue={data?.description} className={field} /></label>
+        <label className="block space-y-1"><span>Descrição</span><textarea name="description" rows={2} required maxLength={3000} defaultValue={data?.description} className={field + ' resize-y'} /></label>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1">
             <span>Categoria</span>
-            <select className={field} value={category} onChange={event => setCategory(event.target.value)}>
-              {CATEGORIES.map(item => <option key={item.name}>{item.name}</option>)}
+            <select className={field} value={category} onChange={event => setCategory(event.target.value)} required>
+              {category && !categories.some(item => item.name === category) && <option>{category}</option>}
+              {categories.map(item => <option key={item.name}>{item.name}</option>)}
             </select>
           </label>
-          {!configurable && <label className="block space-y-1"><span>Preço em euros</span><input name="price" inputMode="decimal" maxLength={9} required defaultValue={data?.price ?? ''} className={field} /></label>}
+          {!optionFieldsForCategory && <PriceInput label="Preço" value={price} onChange={setPrice} required />}
         </div>
-        <label className="block space-y-1"><span>Tópicos (um por linha)</span><textarea name="tags" maxLength={1620} rows={3} defaultValue={data?.tags?.join('\n')} className={field} /></label>
-        {configurable && (
+        {categoryDraft === null ? (
+          <button type="button" className="text-sm font-bold text-primary underline underline-offset-4"
+            onClick={() => setCategoryDraft('')}>Criar categoria</button>
+        ) : (
+          <div className="space-y-2 rounded-xl border border-stone-200 p-3">
+            <label className="block space-y-1">
+              <span>Nome da categoria</span>
+              <input value={categoryDraft} maxLength={60} className={field} onChange={event => setCategoryDraft(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); void addCategory(); }
+                }} />
+            </label>
+            {categoryError && <p role="alert" className="text-sm font-semibold text-primary">{categoryError}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button className={primary} type="button" onClick={addCategory}>{creatingCategory ? 'A criar…' : 'Criar e selecionar'}</button>
+              <button className={secondary} type="button" onClick={() => { setCategoryDraft(null); setCategoryError(''); }}>Cancelar</button>
+            </div>
+          </div>
+        )}
+        <div className="space-y-2">
+          <label className="block space-y-1">
+            <span>Tópicos</span>
+            <input value={topic} maxLength={80} className={field} placeholder="Ex. Chocolate"
+              onChange={event => setTopic(event.target.value)} onKeyDown={event => {
+                if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); addTopic(topic); }
+              }} />
+          </label>
+          <button type="button" className="text-sm font-bold text-primary underline underline-offset-4 disabled:opacity-50"
+            disabled={!topic.trim()} onClick={() => addTopic(topic)}>Adicionar tópico</button>
+          {topicError && <p role="alert" className="text-sm font-semibold text-primary">{topicError}</p>}
+          {!!tags.length && <ul aria-label="Tópicos do produto" className="flex flex-wrap gap-2">
+            {tags.map((tag, index) => (
+              <li key={index}><button type="button" aria-label={'Remover tópico ' + tag} className={chip + ' bg-primary/5'}
+                onClick={() => { setTags(current => current.filter((_, i) => i !== index)); setTopicError(''); }}>{tag} ×</button></li>
+            ))}
+          </ul>}
+          {!!availableTopics.length && <div className="space-y-1.5">
+            <p className="text-sm text-stone-600">Usados em {category}</p>
+            <div className="flex flex-wrap gap-2">
+              {availableTopics.map(([key, value]) => (
+                <button key={key} type="button" className={chip} onClick={() => addTopic(value)}>+ {value}</button>
+              ))}
+            </div>
+          </div>}
+        </div>
+        {optionFieldsForCategory && (
           <div className="space-y-3 rounded-xl border border-stone-200 p-3">
-            <h3 className="font-semibold">{category === 'Bolos Temáticos' ? 'Tamanhos e preços' : 'Opções e preços'}</h3>
-            <p className="text-sm text-stone-600">O catálogo mostra o menor preço das opções.</p>
+            <h3 className="font-semibold">{optionFieldsForCategory.title}</h3>
+            <p className="text-sm text-stone-600">O cliente escolhe uma opção ao encomendar. Indique o preço total de cada opção.</p>
+            <p className="text-sm text-stone-600">{lowestPrice === null ? 'O card mostra o preço da opção mais barata.' : <>No card <strong>A partir de {formatEuros(lowestPrice)}</strong></>}</p>
             {variants.map((option, index) => (
               <div key={index} className="grid gap-2 border-t border-stone-200 pt-3 sm:grid-cols-2">
-                <label><span className="text-sm">Nome da opção</span><input className={field} maxLength={80} value={option.label} onChange={event => updateVariant(index, { label: event.target.value })} /></label>
-                <label><span className="text-sm">Preço em euros</span><input className={field} inputMode="decimal" maxLength={9} value={option.price} onChange={event => updateVariant(index, { price: event.target.value })} /></label>
-                {category !== 'Bolos Temáticos' && <label><span className="text-sm">Limite de sabores (opcional)</span><input className={field} inputMode="numeric" maxLength={3} value={option.maxFlavors} onChange={event => updateVariant(index, { maxFlavors: event.target.value })} /></label>}
-                <button type="button" className={secondary} onClick={() => setVariants(current => current.filter((_, i) => i !== index))}>Remover opção</button>
+                <label><span>{optionFieldsForCategory.label}</span><input className={field} maxLength={80} placeholder={optionFieldsForCategory.example}
+                  value={option.label} onChange={event => updateVariant(index, { label: event.target.value })} required /></label>
+                <PriceInput label="Preço da opção" value={option.price} onChange={value => updateVariant(index, { price: value })} required />
+                {!isThemedCake && <label><span className="text-sm">Máximo de sabores à escolha (opcional)</span><input className={field} inputMode="numeric" maxLength={3}
+                  placeholder="Sem limite" value={option.maxFlavors} onChange={event => updateVariant(index, { maxFlavors: event.target.value })} /></label>}
+                <button type="button" className="justify-self-start text-sm font-semibold text-primary underline underline-offset-4"
+                  onClick={() => setVariants(variants.filter((_, i) => i !== index))}>Remover opção</button>
               </div>
             ))}
-            <button type="button" className={secondary} disabled={variants.length >= 20} onClick={() => setVariants(current => [...current, { label: '', price: '', maxFlavors: '' }])}>Adicionar opção</button>
-            {category !== 'Bolos Temáticos' && <label className="block space-y-1"><span>Sabores (um por linha)</span><textarea name="flavors" maxLength={4050} rows={3} className={field} defaultValue={data?.flavors?.join('\n')} /></label>}
+            <button type="button" className={secondary} disabled={variants.length >= 20}
+              onClick={() => setVariants([...variants, { label: '', price: '', maxFlavors: '' }])}>{optionFieldsForCategory.add}</button>
+            {!isThemedCake && <label className="block space-y-1">
+              <span>{category === 'Salgados' ? 'Tipos de salgado (um por linha)' : 'Sabores da caixa (um por linha)'}</span>
+              <textarea maxLength={4050} rows={2} className={field} value={flavorDrafts.get(category) ?? ''}
+                onChange={event => {
+                  const value = event.target.value;
+                  setFlavorDrafts(current => new Map(current).set(category, value));
+                }} />
+            </label>}
           </div>
         )}
         <div className="space-y-2">
@@ -176,7 +348,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
   );
 }
 
-export function CatalogEditor({ productId, token, onCancel, onChanged }: {
+export function CatalogEditor({ productId, token, onCancel, onChanged, categories, products, onCategoryCreated }: CategoryFields & {
   productId?: string;
   token: string;
   onCancel: () => void;
@@ -202,6 +374,9 @@ export function CatalogEditor({ productId, token, onCancel, onChanged }: {
     <ProductForm
       row={row}
       token={token}
+      categories={categories}
+      products={products}
+      onCategoryCreated={onCategoryCreated}
       onCancel={onCancel}
       onSaved={saved => onChanged(saved.id, saved)}
       onDeleted={id => onChanged(id, null)}

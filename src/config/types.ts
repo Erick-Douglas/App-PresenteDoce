@@ -32,3 +32,8 @@ export interface CartItem extends Product {
   selectedFlavors?: string[]; // Sabores escolhidos
   variant?: string;   // Variante escolhida (Ex: Caixa com 6)
 }
+export interface CatalogCategory {
+  name: string;
+  image?: string;
+}
+

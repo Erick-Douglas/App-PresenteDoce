@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { CatalogCard } from '../components/CatalogCard';
-import { CATEGORIES } from '../config/constants';
-import type { CartItem, Product } from '../config/types';
+import type { CartItem, CatalogCategory, Product } from '../config/types';
 
 interface ProductListScreenProps {
   products: Product[];
+  categories: CatalogCategory[];
   cart: CartItem[];
   favorites: string[];
   activeRecCategory: string;
@@ -19,7 +19,7 @@ interface ProductListScreenProps {
 }
 
 export function ProductListScreen({
-  products: catalogProducts, cart, favorites, activeRecCategory,
+  products: catalogProducts, categories, cart, favorites, activeRecCategory,
   onSetCategory, onProductClick, onEditProduct, onToggleFavorite, onToggleCartItem, onOpenMenu,
 }: ProductListScreenProps) {
   const products = activeRecCategory === 'all' ? catalogProducts : catalogProducts.filter(product => product.category === activeRecCategory);
@@ -31,9 +31,9 @@ export function ProductListScreen({
     if (!container || !activeTab) return;
     const offset = activeTab.getBoundingClientRect().left - container.getBoundingClientRect().left;
     container.scrollLeft += offset - (container.clientWidth - activeTab.clientWidth) / 2;
-  }, [activeRecCategory]);
+  }, [activeRecCategory, categories.length]);
 
-  const categories = [{ id: 'all', label: 'Todos' }, ...CATEGORIES.map(category => ({ id: category.name, label: category.name }))];
+  const filters = [{ id: 'all', label: 'Todos' }, ...categories.map(category => ({ id: category.name, label: category.name }))];
   const title = activeRecCategory === 'all' ? 'Catálogo' : activeRecCategory;
 
   return (
@@ -48,7 +48,7 @@ export function ProductListScreen({
             <h1 className="font-editorial text-3xl leading-none text-primary sm:text-4xl">{title}</h1>
           </div>
           <div ref={tabsRef} role="group" aria-label="Filtrar por categoria" className="scrollbar-hide mt-2 flex gap-2 overflow-x-auto py-1">
-            {categories.map(({ id, label }) => {
+            {filters.map(({ id, label }) => {
               const selected = activeRecCategory === id;
               return (
                 <button key={id} type="button" aria-pressed={selected} onClick={() => onSetCategory(id)}

@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Minus, Plus, ShoppingCart, Clock, Check } from 'lucide-react';
 import { Product, CartItem, View } from '../config/types';
 import { ProductEditButton } from '../components/ProductEditButton';
+import { THEMED_CAKE_SIZES } from '../config/constants';
+import { formatEuros } from '../features/checkout/order';
 
 interface ProductDetailScreenProps {
   product: Product;
@@ -26,13 +28,6 @@ interface ProductDetailScreenProps {
   onBack: () => void;
   onEditProduct?: (id: string) => void;
 }
-
-const TAMANHOS = [
-  { label: 'Mini (800g)', price: 19.99 },
-  { label: 'Pequeno (1,5kg)', price: 39.90 },
-  { label: 'Médio (3kg)', price: 59.90 },
-  { label: 'Grande (5kg)', price: 79.90 },
-];
 
 const MASSAS_BT = [
   { label: 'Chocolate', extra: 0 },
@@ -160,7 +155,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const isSimples = product.simples === true;
   const isConfiguravel = product.configuravel === true;
 
-  const tamanhos = product.category === 'Bolos Temáticos' && product.variants?.length ? product.variants : TAMANHOS;
+  const tamanhos = product.category === 'Bolos Temáticos' && product.variants?.length ? product.variants : THEMED_CAKE_SIZES;
 
   // Preço calculado dinamicamente
   const calculatedPrice = useMemo(() => {
@@ -220,7 +215,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     onNavigate('cart');
   };
 
-  const fmtExtra = (extra: number) => extra > 0 ? `+${extra.toFixed(2)} €` : '+0,00 €';
+  const fmtExtra = (extra: number) => '+' + formatEuros(extra);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-stone-50">
@@ -276,7 +271,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 ) : (
                   <>
                     <span className="font-headline font-black text-[28px] text-primary leading-none">
-                      € {calculatedPrice.toFixed(2)}
+                      {formatEuros(calculatedPrice)}
                     </span>
                     {quantity > 1 && (
                       <span className="font-body text-[12px] text-black/40">{quantity}x</span>
@@ -298,7 +293,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                     <RadioRow
                       key={v.label}
                       label={v.label}
-                      priceLabel={`${v.price.toFixed(2)} €`}
+                      priceLabel={formatEuros(v.price)}
                       selected={variant === v.label}
                       onClick={() => setVariant(v.label)}
                     />
@@ -355,7 +350,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                     <RadioRow
                       key={t.label}
                       label={t.label}
-                      priceLabel={`${t.price.toFixed(2)} €`}
+                      priceLabel={formatEuros(t.price)}
                       selected={tamanho === t.label}
                       onClick={() => setTamanho(t.label)}
                     />
@@ -368,7 +363,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                     <RadioRow
                       key={m.label}
                       label={m.label}
-                      priceLabel={m.extra > 0 ? `+${m.extra.toFixed(2)} €` : undefined}
+                      priceLabel={m.extra > 0 ? fmtExtra(m.extra) : undefined}
                       selected={massa === m.label}
                       onClick={() => setMassa(m.label)}
                     />
@@ -388,7 +383,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                       <CheckRow
                         key={r.label}
                         label={isDouble ? `${r.label} (somente este)` : r.label}
-                        priceLabel={r.extra > 0 ? `+${r.extra.toFixed(2)} €` : undefined}
+                        priceLabel={r.extra > 0 ? fmtExtra(r.extra) : undefined}
                         selected={sel}
                         onClick={() => handleRecheioSelect(r.label)}
                       />
@@ -485,7 +480,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
             </div>
             {calculatedPrice > 0 && (
               <span className={`font-black text-[15px] ${canAdd ? 'text-gold' : 'text-black/30'}`}>
-                € {calculatedPrice.toFixed(2)}
+                {formatEuros(calculatedPrice)}
               </span>
             )}
           </button>

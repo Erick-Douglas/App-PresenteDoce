@@ -38,6 +38,13 @@ export const CATEGORIES = [
 
 export const SPLASH_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDcU-bD-fW5kjdaZ4fWds3h_Co6Ti_Y6UraFJ-2fZ4WV9DfqU6eXpvjsQ-e7SrNsDA6B-AGTogZJxVLO-ADQOCSrb2YvTBclYi-Spj0TV4N2qw1oArzgbGjeI1JLubwUiAVkkvOp8nWqVDqUlxq8myCQtUSwln3qTW4bB6B1fuCKY5l02tDQmBX05KrqYk1ugAiblD1HvPaofZmtrcjpBiR1X7Dqr0CuFf9SfzQ_MBQNfXJOyCZjsQqvMQ4WH34IRJgz9yTWcKfRfM';
 
+export const THEMED_CAKE_SIZES = [
+  { label: 'Mini (800g)', price: 19.99 },
+  { label: 'Pequeno (1,5kg)', price: 39.90 },
+  { label: 'Médio (3kg)', price: 59.90 },
+  { label: 'Grande (5kg)', price: 79.90 },
+];
+
 export const BUSINESS_INFO = {
   name: 'Presente Doce',
   description: 'Confeitaria artesanal por encomenda',

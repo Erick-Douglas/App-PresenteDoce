@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useLayoutEffect, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, useLayoutEffect, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 
@@ -60,7 +60,24 @@ export default function App() {
 
   const { cart, cartTotal, showSuccessToast, addToCart, updateQuantity, toggleCartItem, updateCartItem } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
-  const { products, status, reload, applyChange } = useCatalog();
+  const { products, categories, status, reload, applyChange, applyCategory } = useCatalog();
+  const lockedScroll = useRef<number | null>(null);
+  const overlayOpen = isMenuOpen || !!panel;
+
+  useLayoutEffect(() => {
+    if (!overlayOpen) return;
+    const { style } = document.body;
+    const { position, top, width } = style;
+    lockedScroll.current = window.scrollY;
+    style.position = 'fixed';
+    style.top = -lockedScroll.current + 'px';
+    style.width = document.documentElement.clientWidth + 'px';
+    return () => {
+      Object.assign(style, { position, top, width });
+      window.scrollTo({ top: lockedScroll.current ?? 0, behavior: 'instant' });
+      lockedScroll.current = null;
+    };
+  }, [overlayOpen]);
 
   useLayoutEffect(() => {
     if (recoveryCallback) window.history.replaceState(window.history.state, '', '/admin?recuperar=1');
@@ -99,7 +116,8 @@ export default function App() {
       window.history.pushState({ view }, '', `#${view}`);
     }
     setCurrentView(view);
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    if (lockedScroll.current !== null) lockedScroll.current = 0;
+    else window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentView]);
 
   function closePanel() {
@@ -200,6 +218,7 @@ export default function App() {
               <HomeScreen
                 key="home"
                 products={products}
+                categories={categories}
                 cart={cart}
                 favorites={favorites}
                 isAdmin={!!session}
@@ -216,6 +235,7 @@ export default function App() {
               <ProductListScreen
                 key="product-list"
                 products={products}
+                categories={categories}
                 cart={cart}
                 favorites={favorites}
                 activeRecCategory={activeRecCategory}
@@ -276,6 +296,7 @@ export default function App() {
             {currentView === 'categories-list' && (
               <CategoriesScreen
                 key="categories"
+                categories={categories}
                 activeCategory={activeRecCategory}
                 onSetCategory={setActiveRecCategory}
                 {...commonProps}
@@ -319,6 +340,9 @@ export default function App() {
                 key={panel.id ?? 'new'}
                 productId={panel.id}
                 token={session.token}
+                categories={categories}
+                products={products}
+                onCategoryCreated={applyCategory}
                 onCancel={leaveEditor}
                 onChanged={onCatalogChanged}
               />}

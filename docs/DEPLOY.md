@@ -6,6 +6,7 @@
 - **Vercel.** Um projeto `app-presente-doce` hospeda a [loja](https://presente-doce.vercel.app/) e o [painel](https://presente-doce.vercel.app/admin). As URLs geradas para previews ficam disponíveis para revisão com acesso à Vercel. O endereço oficial usa somente a autenticação do aplicativo para entrar no painel.
 - **Supabase.** O projeto dedicado `gpwcuuqsvnsqudghkylb` guarda o catálogo, as imagens e a conta administrativa. A build de validação de 12/11/2026 e a produção usam essa mesma base para aproveitar as edições já feitas no painel. Alterações nela afetam o catálogo publicado. Para testes de escrita futuros, use dados fictícios em um ambiente separado.
 - **Exclusão.** Antes de liberar a edição integrada, confira a migração `20261112124748_presente_doce_catalog_delete.sql`. Ela restringe a exclusão pela API à conta que consta na lista privada de administradores. A interface pede confirmação e compara a versão atual do registro.
+- **Categorias.** Aplique `20261112184231_presente_doce_catalog_categories.sql` antes de promover a versão com criação de categorias. A migração preserva os produtos, regista as cinco categorias originais e exige uma categoria registada para cada produto. O catálogo lê os nomes publicamente e apenas o admin pode criar uma categoria. Na reversão do frontend, preserve a migração e os dados. Uma versão anterior pode omitir novas categorias da navegação.
 
 ## Configuração do frontend
 
@@ -27,7 +28,7 @@ Configure `VITE_CATALOG_SOURCE=supabase`, `VITE_CATALOG_SUPABASE_URL` e `VITE_SU
 ## Publicação
 
 1. Confirme o repositório, a branch e o projeto Vercel. Identifique o deploy ativo e a versão de retorno.
-2. Abra o pull request e confira a build do commit que será publicado. O comando de build executa TypeScript, testes, leitura anônima da API de catálogo e Vite. O teste de conexão falha quando produção está sem catálogo Supabase ou quando a API não responde como esperado.
+2. Abra o pull request e confira a build do commit que será publicado. O comando de build executa TypeScript, testes, leitura anônima das APIs de produtos e categorias e Vite. O teste de conexão falha quando produção está sem catálogo Supabase ou quando alguma API não responde como esperado.
 3. Faça merge para `main` quando o preview estiver validado. Aguarde o deploy de produção ficar `READY` e confira o domínio oficial.
 4. Abra a loja em uma sessão anônima e confira um produto publicado. Use **Menu → Entrar** e confira os controles de gestão na mesma loja. Valide edição direta, criação, rascunhos, exclusão e saída com produtos fictícios em um ambiente de teste. Confira também o atalho `/admin` e o checkout com dados fictícios.
 5. Registre o commit, o deploy, a verificação e qualquer pendência no Daily Log.
