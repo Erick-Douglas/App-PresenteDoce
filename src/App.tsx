@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 
 import { useCart } from './features/cart/useCart';
 import { useCatalog } from './features/products/useCatalog';
 import { useFavorites } from './features/products/useFavorites';
+import { signOut, toProduct, type CatalogRow, type CatalogSession } from './features/products/catalogApi';
 
 import { Product, View, CartItem } from './config/types';
 
@@ -19,6 +20,20 @@ import { CategoriesScreen } from './pages/CategoriesScreen';
 
 import { Sidebar } from './components/Sidebar';
 import { FloatingCart } from './components/FloatingCart';
+import { StoreDialog } from './components/StoreDialog';
+
+const AccountForm = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.AccountForm })));
+const CatalogManagement = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.CatalogManagement })));
+const CatalogEditor = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.CatalogEditor })));
+const PricingScreen = lazy(() => import('./pages/PricingScreen'));
+
+type StorePanel = { type: 'login' | 'catalog' | 'pricing' } | { type: 'editor'; id?: string; fromCatalog?: boolean };
+
+const panelTitles = { login: 'Entrar na Presente Doce', catalog: 'Gerir catálogo', pricing: 'Precificação de receitas' };
+
+function isLegacyAdminPath() {
+  return window.location.pathname.replace(/\/$/, '') === '/admin';
+}
 
 const views: View[] = ['welcome', 'home', 'product-list', 'product-details', 'cart', 'saved', 'categories-list', 'settings', 'contact'];
 
@@ -34,11 +49,30 @@ export default function App() {
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
   const [activeRecCategory, setActiveRecCategory] = useState('all');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [session, setSession] = useState<CatalogSession | null>(null);
+  const [panel, setPanel] = useState<StorePanel | null>(() => isLegacyAdminPath() ? { type: 'login' } : null);
+  const [notice, setNotice] = useState('');
   const [homeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
 
   const { cart, cartTotal, showSuccessToast, addToCart, updateQuantity, toggleCartItem, updateCartItem } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
-  const { products, status, reload } = useCatalog();
+  const { products, status, reload, applyChange } = useCatalog();
+
+  useEffect(() => {
+    if (!session) return;
+    const timeout = window.setTimeout(() => {
+      setSession(null);
+      setPanel(null);
+      setNotice('A sessão terminou. Entre novamente pelo menu.');
+    }, Math.max(0, session.expiresAt - Date.now()));
+    return () => window.clearTimeout(timeout);
+  }, [session]);
+
+  useEffect(() => {
+    if (!notice || panel) return;
+    const timeout = window.setTimeout(() => setNotice(''), 6500);
+    return () => window.clearTimeout(timeout);
+  }, [notice, panel]);
 
   useEffect(() => {
     const syncLocation = () => {
@@ -59,6 +93,46 @@ export default function App() {
     setCurrentView(view);
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentView]);
+
+  function closePanel() {
+    if (isLegacyAdminPath()) window.history.replaceState(window.history.state, '', '/' + window.location.hash);
+    setPanel(null);
+  }
+
+  function handleLogin(next: CatalogSession) {
+    setSession(next);
+    closePanel();
+    if (currentView === 'welcome') handleNavigate('home');
+    setNotice('Acesso à gestão do catálogo ativo.');
+  }
+
+  function handleLogout() {
+    if (session) void signOut(session.token).catch(() => {});
+    setSession(null);
+    setPanel(null);
+    setNotice('Sessão encerrada.');
+  }
+
+  const openLogin = () => { setNotice(''); setPanel({ type: 'login' }); };
+  const openProductEditor = session ? (id: string) => setPanel({ type: 'editor', id }) : undefined;
+
+  function leaveEditor() {
+    if (panel?.type === 'editor' && panel.fromCatalog) setPanel({ type: 'catalog' });
+    else closePanel();
+  }
+
+  function onCatalogChanged(id: string, row: CatalogRow | null) {
+    applyChange(id, row);
+    if (selectedProduct?.id === id && !editingCartItem) {
+      if (row?.published) setSelectedProduct(toProduct(row));
+      else {
+        setSelectedProduct(null);
+        if (currentView === 'product-details') handleNavigate(previousView);
+      }
+    }
+    setNotice(row ? (row.published ? 'Produto guardado no catálogo.' : 'Rascunho guardado.') : 'Produto excluído.');
+    leaveEditor();
+  }
 
   const handleProductClick = useCallback((product: Product) => {
     setPreviousView(currentView);
@@ -92,6 +166,12 @@ export default function App() {
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
           onNavigate={handleNavigate}
+          isAdmin={!!session}
+          onLogin={openLogin}
+          onLogout={handleLogout}
+          onManage={() => { setNotice(''); setPanel({ type: 'catalog' }); }}
+          onNewProduct={() => setPanel({ type: 'editor' })}
+          onPricing={() => setPanel({ type: 'pricing' })}
         />
 
         {status !== 'ready' && (
@@ -102,7 +182,7 @@ export default function App() {
         )}
         <main className="min-h-screen flex flex-col">
           <AnimatePresence mode="wait">
-            {currentView === 'welcome' && <WelcomeScreen key="welcome" onNavigate={handleNavigate} />}
+            {currentView === 'welcome' && <WelcomeScreen key="welcome" onNavigate={handleNavigate} onLogin={session ? undefined : openLogin} />}
 
             {currentView === 'home' && (
               <HomeScreen
@@ -111,9 +191,11 @@ export default function App() {
                 cart={cart}
                 favorites={favorites}
                 homeBgConfig={homeBgConfig}
+                onLogin={session ? undefined : openLogin}
                 {...commonProps}
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
+                onEditProduct={openProductEditor}
                 onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
               />
@@ -129,6 +211,7 @@ export default function App() {
                 {...commonProps}
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
+                onEditProduct={openProductEditor}
                 onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
               />
@@ -138,6 +221,7 @@ export default function App() {
               <ProductDetailScreen
                 key="product-details"
                 product={selectedProduct}
+                onEditProduct={editingCartItem ? undefined : openProductEditor}
                 cart={cart}
                 favorites={favorites}
                 onAddToCart={addToCart}
@@ -201,6 +285,40 @@ export default function App() {
             )}
           </AnimatePresence>
         </main>
+
+        {panel && (panel.type === 'login' || session) && (
+          <StoreDialog title={panel.type === 'editor' ? (panel.id ? 'Editar produto' : 'Novo produto') : panelTitles[panel.type]} onClose={closePanel}>
+            <Suspense fallback={<p role="status">A carregar…</p>}>
+              {panel.type === 'login' && <AccountForm
+                initialRecovery={isLegacyAdminPath() && new URLSearchParams(window.location.search).get('recuperar') === '1'}
+                onLogin={handleLogin}
+              />}
+              {panel.type === 'catalog' && session && <>
+                {notice && <p role="status" className="mb-4 font-semibold text-primary">{notice}</p>}
+                <CatalogManagement
+                  token={session.token}
+                  onNew={() => setPanel({ type: 'editor', fromCatalog: true })}
+                  onEdit={id => setPanel({ type: 'editor', id, fromCatalog: true })}
+                />
+              </>}
+              {panel.type === 'editor' && session && <CatalogEditor
+                key={panel.id ?? 'new'}
+                productId={panel.id}
+                token={session.token}
+                onCancel={leaveEditor}
+                onChanged={onCatalogChanged}
+              />}
+              {panel.type === 'pricing' && session && <PricingScreen embedded />}
+            </Suspense>
+          </StoreDialog>
+        )}
+
+        {notice && !panel && (
+          <div role="status" className="fixed left-1/2 top-20 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-cream shadow-lg">
+            {notice}
+            <button type="button" onClick={() => setNotice('')} aria-label="Dispensar aviso" className="p-2 text-lg leading-none">×</button>
+          </div>
+        )}
 
         <FloatingCart
           cart={cart}

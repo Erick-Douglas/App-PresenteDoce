@@ -4,15 +4,18 @@ import { Heart, ShoppingCart, Search } from 'lucide-react';
 import { CATEGORIES } from '../config/constants';
 import { Product, CartItem, View } from '../config/types';
 import { Header } from '../components/Header';
+import { ProductEditButton } from '../components/ProductEditButton';
 
 interface HomeScreenProps {
   products: Product[];
   cart: CartItem[];
   favorites: string[];
   onOpenMenu: () => void;
+  onLogin?: () => void;
   homeBgConfig: { type: 'color' | 'image'; value: string };
   onSetCategory: (cat: string) => void;
   onProductClick: (product: Product) => void;
+  onEditProduct?: (id: string) => void;
   onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
   onToggleCartItem: (product: Product, e?: React.MouseEvent) => void;
   onNavigate: (view: View) => void;
@@ -20,12 +23,12 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   products, cart, favorites,
-  onOpenMenu, homeBgConfig,
-  onSetCategory, onProductClick, onToggleFavorite, onToggleCartItem, onNavigate,
+  onOpenMenu, onLogin, homeBgConfig,
+  onSetCategory, onProductClick, onEditProduct, onToggleFavorite, onToggleCartItem, onNavigate,
 }) => {
   const topSellersImages = useMemo(() => [1, 2, 3]
     .map(pos => products.find(p => p.topSeller === pos)?.image)
-    .filter(Boolean) as string[], []);
+    .filter(Boolean) as string[], [products]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +68,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </div>
       <div className="p-4 flex-1 flex flex-col gap-2 bg-white">
         <h4 className="font-headline font-bold text-[13px] text-on-surface leading-snug line-clamp-2">{product.name}</h4>
+        <ProductEditButton product={product} onEdit={onEditProduct} />
         <div className="flex justify-between items-center mt-auto pt-2">
           <span className="font-headline font-black text-base md:text-lg text-primary">€ {product.price.toFixed(2)}</span>
           <motion.button
@@ -81,7 +85,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen pb-32 bg-stone-50">
-      <Header onOpenMenu={onOpenMenu} />
+      <Header onOpenMenu={onOpenMenu} onLogin={onLogin} />
       
       <main>
         {/* ── Hero Carousel ── */}
@@ -90,7 +94,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {topSellersImages.length > 0 && (
               <motion.img
                 key={currentImageIndex}
-                src={topSellersImages[currentImageIndex]}
+                src={topSellersImages[currentImageIndex % topSellersImages.length]}
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}

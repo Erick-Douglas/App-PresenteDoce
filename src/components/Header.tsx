@@ -4,9 +4,10 @@ import { BUSINESS_INFO } from '../config/constants';
 
 interface HeaderProps {
   onOpenMenu: () => void;
+  onLogin?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenMenu, onLogin }) => {
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -33,13 +34,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <img src="/logo.png" alt="Presente Doce" className="object-contain h-12 drop-shadow-2xl brightness-110" />
         </div>
-        <button
-          aria-label="Abrir menu"
-          onClick={onOpenMenu}
-          className="p-2 transition-all active:scale-95 flex items-center justify-center text-white hover:text-white/80"
-        >
-          <Menu size={24} strokeWidth={1.5} />
-        </button>
+        <div className="flex items-center gap-1 text-white">
+          <button
+            type="button"
+            aria-label="Abrir menu"
+            onClick={onOpenMenu}
+            className="min-h-11 min-w-11 p-2 transition-all active:scale-95 flex items-center justify-center hover:text-white/80"
+          >
+            <Menu size={24} strokeWidth={1.5} />
+          </button>
+          {onLogin && <button type="button" onClick={onLogin} className="min-h-11 rounded-xl bg-black/35 px-2.5 text-xs font-bold hover:bg-black/50">Entrar</button>}
+        </div>
 
         <button
           aria-label="Partilhar catálogo"

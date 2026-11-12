@@ -35,13 +35,18 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   return response.json() as Promise<T>;
 }
 
-export async function signIn(email: string, password: string) {
-  const result = await request<{ access_token: string }>('/auth/v1/token?grant_type=password', {
+export interface CatalogSession {
+  token: string;
+  expiresAt: number;
+}
+
+export async function signIn(email: string, password: string): Promise<CatalogSession> {
+  const result = await request<{ access_token: string; expires_in: number }>('/auth/v1/token?grant_type=password', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
   await assertCatalogAdmin(result.access_token);
-  return result.access_token;
+  return { token: result.access_token, expiresAt: Date.now() + result.expires_in * 1000 };
 }
 
 async function assertCatalogAdmin(token: string) {
@@ -85,6 +90,12 @@ export function listCatalog(token?: string, signal?: AbortSignal) {
   return request<CatalogRow[]>(productsPath + query, { signal }, token);
 }
 
+export async function getCatalogProduct(id: string, token: string, signal?: AbortSignal) {
+  const rows = await request<CatalogRow[]>(productsPath + '?id=eq.' + encodeURIComponent(id) + '&select=id,details,published,version', { signal }, token);
+  if (!rows.length) throw new Error('Este produto já não está disponível para edição.');
+  return rows[0];
+}
+
 export function imageUrl(value: string) {
   if (!value) return '';
   if (!value.startsWith('catalog/')) return value;
@@ -105,6 +116,15 @@ export async function saveProduct(row: Omit<CatalogRow, 'version'>, version: num
   }, token);
   if (!rows?.length) throw new Error('O produto mudou entretanto. Volte à lista e abra a versão mais recente.');
   return rows[0];
+}
+
+export async function deleteProduct(row: CatalogRow, token: string) {
+  const filter = '?id=eq.' + encodeURIComponent(row.id) + '&version=eq.' + row.version + '&select=id';
+  const rows = await request<{ id: string }[]>(productsPath + filter, {
+    method: 'DELETE',
+    headers: { Prefer: 'return=representation' },
+  }, token);
+  if (rows?.length !== 1) throw new Error('O produto mudou entretanto. Abra a versão mais recente antes de excluir.');
 }
 
 export async function uploadProductImage(file: File, token: string) {

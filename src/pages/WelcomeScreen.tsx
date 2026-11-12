@@ -6,9 +6,10 @@ import { View } from '../config/types';
 
 interface WelcomeScreenProps {
   onNavigate: (view: View) => void;
+  onLogin?: () => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onLogin }) => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-screen flex flex-col items-center justify-center overflow-hidden bg-primary">
       <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
@@ -31,6 +32,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
             className="w-full max-w-xs py-4 bg-gold text-primary rounded-2xl font-headline font-black text-sm uppercase tracking-[0.1em] shadow-xl active:scale-95 transition-transform">
             Ver Cardápio
           </button>
+          {onLogin && <button type="button" onClick={onLogin} className="min-h-11 px-4 font-headline text-sm font-bold text-cream underline">Entrar</button>}
 
           {/* Redes sociais abaixo do botão */}
           <div className="flex justify-center gap-5 pt-1">

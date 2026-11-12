@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Heart, Minus, Plus, ShoppingCart, Clock, Check } from 'lucide-react';
 import { Product, CartItem, View } from '../config/types';
+import { ProductEditButton } from '../components/ProductEditButton';
 
 interface ProductDetailScreenProps {
   product: Product;
@@ -23,6 +24,7 @@ interface ProductDetailScreenProps {
   favorites: string[];
   onNavigate: (view: View) => void;
   onBack: () => void;
+  onEditProduct?: (id: string) => void;
 }
 
 const TAMANHOS = [
@@ -117,7 +119,7 @@ function Section({ title, done, optional, hint, children }: {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
-  product, cart, onAddToCart, onUpdateCartItem, editingItem, onToggleFavorite, favorites, onNavigate, onBack,
+  product, cart, onAddToCart, onUpdateCartItem, editingItem, onToggleFavorite, favorites, onNavigate, onBack, onEditProduct,
 }) => {
   const [quantity, setQuantity] = useState(editingItem?.quantity || 1);
   const [observations, setObservations] = useState(editingItem?.observations || '');
@@ -264,6 +266,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 )}
               </div>
               <h2 className="font-headline font-black text-[22px] text-black tracking-tight leading-tight mb-1">{product.name}</h2>
+              <ProductEditButton product={product} onEdit={onEditProduct} />
               <p className="font-body text-[13px] text-black/50 leading-relaxed mb-3">{product.description}</p>
 
               {/* Preço total — bem visível */}

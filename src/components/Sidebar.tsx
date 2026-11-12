@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Home, Info, MessageSquare, ChevronRight, Instagram, MessageCircle, Facebook } from 'lucide-react';
+import { X, Home, Info, MessageSquare, ChevronRight, Instagram, MessageCircle, Facebook, LogIn, LogOut, Package, Plus, Calculator } from 'lucide-react';
 import { View } from '../config/types';
 import { BUSINESS_INFO } from '../config/constants';
 
@@ -8,13 +8,25 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (view: View) => void;
+  isAdmin: boolean;
+  onLogin: () => void;
+  onLogout: () => void;
+  onManage: () => void;
+  onNewProduct: () => void;
+  onPricing: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onManage, onNewProduct, onPricing }: SidebarProps) {
   const menuItems = [
-    { icon: Home, label: 'Início', view: 'home' as View },
-    { icon: Info, label: 'Sobre nós', view: 'settings' as View },
-    { icon: MessageSquare, label: 'Fale conosco', view: 'contact' as View },
+    { icon: Home, label: 'Início', action: () => onNavigate('home') },
+    { icon: Info, label: 'Sobre nós', action: () => onNavigate('settings') },
+    { icon: MessageSquare, label: 'Fale conosco', action: () => onNavigate('contact') },
+    ...(isAdmin ? [
+      { icon: Package, label: 'Gerir catálogo', action: onManage },
+      { icon: Plus, label: 'Novo produto', action: onNewProduct },
+      { icon: Calculator, label: 'Precificação', action: onPricing },
+      { icon: LogOut, label: 'Sair da conta', action: onLogout },
+    ] : [{ icon: LogIn, label: 'Entrar', action: onLogin }]),
   ];
 
   const socialLinks = [
@@ -32,7 +44,7 @@ export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
           />
 
           <motion.div
@@ -40,11 +52,11 @@ export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="absolute inset-y-0 left-0 w-[280px] bg-white z-[101] shadow-2xl flex flex-col"
+            className="fixed inset-y-0 left-0 w-[280px] max-w-[90vw] bg-white z-[101] shadow-2xl flex flex-col"
           >
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
               <h2 className="font-headline font-black text-xl text-primary">Menu</h2>
-              <button onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-primary transition-colors">
+              <button type="button" aria-label="Fechar menu" onClick={onClose} className="p-2 -mr-2 text-gray-400 hover:text-primary transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -53,7 +65,8 @@ export function Sidebar({ isOpen, onClose, onNavigate }: SidebarProps) {
               {menuItems.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => { onNavigate(item.view); onClose(); }}
+                  type="button"
+                  onClick={() => { onClose(); item.action(); }}
                   className="w-full flex items-center gap-4 py-4 px-6 hover:bg-primary/5 transition-colors group"
                 >
                   <div className="text-gray-400 group-hover:text-primary transition-colors">
