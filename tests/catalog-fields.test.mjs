@@ -1,7 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatCatalogPrice, parseCatalogPrice } from '../src/features/products/catalogFields.ts';
+import { formatCatalogPrice, moveCatalogItem, parseCatalogPrice, productOrderMode } from '../src/features/products/catalogFields.ts';
 import { currencySymbol, formatEuros } from '../src/features/checkout/order.ts';
+
+test('category changes preserve the configured product order flow and legacy carts', () => {
+  assert.equal(productOrderMode({ category: 'Caixas', orderMode: 'brigadeiros', configuravel: true }), 'brigadeiros');
+  assert.equal(productOrderMode({ category: 'Caixas', orderMode: 'cake', configuravel: true }), 'cake');
+  assert.equal(productOrderMode({ category: 'Salgados', configuravel: true }), 'salgados');
+  assert.equal(productOrderMode({ category: 'Bolos Temáticos', configuravel: false }), 'simple');
+});
+
+test('catalog reorder moves a single item and keeps the original snapshot', () => {
+  const items = ['a', 'b', 'c'];
+  assert.deepEqual(moveCatalogItem(items, 0, 1), ['b', 'a', 'c']);
+  assert.deepEqual(moveCatalogItem(items, 2, -1), ['a', 'c', 'b']);
+  assert.deepEqual(items, ['a', 'b', 'c']);
+  assert.equal(moveCatalogItem(items, 0, -1), items);
+});
 
 test('catalog price keeps whole euros and normalizes decimal separators', () => {
   for (const value of ['20', '20,0', '20.00']) assert.equal(parseCatalogPrice(value), 20);

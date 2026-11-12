@@ -1,4 +1,4 @@
-import type { Product } from '../../config/types';
+import type { Product, ProductOrderMode } from '../../config/types';
 import { readManualRecoveryToken } from './adminLink';
 import { AuthRateLimitError, authRetryAfter } from './authRateLimit';
 
@@ -18,6 +18,26 @@ export interface CatalogRow {
   published: boolean;
   version: number;
 }
+
+export interface CatalogTopic {
+  id: string;
+  name: string;
+}
+
+export interface CategoryRow {
+  id: string;
+  name: string;
+  cover: string | null;
+  order_mode: ProductOrderMode;
+}
+
+export interface AdminCategoryRow extends CategoryRow {
+  revision: number;
+  topics: CatalogTopic[];
+}
+
+const categoryColumns = 'id,name,cover,order_mode';
+const categoryConflict = 'O catálogo mudou entretanto. Reabra a categoria para obter a versão atual.';
 
 async function request<T>(path: string, options: RequestInit = {}, token?: string, conflictMessage?: string): Promise<T> {
   if (!catalogConfigured) throw new Error('O ambiente do catálogo ainda precisa de configuração.');
@@ -92,22 +112,47 @@ export async function signOut(token: string, scope: 'local' | 'global' = 'local'
 }
 
 export function listCatalog(token?: string, signal?: AbortSignal) {
-  const query = '?select=id,details,published,version&order=created_at.asc,id.asc' +
+  const query = '?select=id,details,published,version&order=display_order.asc.nullslast,created_at.asc,id.asc' +
     (token ? '' : '&published=eq.true');
   return request<CatalogRow[]>(productsPath + query, { signal }, token);
 }
 
 export function listCatalogCategories(signal?: AbortSignal) {
-  return request<{ name: string }[]>(categoriesPath + '?select=name&order=position.asc', { signal });
+  return request<CategoryRow[]>(categoriesPath + '?select=' + categoryColumns + '&order=display_order.asc.nullslast,position.asc', { signal });
 }
 
 export async function createCatalogCategory(name: string, token: string) {
-  const [category] = await request<{ name: string }[]>(categoriesPath + '?select=name', {
+  const [category] = await request<CategoryRow[]>(categoriesPath + '?select=' + categoryColumns, {
     method: 'POST',
     headers: { Prefer: 'return=representation' },
     body: JSON.stringify({ name }),
   }, token, 'Já existe uma categoria com esse nome. Atualize o catálogo para a selecionar.');
-  return category;
+  return { ...category, revision: 1, topics: [] } satisfies AdminCategoryRow;
+}
+
+export function listAdminCategories(token: string, signal?: AbortSignal) {
+  return request<AdminCategoryRow[]>('/rest/v1/rpc/catalog_category_details', {
+    method: 'POST', body: '{}', signal,
+  }, token);
+}
+
+type OrderChange = { current: string[]; next: string[] };
+
+export function saveCatalogCategory(category: AdminCategoryRow, token: string, products?: OrderChange, categories?: OrderChange) {
+  return request<void>('/rest/v1/rpc/save_catalog_category', {
+    method: 'POST',
+    body: JSON.stringify({
+      p_id: category.id, p_revision: category.revision, p_name: category.name, p_topics: category.topics,
+      p_product_ids: products?.next, p_expected_product_ids: products?.current,
+      p_category_ids: categories?.next, p_expected_category_ids: categories?.current,
+    }),
+  }, token, categoryConflict);
+}
+
+export function deleteCatalogCategory(category: AdminCategoryRow, destination: string | null, token: string) {
+  return request<void>('/rest/v1/rpc/delete_catalog_category', {
+    method: 'POST', body: JSON.stringify({ p_id: category.id, p_revision: category.revision, p_destination: destination }),
+  }, token, categoryConflict);
 }
 
 export async function getCatalogProduct(id: string, token: string, signal?: AbortSignal) {

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { CatalogCard } from '../components/CatalogCard';
+import { CategoryEditButton } from '../components/CategoryEditButton';
 import type { CartItem, CatalogCategory, Product } from '../config/types';
 
 interface ProductListScreenProps {
@@ -13,6 +14,7 @@ interface ProductListScreenProps {
   onSetCategory: (cat: string) => void;
   onProductClick: (product: Product) => void;
   onEditProduct?: (id: string) => void;
+  onEditCategory?: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   onToggleCartItem: (product: Product) => void;
   onOpenMenu: () => void;
@@ -20,7 +22,7 @@ interface ProductListScreenProps {
 
 export function ProductListScreen({
   products: catalogProducts, categories, cart, favorites, activeRecCategory,
-  onSetCategory, onProductClick, onEditProduct, onToggleFavorite, onToggleCartItem, onOpenMenu,
+  onSetCategory, onProductClick, onEditProduct, onEditCategory, onToggleFavorite, onToggleCartItem, onOpenMenu,
 }: ProductListScreenProps) {
   const products = activeRecCategory === 'all' ? catalogProducts : catalogProducts.filter(product => product.category === activeRecCategory);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -35,6 +37,7 @@ export function ProductListScreen({
 
   const filters = [{ id: 'all', label: 'Todos' }, ...categories.map(category => ({ id: category.name, label: category.name }))];
   const title = activeRecCategory === 'all' ? 'Catálogo' : activeRecCategory;
+  const currentCategory = categories.find(category => category.name === activeRecCategory);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
@@ -45,7 +48,8 @@ export function ProductListScreen({
               className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
               <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
             </button>
-            <h1 className="font-editorial text-3xl leading-none text-primary sm:text-4xl">{title}</h1>
+            <h1 className="min-w-0 flex-1 break-words font-editorial text-3xl leading-none text-primary sm:text-4xl">{title}</h1>
+            {currentCategory && <CategoryEditButton category={currentCategory} onEdit={onEditCategory} />}
           </div>
           <div ref={tabsRef} role="group" aria-label="Filtrar por categoria" className="scrollbar-hide mt-2 flex gap-2 overflow-x-auto py-1">
             {filters.map(({ id, label }) => {
@@ -63,7 +67,7 @@ export function ProductListScreen({
       </header>
 
       <div className="mx-auto max-w-6xl space-y-4 px-4 pt-5 sm:px-6">
-        {activeRecCategory === 'Bolos Temáticos' && (
+        {(currentCategory?.orderMode === 'cake' || activeRecCategory === 'Bolos Temáticos') && (
           <p className="rounded-xl border border-primary/10 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-stone-700">
             Encomende bolos temáticos com pelo menos <strong>48 horas de antecedência</strong>. Para prazos mais curtos, fale com a confeitaria pelo WhatsApp.
           </p>

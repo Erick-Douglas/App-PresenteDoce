@@ -5,6 +5,7 @@ import { BUSINESS_INFO } from '../config/constants';
 import type { CartItem, CatalogCategory, Product, View } from '../config/types';
 import { CatalogCard } from '../components/CatalogCard';
 import { CategoryCover } from '../components/CategoryCover';
+import { CategoryEditButton } from '../components/CategoryEditButton';
 import { Header } from '../components/Header';
 
 interface HomeScreenProps {
@@ -18,6 +19,7 @@ interface HomeScreenProps {
   onSetCategory: (cat: string) => void;
   onProductClick: (product: Product) => void;
   onEditProduct?: (id: string) => void;
+  onEditCategory?: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   onToggleCartItem: (product: Product) => void;
   onNavigate: (view: View) => void;
@@ -33,7 +35,7 @@ function searchText(value: string) {
 }
 
 export function HomeScreen({
-  products, categories, cart, favorites, onOpenMenu, isAdmin, catalogNotice, onSetCategory, onProductClick, onEditProduct,
+  products, categories, cart, favorites, onOpenMenu, isAdmin, catalogNotice, onSetCategory, onProductClick, onEditProduct, onEditCategory,
   onToggleFavorite, onToggleCartItem, onNavigate,
 }: HomeScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,13 +113,16 @@ export function HomeScreen({
                 </div>
                 <div className="home-rail -mx-4 flex snap-x gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pt-1 pb-2 sm:-mx-6 sm:gap-5 sm:scroll-px-6 sm:px-6">
                   {categories.map((category, index) => (
-                    <button key={category.name} type="button" onClick={() => jumpToCategory(category.name, index)}
-                      className="group flex w-[4.75rem] shrink-0 snap-start flex-col items-center gap-2 rounded-xl px-0.5 py-1 text-center text-xs leading-tight font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary sm:w-[5.5rem] sm:text-sm">
-                      <span className="block size-[4.25rem] rounded-full bg-linear-to-tr from-primary via-primary to-gold p-[2px] sm:size-[4.75rem]">
-                        <CategoryCover category={category} className="border-2 border-cream" />
-                      </span>
-                      <span>{category.name}</span>
-                    </button>
+                    <div key={category.id ?? category.name} className="relative w-[4.75rem] shrink-0 snap-start sm:w-[5.5rem]">
+                      <button type="button" onClick={() => jumpToCategory(category.name, index)}
+                        className="flex w-full flex-col items-center gap-2 rounded-xl px-0.5 py-1 text-center text-xs leading-tight font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary sm:text-sm">
+                        <span className="block size-[4.25rem] rounded-full bg-linear-to-tr from-primary via-primary to-gold p-[2px] sm:size-[4.75rem]">
+                          <CategoryCover category={category} className="border-2 border-cream" />
+                        </span>
+                        <span>{category.name}</span>
+                      </button>
+                      <CategoryEditButton category={category} onEdit={onEditCategory} compact />
+                    </div>
                   ))}
                 </div>
               </nav>

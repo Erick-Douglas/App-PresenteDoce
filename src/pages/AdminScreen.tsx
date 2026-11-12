@@ -1,24 +1,31 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Plus } from 'lucide-react';
 import { THEMED_CAKE_SIZES } from '../config/constants';
-import type { CatalogCategory, Product } from '../config/types';
+import type { Product, ProductOrderMode } from '../config/types';
 import {
-  createCatalogCategory, deleteProduct, getCatalogProduct, imageUrl, listCatalog, saveProduct, uploadProductImage, type CatalogRow,
+  createCatalogCategory, deleteProduct, getCatalogProduct, imageUrl, saveProduct, uploadProductImage, type AdminCategoryRow, type CatalogRow,
 } from '../features/products/catalogApi';
-import { formatCatalogPrice, parseCatalogPrice } from '../features/products/catalogFields';
+import { formatCatalogPrice, parseCatalogPrice, productOrderMode } from '../features/products/catalogFields';
 import { currencySymbol, formatEuros } from '../features/checkout/order';
+import { CategoryEditor, categoryNameFrom, type CategoryChange } from './CategoryEditor';
 
 const primary = 'rounded-xl bg-primary px-4 py-3 text-center font-bold text-white disabled:opacity-50';
 const secondary = 'rounded-xl border border-stone-300 px-4 py-3 font-semibold disabled:opacity-50';
 const field = 'w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base';
 const chip = 'rounded-full border border-primary/15 px-3 py-1.5 text-sm text-primary';
 type Variant = { label: string; price: string; maxFlavors: string };
-const optionFields = new Map([
-  ['Bolos Temáticos', { title: 'Tamanhos do bolo', label: 'Tamanho', example: 'Pequeno (1,5 kg)', add: 'Adicionar tamanho' }],
-  ['Brigadeiros', { title: 'Tamanhos da caixa', label: 'Caixa', example: 'Caixa com 12', add: 'Adicionar caixa' }],
-  ['Salgados', { title: 'Quantidades disponíveis', label: 'Quantidade', example: '25 unidades', add: 'Adicionar quantidade' }],
+const optionFields = new Map<ProductOrderMode, { title: string; label: string; example: string; add: string }>([
+  ['cake', { title: 'Tamanhos do bolo', label: 'Tamanho', example: 'Pequeno (1,5 kg)', add: 'Adicionar tamanho' }],
+  ['brigadeiros', { title: 'Tamanhos da caixa', label: 'Caixa', example: 'Caixa com 12', add: 'Adicionar caixa' }],
+  ['salgados', { title: 'Quantidades disponíveis', label: 'Quantidade', example: '25 unidades', add: 'Adicionar quantidade' }],
 ]);
 const parseList = (value: string) => [...new Set(value.split('\n').map(item => item.trim()).filter(Boolean))];
-const searchText = (value: string) => value.trim().toLocaleLowerCase('pt-PT').normalize('NFD').replace(/\p{Diacritic}/gu, '');
+const topicKey = (value: string) => value.trim().toLocaleLowerCase('pt-PT');
+
+function productContent(details: CatalogRow['details']) {
+  return JSON.stringify(Object.entries(details).filter(([key]) => !['category', 'topicIds', 'tags'].includes(key))
+    .sort(([a], [b]) => a.localeCompare(b)));
+}
 
 function priceFrom(value: string) {
   const price = parseCatalogPrice(value);
@@ -49,12 +56,13 @@ function PriceInput({ label, value, onChange, required }: {
 }
 
 type CategoryFields = {
-  categories: CatalogCategory[];
-  products: Product[];
-  onCategoryCreated: (name: string) => void;
+  categories: AdminCategoryRow[];
+  rows: CatalogRow[];
+  onCategoryCreated: (category: AdminCategoryRow) => void;
+  onCategoryChanged: (change: CategoryChange) => void;
 };
 
-function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, products, onCategoryCreated }: CategoryFields & {
+function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, rows, onCategoryCreated, onCategoryChanged }: CategoryFields & {
   row: CatalogRow | null;
   token: string;
   onSaved: (row: CatalogRow) => void;
@@ -62,67 +70,54 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
   onCancel: () => void;
 }) {
   const data = row?.details;
+  const initialCategory = data ? categories.find(item => item.name === data.category) : categories[0];
   const [productId] = useState(() => row?.id ?? crypto.randomUUID());
-  const [category, setCategory] = useState(data?.category ?? categories[0]?.name ?? '');
+  const [version, setVersion] = useState(row?.version ?? null);
+  const [categoryId, setCategoryId] = useState(initialCategory?.id ?? '');
+  const [managingCategory, setManagingCategory] = useState(false);
   const [categoryDraft, setCategoryDraft] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState('');
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [price, setPrice] = useState(data ? formatCatalogPrice(data.price) : '');
-  const [tags, setTags] = useState(data?.tags ?? []);
-  const [topic, setTopic] = useState('');
-  const [topicError, setTopicError] = useState('');
+  const [topicDrafts, setTopicDrafts] = useState<Record<string, string[]>>(() => initialCategory ? {
+    [initialCategory.id]: data?.topicIds ?? initialCategory.topics.filter(topic =>
+      data?.tags?.some(tag => topicKey(tag) === topicKey(topic.name))).map(topic => topic.id),
+  } : {});
   const [variantDrafts, setVariantDrafts] = useState<Record<string, Variant[]>>(() => {
     if (!data) return {};
     const savedOptions = data.variants ?? [];
     const options: NonNullable<Product['variants']> =
-      !savedOptions.length && data.category === 'Bolos Temáticos' && row?.published ? THEMED_CAKE_SIZES : savedOptions;
-    return { [data.category]: options.map(option => ({
+      !savedOptions.length && productOrderMode(data) === 'cake' && row?.published ? THEMED_CAKE_SIZES : savedOptions;
+    return { [productOrderMode(data)]: options.map(option => ({
       label: option.label,
       price: formatCatalogPrice(option.price),
       maxFlavors: option.maxFlavors == null ? '' : String(option.maxFlavors),
     })) };
   });
-  const [flavorDrafts, setFlavorDrafts] = useState(() => new Map(data ? [[data.category, data.flavors?.join('\n') ?? '']] : []));
+  const [flavorDrafts, setFlavorDrafts] = useState(() => new Map(data ? [[productOrderMode(data), data.flavors?.join('\n') ?? '']] : []));
   const [image, setImage] = useState(data?.image ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const optionFieldsForCategory = optionFields.get(category);
-  const isThemedCake = category === 'Bolos Temáticos';
-  const variants = optionFieldsForCategory ? variantDrafts[category] ?? [] : [];
+  const selectedCategory = categories.find(item => item.id === categoryId);
+  const mode = data ? productOrderMode(data) : selectedCategory?.order_mode ?? 'simple';
+  const optionFieldsForCategory = optionFields.get(mode);
+  const isThemedCake = mode === 'cake';
+  const variants = optionFieldsForCategory ? variantDrafts[mode] ?? [] : [];
   const optionPrices = variants.map(option => parseCatalogPrice(option.price));
   const lowestPrice = optionPrices.length && optionPrices.every(value => value !== null)
     ? Math.min(...optionPrices) : null;
-  const suggestedTopics = new Map<string, string>();
-  for (const product of products) {
-    if (product.category !== category) continue;
-    for (const item of product.tags ?? []) {
-      const key = searchText(item);
-      if (key && !suggestedTopics.has(key)) suggestedTopics.set(key, item.trim());
-    }
-  }
-  const selectedTopicKeys = new Set(tags.map(searchText));
-  const availableTopics = [...suggestedTopics].filter(([key]) => !selectedTopicKeys.has(key));
+  const chosenTopics = selectedCategory?.topics.filter(topic => topicDrafts[categoryId]?.includes(topic.id)) ?? [];
 
   async function addCategory() {
     if (busy || creatingCategory) return;
-    const name = (categoryDraft ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
     setCategoryError('');
-    if (!name || name.length > 60 || name.toLocaleLowerCase('pt-PT') === 'all') {
-      setCategoryError('Escreva um nome de categoria válido com até 60 caracteres.');
-      return;
-    }
-    const existing = categories.find(item => item.name.toLocaleLowerCase('pt-PT') === name.toLocaleLowerCase('pt-PT'));
-    if (existing) {
-      setCategory(existing.name);
-      setCategoryDraft(null);
-      return;
-    }
-    setCreatingCategory(true);
     try {
+      const name = categoryNameFrom(categoryDraft ?? '');
+      setCreatingCategory(true);
       const created = await createCatalogCategory(name, token);
-      onCategoryCreated(created.name);
-      setCategory(created.name);
+      onCategoryCreated(created);
+      setCategoryId(created.id);
       setCategoryDraft(null);
     } catch (cause) {
       setCategoryError(cause instanceof Error ? cause.message : 'Não foi possível criar a categoria.');
@@ -131,21 +126,24 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
     }
   }
 
-  function tagsWith(value: string) {
-    const key = searchText(value);
-    if (!key || selectedTopicKeys.has(key)) return tags;
-    if (tags.length >= 20 || value.trim().length > 80) throw new Error('Use até 20 tópicos, com até 80 caracteres cada.');
-    return [...tags, suggestedTopics.get(key) ?? value.trim()];
-  }
-
-  function addTopic(value: string) {
-    setTopicError('');
-    try {
-      setTags(tagsWith(value));
-      setTopic('');
-    } catch (cause) {
-      setTopicError(cause instanceof Error ? cause.message : 'Não foi possível adicionar o tópico.');
+  function applyManagedCategory(change: CategoryChange) {
+    onCategoryChanged(change);
+    setManagingCategory(false);
+    if (!change.saved && change.previous.id === categoryId) {
+      const target = change.destination ?? categories.find(item => item.id !== categoryId);
+      if (target) {
+        setTopicDrafts(current => ({ ...current, [target.id]: target.topics
+          .filter(topic => chosenTopics.some(chosen => topicKey(chosen.name) === topicKey(topic.name))).map(topic => topic.id) }));
+      }
+      setCategoryId(target?.id ?? '');
     }
+    if (!row) return;
+    setBusy(true);
+    void getCatalogProduct(row.id, token).then(updated => {
+      if (updated.published === row.published && productContent(updated.details) === productContent(row.details)) {
+        setVersion(updated.version);
+      }
+    }).catch(() => {}).finally(() => setBusy(false));
   }
 
   async function remove() {
@@ -153,7 +151,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
     setBusy(true);
     setError('');
     try {
-      await deleteProduct(row, token);
+      await deleteProduct({ ...row, version: version ?? row.version }, token);
       onDeleted(row.id);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível excluir o produto.');
@@ -163,7 +161,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
   }
 
   function setVariants(next: Variant[]) {
-    setVariantDrafts(current => ({ ...current, [category]: next }));
+    setVariantDrafts(current => ({ ...current, [mode]: next }));
   }
 
   function updateVariant(index: number, value: Partial<Variant>) {
@@ -187,7 +185,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
     const published = form.get('published') === 'on';
     try {
       if (!name || !description) throw new Error('Preencha o nome e a descrição.');
-      if (!category) throw new Error('Escolha uma categoria.');
+      if (!selectedCategory) throw new Error('Escolha uma categoria.');
       const configurable = !!optionFieldsForCategory;
       const options = configurable ? variants.map(option => {
         const label = option.label.trim();
@@ -204,10 +202,9 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
       if (published && configurable && !options.length) throw new Error('Adicione pelo menos uma opção antes de publicar.');
       const productPrice = options.length ? Math.min(...options.map(option => option.price)) : priceFrom(configurable ? '0' : price);
       if (published && productPrice <= 0) throw new Error('Os preços publicados devem ser superiores a zero.');
-      const topics = tagsWith(topic);
-      const flavors = configurable && !isThemedCake ? parseList(flavorDrafts.get(category) ?? '') : [];
-      if (topics.length > 20 || flavors.length > 50 || [...topics, ...flavors].some(value => value.length > 80)) {
-        throw new Error('Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres cada.');
+      const flavors = configurable && !isThemedCake ? parseList(flavorDrafts.get(mode) ?? '') : [];
+      if (chosenTopics.length > 20 || flavors.length > 50 || flavors.some(value => value.length > 80)) {
+        throw new Error('Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres por sabor.');
       }
 
       const file = form.get('image');
@@ -220,13 +217,16 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
       }
       if (published && !nextImage) throw new Error('Adicione uma imagem antes de publicar.');
       const details: Omit<Product, 'id'> = {
-        ...data, name, description, category, price: productPrice, tags: topics, image: nextImage,
+        ...data, name, description, category: selectedCategory.name, price: productPrice, image: nextImage,
+        orderMode: mode,
+        topicIds: chosenTopics.map(topic => topic.id),
+        tags: chosenTopics.map(topic => topic.name),
         configuravel: configurable,
         simples: !configurable,
         variants: options.length ? options : undefined,
         flavors: flavors.length ? flavors : undefined,
       };
-      const saved = await saveProduct({ id: productId, details, published }, row?.version ?? null, token);
+      const saved = await saveProduct({ id: productId, details, published }, version, token);
       onSaved(saved);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível guardar.');
@@ -235,66 +235,69 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
     }
   }
 
-  return (
-    <form onSubmit={submit}>
+  return (<>
+    <form onSubmit={submit} hidden={managingCategory}>
       <fieldset disabled={busy || creatingCategory} className="space-y-4">
         <label className="block space-y-1"><span>Nome</span><input name="name" required maxLength={100} defaultValue={data?.name} className={field} /></label>
         <label className="block space-y-1"><span>Descrição</span><textarea name="description" rows={2} required maxLength={3000} defaultValue={data?.description} className={field + ' resize-y'} /></label>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1">
-            <span>Categoria</span>
-            <select className={field} value={category} onChange={event => setCategory(event.target.value)} required>
-              {category && !categories.some(item => item.name === category) && <option>{category}</option>}
-              {categories.map(item => <option key={item.name}>{item.name}</option>)}
-            </select>
-          </label>
+          <div className="flex items-end gap-2">
+            <label className="min-w-0 flex-1 space-y-1">
+              <span>Categoria</span>
+              <select className={field} value={selectedCategory?.id ?? ''} onChange={event => {
+                if (event.target.value === '@manage') setManagingCategory(true);
+                else setCategoryId(event.target.value);
+              }} required>
+                <option value="" disabled>Selecione a categoria</option>
+                {categories.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
+                {selectedCategory && <option value="@manage">Gerir categorias…</option>}
+              </select>
+            </label>
+            <button type="button" aria-label="Criar categoria" className="grid size-11 shrink-0 place-items-center rounded-xl border border-stone-300 bg-white text-primary hover:bg-primary/5"
+              onClick={() => { setCategoryDraft(''); setCategoryError(''); }}><Plus size={19} aria-hidden="true" /></button>
+          </div>
           {!optionFieldsForCategory && <PriceInput label="Preço" value={price} onChange={setPrice} required />}
         </div>
-        {categoryDraft === null ? (
-          <button type="button" className="text-sm font-bold text-primary underline underline-offset-4"
-            onClick={() => setCategoryDraft('')}>Criar categoria</button>
-        ) : (
+        {categoryDraft !== null && (
           <div className="space-y-2 rounded-xl border border-stone-200 p-3">
-            <label className="block space-y-1">
+            <div className="flex flex-wrap items-end gap-2">
+            <label className="min-w-44 flex-1 space-y-1">
               <span>Nome da categoria</span>
               <input value={categoryDraft} maxLength={60} className={field} onChange={event => setCategoryDraft(event.target.value)}
                 onKeyDown={event => {
                   if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); void addCategory(); }
                 }} />
             </label>
-            {categoryError && <p role="alert" className="text-sm font-semibold text-primary">{categoryError}</p>}
-            <div className="flex flex-wrap gap-2">
-              <button className={primary} type="button" onClick={addCategory}>{creatingCategory ? 'A criar…' : 'Criar e selecionar'}</button>
+              <button className={primary} type="button" onClick={addCategory}>{creatingCategory ? 'A criar…' : 'Confirmar nome'}</button>
               <button className={secondary} type="button" onClick={() => { setCategoryDraft(null); setCategoryError(''); }}>Cancelar</button>
             </div>
+            {categoryError && <p role="alert" className="text-sm font-semibold text-primary">{categoryError}</p>}
           </div>
         )}
-        <div className="space-y-2">
-          <label className="block space-y-1">
-            <span>Tópicos</span>
-            <input value={topic} maxLength={80} className={field} placeholder="Ex. Chocolate"
-              onChange={event => setTopic(event.target.value)} onKeyDown={event => {
-                if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); addTopic(topic); }
-              }} />
-          </label>
-          <button type="button" className="text-sm font-bold text-primary underline underline-offset-4 disabled:opacity-50"
-            disabled={!topic.trim()} onClick={() => addTopic(topic)}>Adicionar tópico</button>
-          {topicError && <p role="alert" className="text-sm font-semibold text-primary">{topicError}</p>}
-          {!!tags.length && <ul aria-label="Tópicos do produto" className="flex flex-wrap gap-2">
-            {tags.map((tag, index) => (
-              <li key={index}><button type="button" aria-label={'Remover tópico ' + tag} className={chip + ' bg-primary/5'}
-                onClick={() => { setTags(current => current.filter((_, i) => i !== index)); setTopicError(''); }}>{tag} ×</button></li>
-            ))}
-          </ul>}
-          {!!availableTopics.length && <div className="space-y-1.5">
-            <p className="text-sm text-stone-600">Usados em {category}</p>
+        {selectedCategory && <section aria-label="Tópicos do produto" className="space-y-2">
+          <div className="flex flex-wrap items-center gap-x-3">
+            <h3 className="font-bold text-primary">Tópicos de {selectedCategory.name}</h3>
+            <button type="button" className="min-h-11 rounded-lg px-2 text-sm font-bold text-primary hover:bg-primary/5"
+              onClick={() => setManagingCategory(true)}>Gerir tópicos</button>
+          </div>
+          {selectedCategory.topics.length ? (
             <div className="flex flex-wrap gap-2">
-              {availableTopics.map(([key, value]) => (
-                <button key={key} type="button" className={chip} onClick={() => addTopic(value)}>+ {value}</button>
+              {selectedCategory.topics.map(topic => (
+                <label key={topic.id} className={chip + ' inline-flex min-h-10 items-center gap-2 has-checked:bg-primary/5'}>
+                  <input type="checkbox" className="accent-primary" checked={!!topicDrafts[categoryId]?.includes(topic.id)}
+                    onChange={event => {
+                      const checked = event.target.checked;
+                      setTopicDrafts(current => {
+                        const ids = current[categoryId] ?? [];
+                        return { ...current, [categoryId]: checked ? [...ids, topic.id] : ids.filter(id => id !== topic.id) };
+                      });
+                    }} />
+                  {topic.name}
+                </label>
               ))}
             </div>
-          </div>}
-        </div>
+          ) : <p className="text-sm text-stone-600">Esta categoria ainda não tem tópicos.</p>}
+        </section>}
         {optionFieldsForCategory && (
           <div className="space-y-3 rounded-xl border border-stone-200 p-3">
             <h3 className="font-semibold">{optionFieldsForCategory.title}</h3>
@@ -314,11 +317,11 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
             <button type="button" className={secondary} disabled={variants.length >= 20}
               onClick={() => setVariants([...variants, { label: '', price: '', maxFlavors: '' }])}>{optionFieldsForCategory.add}</button>
             {!isThemedCake && <label className="block space-y-1">
-              <span>{category === 'Salgados' ? 'Tipos de salgado (um por linha)' : 'Sabores da caixa (um por linha)'}</span>
-              <textarea maxLength={4050} rows={2} className={field} value={flavorDrafts.get(category) ?? ''}
+              <span>{mode === 'salgados' ? 'Tipos de salgado (um por linha)' : 'Sabores da caixa (um por linha)'}</span>
+              <textarea maxLength={4050} rows={2} className={field} value={flavorDrafts.get(mode) ?? ''}
                 onChange={event => {
                   const value = event.target.value;
-                  setFlavorDrafts(current => new Map(current).set(category, value));
+                  setFlavorDrafts(current => new Map(current).set(mode, value));
                 }} />
             </label>}
           </div>
@@ -345,10 +348,17 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, pro
         )}
       </fieldset>
     </form>
-  );
+    {managingCategory && selectedCategory && (
+      <section className="space-y-4">
+        <h3 className="text-lg font-bold text-primary">Editar categoria</h3>
+        <CategoryEditor category={selectedCategory} categories={categories} rows={rows} token={token}
+          onBack={() => setManagingCategory(false)} onChanged={applyManagedCategory} />
+      </section>
+    )}
+  </>);
 }
 
-export function CatalogEditor({ productId, token, onCancel, onChanged, categories, products, onCategoryCreated }: CategoryFields & {
+export function CatalogEditor({ productId, token, onCancel, onChanged, categories, rows, onCategoryCreated, onCategoryChanged }: CategoryFields & {
   productId?: string;
   token: string;
   onCancel: () => void;
@@ -375,79 +385,12 @@ export function CatalogEditor({ productId, token, onCancel, onChanged, categorie
       row={row}
       token={token}
       categories={categories}
-      products={products}
+      rows={rows}
       onCategoryCreated={onCategoryCreated}
+      onCategoryChanged={onCategoryChanged}
       onCancel={onCancel}
       onSaved={saved => onChanged(saved.id, saved)}
       onDeleted={id => onChanged(id, null)}
     />
-  );
-}
-
-export function CatalogManagement({ token, onNew, onEdit }: {
-  token: string;
-  onNew: () => void;
-  onEdit: (id: string) => void;
-}) {
-  const [rows, setRows] = useState<CatalogRow[]>([]);
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(true);
-  const [attempt, setAttempt] = useState(0);
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<'all' | 'published' | 'draft'>('all');
-  const published = rows.filter(row => row.published).length;
-  const query = searchText(search);
-  const visibleRows = rows.filter(row =>
-    (status === 'all' || row.published === (status === 'published')) &&
-    searchText(row.details.name + ' ' + row.details.category).includes(query)
-  );
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setBusy(true);
-    setError('');
-    listCatalog(token, controller.signal)
-      .then(setRows)
-      .catch(cause => {
-        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar.');
-      })
-      .finally(() => { if (!controller.signal.aborted) setBusy(false); });
-    return () => controller.abort();
-  }, [token, attempt]);
-
-  return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-headline text-xl font-bold">Produtos</h2>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" disabled={busy} className={secondary} onClick={() => setAttempt(value => value + 1)}>Atualizar lista</button>
-          <button type="button" className={primary} onClick={onNew}>Novo produto</button>
-        </div>
-      </div>
-      {busy && <p role="status">A carregar produtos…</p>}
-      {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-      <dl className="grid grid-cols-3 gap-2 rounded-xl bg-stone-50 p-3 text-sm">
-        <div><dt>Total</dt><dd className="font-bold">{rows.length}</dd></div>
-        <div><dt>Publicados</dt><dd className="font-bold">{published}</dd></div>
-        <div><dt>Rascunhos</dt><dd className="font-bold">{rows.length - published}</dd></div>
-      </dl>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block space-y-1"><span>Pesquisar nome ou categoria</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} className={field} /></label>
-        <label className="block space-y-1"><span>Estado</span><select value={status} onChange={event => setStatus(event.target.value as typeof status)} className={field}><option value="all">Todos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
-      </div>
-      {!busy && !error && !visibleRows.length && <p>{rows.length ? 'Nenhum produto corresponde aos filtros.' : 'Ainda não há produtos.'}</p>}
-      <ul className="divide-y divide-stone-200">
-        {visibleRows.map(row => (
-          <li key={row.id} className="flex items-center gap-3 py-3">
-            {row.details.image && <img src={imageUrl(row.details.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />}
-            <div className="min-w-0 flex-1">
-              <p className="break-words font-semibold">{row.details.name}</p>
-              <p className="text-sm text-stone-600">{row.details.category} · {formatEuros(row.details.price)} · {row.published ? 'Publicado' : 'Rascunho'}</p>
-            </div>
-            <button type="button" aria-label={'Editar ' + row.details.name} className={secondary} onClick={() => onEdit(row.id)}>Editar</button>
-          </li>
-        ))}
-      </ul>
-    </section>
   );
 }
