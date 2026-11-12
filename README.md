@@ -37,6 +37,7 @@ A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, re
 ## Operação
 
 - No primeiro acesso, abra /admin e selecione Ativar acesso. Copie o endereço do convite do Supabase sem abri-lo. Cole-o no painel e defina a palavra-passe. O painel valida o convite no Supabase e verifica a autorização antes de aceitar a nova palavra-passe.
+- Para recuperar a senha, use Esqueci a senha no painel e solicite o e-mail de recuperação. Copie o endereço do botão do novo e-mail sem abri-lo, cole em Redefinir senha e defina uma nova senha. O painel aceita apenas o link de recuperação do projeto configurado.
 - A lista privada de administradores controla gravação no Postgres e upload no Storage por RLS. Para remover o acesso de uma conta, retire seu UUID da lista e encerre suas sessões no Supabase Auth.
 - O painel guarda a sessão em memória. Recarregar a página exige entrar novamente. Use a opção Sair ao terminar. Uma publicação concorre com outras edições por versão do registro.
 - Fotos de produto são públicas por URL. O painel reprocessa JPG, PNG e WebP para WebP e limita o tamanho. Envie somente imagens de catálogo. Preserve as imagens antigas até conferir referências e backups antes de removê-las no Storage.

@@ -1,5 +1,5 @@
 import type { Product } from '../../config/types';
-import { readInviteToken } from './adminInvite';
+import { readAdminLinkToken, type AdminLinkType } from './adminLink';
 
 const configuredUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
@@ -55,24 +55,28 @@ async function assertCatalogAdmin(token: string) {
   }
 }
 
-export async function redeemAdminInvite(link: string) {
-  const tokenHash = readInviteToken(link, serviceUrl);
+export async function redeemAdminLink(link: string, type: AdminLinkType) {
+  const tokenHash = readAdminLinkToken(link, serviceUrl, type);
   const result = await request<{ access_token: string }>('/auth/v1/verify', {
     method: 'POST',
-    body: JSON.stringify({ token_hash: tokenHash, type: 'invite' }),
+    body: JSON.stringify({ token_hash: tokenHash, type }),
   }).catch(() => {
-    throw new Error('O convite não pôde ser validado. Confirme se copiou o link completo e se ainda está válido.');
+    throw new Error('Este link não pôde ser validado. Use o endereço completo do e-mail mais recente, antes de abrir o link.');
   });
   await assertCatalogAdmin(result.access_token);
   return result.access_token;
+}
+
+export async function requestAdminRecovery(email: string) {
+  await request('/auth/v1/recover', { method: 'POST', body: JSON.stringify({ email }) });
 }
 
 export async function setAdminPassword(token: string, password: string) {
   await request('/auth/v1/user', { method: 'PUT', body: JSON.stringify({ password }) }, token);
 }
 
-export async function signOut(token: string) {
-  await request<void>('/auth/v1/logout?scope=local', { method: 'POST' }, token);
+export async function signOut(token: string, scope: 'local' | 'global' = 'local') {
+  await request<void>('/auth/v1/logout?scope=' + scope, { method: 'POST' }, token);
 }
 
 export function listCatalog(token?: string, signal?: AbortSignal) {

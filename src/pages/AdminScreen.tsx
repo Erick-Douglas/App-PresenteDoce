@@ -2,9 +2,10 @@ import { useState, type FormEvent } from 'react';
 import { CATEGORIES } from '../config/constants';
 import type { Product } from '../config/types';
 import {
-  catalogConfigured, imageUrl, listCatalog, redeemAdminInvite, saveProduct, setAdminPassword, signIn, signOut,
-  uploadProductImage, type CatalogRow,
+  catalogConfigured, imageUrl, listCatalog, redeemAdminLink, requestAdminRecovery, saveProduct, setAdminPassword,
+  signIn, signOut, uploadProductImage, type CatalogRow,
 } from '../features/products/catalogApi';
+import type { AdminLinkType } from '../features/products/adminLink';
 import { formatEuros } from '../features/checkout/order';
 
 const primary = 'rounded-xl bg-primary px-4 py-3 text-center font-bold text-white disabled:opacity-50';
@@ -159,8 +160,12 @@ export default function AdminScreen() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
-  const [activation, setActivation] = useState(false);
-  const [inviteSession, setInviteSession] = useState('');
+  const [passwordMode, setPasswordMode] = useState<AdminLinkType | null>(() =>
+    new URLSearchParams(window.location.search).get('recuperar') === '1' ? 'recovery' : null
+  );
+  const [passwordSession, setPasswordSession] = useState('');
+  const [recoveryNotice, setRecoveryNotice] = useState('');
+  const recovering = passwordMode === 'recovery';
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'all' | 'published' | 'draft'>('all');
   const published = rows.filter(row => row.published).length;
@@ -187,27 +192,52 @@ export default function AdminScreen() {
     }
   }
 
-  async function activateAccount(event: FormEvent<HTMLFormElement>) {
+  function backToLogin() {
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('recuperar')) {
+      url.searchParams.delete('recuperar');
+      window.history.replaceState(window.history.state, '', url);
+    }
+    setPasswordMode(null);
+  }
+
+  async function sendRecovery(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
+    setBusy(true);
+    setRecoveryNotice('');
+    const form = new FormData(event.currentTarget);
+    try {
+      await requestAdminRecovery(String(form.get('email') ?? '').trim());
+      setRecoveryNotice('Confira a caixa de entrada do e-mail cadastrado.');
+    } catch {
+      setRecoveryNotice('Não foi possível solicitar outro e-mail agora. Aguarde e tente novamente.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function changePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || !passwordMode) return;
     const form = new FormData(event.currentTarget);
     const password = String(form.get('newPassword') ?? '');
     if (password.length < 12 || password !== form.get('confirmPassword')) {
-      setError('Use pelo menos 12 caracteres e repita a mesma palavra-passe.');
+      setError('Use pelo menos 12 caracteres e repita a mesma senha.');
       return;
     }
     setBusy(true);
     setError('');
     try {
-      const session = inviteSession || await redeemAdminInvite(String(form.get('invite') ?? ''));
-      setInviteSession(session);
+      const session = passwordSession || await redeemAdminLink(String(form.get('accessLink') ?? ''), passwordMode);
+      setPasswordSession(session);
       await setAdminPassword(session, password);
-      setInviteSession('');
-      setActivation(false);
-      setNotice('Acesso ativado. Entre com o e-mail e a palavra-passe que acabou de definir.');
-      void signOut(session).catch(() => {});
+      setPasswordSession('');
+      backToLogin();
+      setNotice(recovering ? 'Senha redefinida. Entre com a nova senha.' : 'Acesso ativado. Entre com a senha que acabou de definir.');
+      void signOut(session, recovering ? 'global' : 'local').catch(() => {});
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível ativar a conta.');
+      setError(cause instanceof Error ? cause.message : 'Não foi possível definir a senha.');
     } finally {
       setBusy(false);
     }
@@ -234,32 +264,45 @@ export default function AdminScreen() {
       {!catalogConfigured ? (
         <p role="status">A gestão do catálogo será disponibilizada quando a base de dados estiver ligada.</p>
       ) : !token ? (
-        activation ? (
-          <form onSubmit={activateAccount} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
-            <h2 className="font-headline text-lg font-bold">Ativar acesso</h2>
-            {!inviteSession && (
-              <>
-                <p className="text-sm text-stone-600">No e-mail do Supabase, copie o endereço do botão de convite sem abrir o link. Cole-o aqui para definir a sua palavra-passe.</p>
-                <label className="block space-y-1"><span>Link de convite</span><input name="invite" type="password" required autoComplete="off" className={field} /></label>
-              </>
+        passwordMode ? (
+          <section className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
+            <h2 className="font-headline text-lg font-bold">{recovering ? 'Redefinir senha' : 'Ativar acesso'}</h2>
+            <form onSubmit={changePassword} className="space-y-4">
+              {!passwordSession && (
+                <>
+                  <p className="text-sm text-stone-600">No e-mail {recovering ? 'de recuperação' : 'de convite'} do Supabase, copie o endereço do botão sem abrir o link. Cole-o aqui.</p>
+                  <label className="block space-y-1"><span>{recovering ? 'Link do e-mail de recuperação' : 'Link de convite'}</span><input name="accessLink" type="password" required autoComplete="off" className={field} /></label>
+                </>
+              )}
+              <label className="block space-y-1"><span>Nova senha (mínimo de 12 caracteres)</span><input name="newPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
+              <label className="block space-y-1"><span>Confirmar nova senha</span><input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
+              {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+              <div className="flex flex-wrap gap-2">
+                <button type="submit" className={primary} disabled={busy}>{busy ? 'A guardar…' : recovering ? 'Guardar nova senha' : 'Ativar conta'}</button>
+                <button type="button" className={secondary} disabled={busy || !!passwordSession} onClick={() => { setError(''); backToLogin(); }}>Voltar</button>
+              </div>
+            </form>
+            {recovering && !passwordSession && (
+              <details className="border-t border-stone-200 pt-4">
+                <summary className="cursor-pointer font-semibold text-primary">Ainda não recebeu o e-mail?</summary>
+                <form onSubmit={sendRecovery} className="mt-3 space-y-3">
+                  <label className="block space-y-1"><span>E-mail cadastrado</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
+                  <button type="submit" className={secondary} disabled={busy}>Enviar e-mail de recuperação</button>
+                  {recoveryNotice && <p role="status" className="text-sm">{recoveryNotice}</p>}
+                </form>
+              </details>
             )}
-            <label className="block space-y-1"><span>Nova palavra-passe</span><input name="newPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
-            <label className="block space-y-1"><span>Confirmar palavra-passe</span><input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
-            {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-            <div className="flex flex-wrap gap-2">
-              <button type="submit" className={primary} disabled={busy}>{busy ? 'A ativar…' : 'Ativar conta'}</button>
-              <button type="button" className={secondary} disabled={busy || !!inviteSession} onClick={() => { setError(''); setActivation(false); }}>Voltar</button>
-            </div>
-          </form>
+          </section>
         ) : (
           <form onSubmit={login} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
             <label className="block space-y-1"><span>E-mail</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
-            <label className="block space-y-1"><span>Palavra-passe</span><input name="password" type="password" required autoComplete="current-password" className={field} /></label>
+            <label className="block space-y-1"><span>Senha</span><input name="password" type="password" required autoComplete="current-password" className={field} /></label>
             {notice && <p role="status" className="text-sm font-semibold">{notice}</p>}
             {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
             <div className="flex flex-wrap gap-2">
               <button type="submit" className={primary} disabled={busy}>{busy ? 'A entrar…' : 'Entrar'}</button>
-              <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setActivation(true); }}>Ativar acesso</button>
+              <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setPasswordMode('recovery'); }}>Esqueci a senha</button>
+              <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setPasswordMode('invite'); }}>Ativar acesso</button>
             </div>
           </form>
         )
