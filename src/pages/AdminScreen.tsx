@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { CATEGORIES } from '../config/constants';
 import type { Product } from '../config/types';
 import {
-  catalogConfigured, imageUrl, listCatalog, saveProduct, signIn, signOut, uploadProductImage, type CatalogRow,
+  catalogConfigured, imageUrl, listCatalog, redeemAdminInvite, saveProduct, setAdminPassword, signIn, signOut,
+  uploadProductImage, type CatalogRow,
 } from '../features/products/catalogApi';
 import { formatEuros } from '../features/checkout/order';
 
@@ -11,6 +12,7 @@ const secondary = 'rounded-xl border border-stone-300 px-4 py-3 font-semibold di
 const field = 'w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base';
 type Variant = { label: string; price: string; maxFlavors: string };
 const parseList = (value: string) => [...new Set(value.split('\n').map(item => item.trim()).filter(Boolean))];
+const searchText = (value: string) => value.trim().toLocaleLowerCase('pt-PT').normalize('NFD').replace(/\p{Diacritic}/gu, '');
 
 function priceFrom(value: string) {
   const normalized = value.trim().replace(',', '.');
@@ -157,6 +159,16 @@ export default function AdminScreen() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const [activation, setActivation] = useState(false);
+  const [inviteSession, setInviteSession] = useState('');
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<'all' | 'published' | 'draft'>('all');
+  const published = rows.filter(row => row.published).length;
+  const query = searchText(search);
+  const visibleRows = rows.filter(row =>
+    (status === 'all' || row.published === (status === 'published')) &&
+    searchText(row.details.name + ' ' + row.details.category).includes(query)
+  );
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -170,6 +182,32 @@ export default function AdminScreen() {
       setToken(session);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível entrar.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function activateAccount(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get('newPassword') ?? '');
+    if (password.length < 12 || password !== form.get('confirmPassword')) {
+      setError('Use pelo menos 12 caracteres e repita a mesma palavra-passe.');
+      return;
+    }
+    setBusy(true);
+    setError('');
+    try {
+      const session = inviteSession || await redeemAdminInvite(String(form.get('invite') ?? ''));
+      setInviteSession(session);
+      await setAdminPassword(session, password);
+      setInviteSession('');
+      setActivation(false);
+      setNotice('Acesso ativado. Entre com o e-mail e a palavra-passe que acabou de definir.');
+      void signOut(session).catch(() => {});
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível ativar a conta.');
     } finally {
       setBusy(false);
     }
@@ -196,12 +234,35 @@ export default function AdminScreen() {
       {!catalogConfigured ? (
         <p role="status">A gestão do catálogo será disponibilizada quando a base de dados estiver ligada.</p>
       ) : !token ? (
-        <form onSubmit={login} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
-          <label className="block space-y-1"><span>Email</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
-          <label className="block space-y-1"><span>Palavra-passe</span><input name="password" type="password" required autoComplete="current-password" className={field} /></label>
-          {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-          <button className={primary} disabled={busy}>{busy ? 'A entrar…' : 'Entrar'}</button>
-        </form>
+        activation ? (
+          <form onSubmit={activateAccount} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
+            <h2 className="font-headline text-lg font-bold">Ativar acesso</h2>
+            {!inviteSession && (
+              <>
+                <p className="text-sm text-stone-600">No e-mail do Supabase, copie o endereço do botão de convite sem abrir o link. Cole-o aqui para definir a sua palavra-passe.</p>
+                <label className="block space-y-1"><span>Link de convite</span><input name="invite" type="password" required autoComplete="off" className={field} /></label>
+              </>
+            )}
+            <label className="block space-y-1"><span>Nova palavra-passe</span><input name="newPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
+            <label className="block space-y-1"><span>Confirmar palavra-passe</span><input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
+            {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className={primary} disabled={busy}>{busy ? 'A ativar…' : 'Ativar conta'}</button>
+              <button type="button" className={secondary} disabled={busy || !!inviteSession} onClick={() => { setError(''); setActivation(false); }}>Voltar</button>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={login} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
+            <label className="block space-y-1"><span>E-mail</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
+            <label className="block space-y-1"><span>Palavra-passe</span><input name="password" type="password" required autoComplete="current-password" className={field} /></label>
+            {notice && <p role="status" className="text-sm font-semibold">{notice}</p>}
+            {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" className={primary} disabled={busy}>{busy ? 'A entrar…' : 'Entrar'}</button>
+              <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setActivation(true); }}>Ativar acesso</button>
+            </div>
+          </form>
+        )
       ) : edit ? (
         <ProductForm
           key={edit === 'new' ? 'new' : edit.id}
@@ -233,14 +294,23 @@ export default function AdminScreen() {
           </div>
           {notice && <p role="status" className="text-sm font-semibold">{notice}</p>}
           {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-          {!rows.length && <p>Ainda não há produtos.</p>}
+          <dl className="grid grid-cols-3 gap-2 rounded-xl bg-stone-50 p-3 text-sm">
+            <div><dt>Total</dt><dd className="font-bold">{rows.length}</dd></div>
+            <div><dt>Publicados</dt><dd className="font-bold">{published}</dd></div>
+            <div><dt>Rascunhos</dt><dd className="font-bold">{rows.length - published}</dd></div>
+          </dl>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block space-y-1"><span>Pesquisar nome ou categoria</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} className={field} /></label>
+            <label className="block space-y-1"><span>Estado</span><select value={status} onChange={event => setStatus(event.target.value as typeof status)} className={field}><option value="all">Todos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
+          </div>
+          {!visibleRows.length && <p>{rows.length ? 'Nenhum produto corresponde aos filtros.' : 'Ainda não há produtos.'}</p>}
           <ul className="divide-y divide-stone-200">
-            {rows.map(row => (
+            {visibleRows.map(row => (
               <li key={row.id} className="flex items-center gap-3 py-3">
                 {row.details.image && <img src={imageUrl(row.details.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />}
                 <div className="min-w-0 flex-1">
                   <p className="break-words font-semibold">{row.details.name}</p>
-                  <p className="text-sm text-stone-600">{formatEuros(row.details.price)} · {row.published ? 'Publicado' : 'Rascunho'}</p>
+                  <p className="text-sm text-stone-600">{row.details.category} · {formatEuros(row.details.price)} · {row.published ? 'Publicado' : 'Rascunho'}</p>
                 </div>
                 <button type="button" aria-label={'Editar ' + row.details.name} className={secondary} onClick={() => setEdit(row)}>Editar</button>
               </li>

@@ -1,4 +1,5 @@
 import type { Product } from '../../config/types';
+import { readInviteToken } from './adminInvite';
 
 const configuredUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
@@ -39,15 +40,35 @@ export async function signIn(email: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
+  await assertCatalogAdmin(result.access_token);
+  return result.access_token;
+}
+
+async function assertCatalogAdmin(token: string) {
   const allowed = await request<boolean>('/rest/v1/rpc/is_catalog_admin', {
     method: 'POST',
     body: '{}',
-  }, result.access_token);
+  }, token);
   if (!allowed) {
-    await signOut(result.access_token).catch(() => {});
+    await signOut(token).catch(() => {});
     throw new Error('Esta conta não tem acesso à gestão do catálogo.');
   }
+}
+
+export async function redeemAdminInvite(link: string) {
+  const tokenHash = readInviteToken(link, serviceUrl);
+  const result = await request<{ access_token: string }>('/auth/v1/verify', {
+    method: 'POST',
+    body: JSON.stringify({ token_hash: tokenHash, type: 'invite' }),
+  }).catch(() => {
+    throw new Error('O convite não pôde ser validado. Confirme se copiou o link completo e se ainda está válido.');
+  });
+  await assertCatalogAdmin(result.access_token);
   return result.access_token;
+}
+
+export async function setAdminPassword(token: string, password: string) {
+  await request('/auth/v1/user', { method: 'PUT', body: JSON.stringify({ password }) }, token);
 }
 
 export async function signOut(token: string) {
