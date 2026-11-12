@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 import { View, CartItem } from '../config/types';
+import { formatEuros } from '../features/checkout/order';
 
 interface FloatingCartProps {
   cart: CartItem[];
@@ -24,26 +25,26 @@ export function FloatingCart({ cart, cartTotal, onNavigate, isVisible }: Floatin
         >
           <button
             onClick={() => onNavigate('cart')}
-            className="w-full max-w-lg bg-primary text-white p-4 rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-between group active:scale-[0.98] transition-all border border-white/10 backdrop-blur-md"
+            className="w-full max-w-lg bg-primary text-on-strong p-4 rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-between group active:scale-[0.98] transition-all border border-surface/10 backdrop-blur-md"
           >
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-inner">
-                  <ShoppingBag size={22} className="text-white" />
+                <div className="w-12 h-12 bg-surface/20 rounded-xl flex items-center justify-center shadow-inner">
+                  <ShoppingBag size={22} className="text-on-strong" />
                 </div>
-                <span className="absolute -top-2 -right-2 w-6 h-6 bg-gold text-primary font-black text-[10px] rounded-full flex items-center justify-center border-2 border-primary shadow-lg">
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-gold text-on-accent font-bold text-xs rounded-full flex items-center justify-center border-2 border-primary shadow-lg">
                   {cart.reduce((s, i) => s + i.quantity, 0)}
                 </span>
               </div>
               <div className="text-left">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-cream/60">Ver Carrinho</p>
-                <p className="font-headline font-black text-lg leading-none">€ {cartTotal.toFixed(2)}</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-on-primary/60">Ver Carrinho</p>
+                <p className="type-price">{formatEuros(cartTotal)}</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Finalizar</span>
-              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+              <span className="text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Finalizar</span>
+              <div className="w-8 h-8 bg-surface/10 rounded-lg flex items-center justify-center">
                 <ChevronRight size={16} />
               </div>
             </div>

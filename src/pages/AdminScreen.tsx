@@ -9,9 +9,9 @@ import { formatCatalogPrice, parseCatalogPrice, productOrderMode } from '../feat
 import { currencySymbol, formatEuros } from '../features/checkout/order';
 import { CategoryEditor, categoryNameFrom, type CategoryChange } from './CategoryEditor';
 
-const primary = 'rounded-xl bg-primary px-4 py-3 text-center font-bold text-white disabled:opacity-50';
-const secondary = 'rounded-xl border border-stone-300 px-4 py-3 font-semibold disabled:opacity-50';
-const field = 'w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base';
+const primary = 'rounded-xl bg-primary px-4 py-3 text-center font-bold text-on-strong disabled:opacity-50';
+const secondary = 'rounded-xl border border-outline-strong px-4 py-3 font-bold disabled:opacity-50';
+const field = 'w-full rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base';
 const chip = 'rounded-full border border-primary/15 px-3 py-1.5 text-sm text-primary';
 type Variant = { label: string; price: string; maxFlavors: string };
 const optionFields = new Map<ProductOrderMode, { title: string; label: string; example: string; add: string }>([
@@ -49,7 +49,7 @@ function PriceInput({ label, value, onChange, required }: {
             if (price !== null) onChange(formatCatalogPrice(price));
           }}
           inputMode="decimal" maxLength={8} placeholder="0,00" required={required} />
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-stone-500">{currencySymbol}</span>
+        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted">{currencySymbol}</span>
       </span>
     </label>
   );
@@ -266,13 +266,13 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
                 {selectedCategory && <option value="@manage">Gerir categorias…</option>}
               </select>
             </label>
-            <button type="button" aria-label="Criar categoria" className="grid size-11 shrink-0 place-items-center rounded-xl border border-stone-300 bg-white text-primary hover:bg-primary/5"
+            <button type="button" aria-label="Criar categoria" className="grid size-11 shrink-0 place-items-center rounded-xl border border-outline-strong bg-surface text-primary hover:bg-primary/5"
               onClick={() => { setCategoryDraft(''); setCategoryError(''); }}><Plus size={19} aria-hidden="true" /></button>
           </div>
           {!optionFieldsForCategory && <PriceInput label="Preço" value={price} onChange={setPrice} required />}
         </div>
         {categoryDraft !== null && (
-          <div className="space-y-2 rounded-xl border border-stone-200 p-3">
+          <div className="space-y-2 rounded-xl border border-outline p-3">
             <div className="flex flex-wrap items-end gap-2">
             <label className="min-w-44 flex-1 space-y-1">
               <span>Nome da categoria</span>
@@ -284,12 +284,12 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
               <button className={primary} type="button" onClick={addCategory}>{creatingCategory ? 'A criar…' : 'Confirmar nome'}</button>
               <button className={secondary} type="button" onClick={() => { setCategoryDraft(null); setCategoryError(''); }}>Cancelar</button>
             </div>
-            {categoryError && <p role="alert" className="text-sm font-semibold text-primary">{categoryError}</p>}
+            {categoryError && <p role="alert" className="text-sm font-bold text-primary">{categoryError}</p>}
           </div>
         )}
         {selectedCategory && <section aria-label="Tópicos do produto" className="space-y-2">
           <div className="flex flex-wrap items-center gap-x-3">
-            <h3 className="font-bold text-primary">Tópicos de {selectedCategory.name}</h3>
+            <h3 className="type-item text-primary">Tópicos de {selectedCategory.name}</h3>
             <button type="button" className="min-h-11 rounded-lg px-2 text-sm font-bold text-primary hover:bg-primary/5"
               onClick={() => setManagingCategory(true)}>Gerir tópicos</button>
           </div>
@@ -309,21 +309,21 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
                 </label>
               ))}
             </div>
-          ) : <p className="text-sm text-stone-600">Esta categoria ainda não tem tópicos.</p>}
+          ) : <p className="text-sm text-muted">Esta categoria ainda não tem tópicos.</p>}
         </section>}
         {optionFieldsForCategory && (
-          <div className="space-y-3 rounded-xl border border-stone-200 p-3">
-            <h3 className="font-semibold">{optionFieldsForCategory.title}</h3>
-            <p className="text-sm text-stone-600">O cliente escolhe uma opção ao encomendar. Indique o preço total de cada opção.</p>
-            <p className="text-sm text-stone-600">{lowestPrice === null ? 'O card mostra o preço da opção mais barata.' : <>No card <strong>A partir de {formatEuros(lowestPrice)}</strong></>}</p>
+          <div className="space-y-3 rounded-xl border border-outline p-3">
+            <h3 className="type-item">{optionFieldsForCategory.title}</h3>
+            <p className="text-sm text-muted">O cliente escolhe uma opção ao encomendar. Indique o preço total de cada opção.</p>
+            <p className="text-sm text-muted">{lowestPrice === null ? 'O card mostra o preço da opção mais barata.' : <>No card <strong>A partir de {formatEuros(lowestPrice)}</strong></>}</p>
             {variants.map((option, index) => (
-              <div key={index} className="grid gap-2 border-t border-stone-200 pt-3 sm:grid-cols-2">
+              <div key={index} className="grid gap-2 border-t border-outline pt-3 sm:grid-cols-2">
                 <label><span>{optionFieldsForCategory.label}</span><input className={field} maxLength={80} placeholder={optionFieldsForCategory.example}
                   value={option.label} onChange={event => updateVariant(index, { label: event.target.value })} required /></label>
                 <PriceInput label="Preço da opção" value={option.price} onChange={value => updateVariant(index, { price: value })} required />
                 {!isThemedCake && <label><span className="text-sm">Máximo de sabores à escolha (opcional)</span><input className={field} inputMode="numeric" maxLength={3}
                   placeholder="Sem limite" value={option.maxFlavors} onChange={event => updateVariant(index, { maxFlavors: event.target.value })} /></label>}
-                <button type="button" className="justify-self-start text-sm font-semibold text-primary underline underline-offset-4"
+                <button type="button" className="justify-self-start text-sm font-bold text-primary underline underline-offset-4"
                   onClick={() => setVariants(variants.filter((_, i) => i !== index))}>Remover opção</button>
               </div>
             ))}
@@ -344,11 +344,11 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
           <label className="block space-y-1"><span>Imagem (JPG, PNG ou WebP até 5 MB)</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" className={field} /></label>
         </div>
         <label className="flex items-center gap-3"><input name="published" type="checkbox" defaultChecked={row?.published} className="size-5 accent-primary" /> Mostrar no catálogo público</label>
-        {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+        {error && <p role="alert" className="text-sm font-bold text-primary">{error}</p>}
         <div className="flex flex-col gap-2 sm:flex-row">
           <button className={primary} type="submit">{busy ? 'A guardar…' : 'Guardar produto'}</button>
           <button className={secondary} type="button" onClick={onCancel}>Voltar</button>
-          {row && !confirmDelete && <button className="rounded-xl px-4 py-3 font-semibold text-primary underline" type="button" onClick={() => setConfirmDelete(true)}>Excluir produto</button>}
+          {row && !confirmDelete && <button className="rounded-xl px-4 py-3 font-bold text-primary underline" type="button" onClick={() => setConfirmDelete(true)}>Excluir produto</button>}
         </div>
         {row && confirmDelete && (
           <section aria-label="Confirmar exclusão" className="space-y-3 rounded-xl border border-red-200 bg-red-50 p-4">
@@ -363,7 +363,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
     </form>
     {managingCategory && selectedCategory && (
       <section className="space-y-4">
-        <h3 className="text-lg font-bold text-primary">Editar categoria</h3>
+        <h3 className="type-section text-primary">Editar categoria</h3>
         <CategoryEditor category={selectedCategory} categories={categories} rows={rows} token={token}
           onBack={() => setManagingCategory(false)} onChanged={applyManagedCategory} />
       </section>

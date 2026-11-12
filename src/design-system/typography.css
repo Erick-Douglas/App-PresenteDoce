@@ -1,0 +1,36 @@
+@layer components {
+  .type-display {
+    font-family: var(--pd-font-display);
+    font-size: var(--pd-size-display);
+    font-weight: var(--pd-weight-regular);
+    line-height: var(--pd-leading-display);
+  }
+
+  .type-page, .type-section, .type-item, .type-label {
+    font-weight: var(--pd-weight-emphasis);
+    line-height: var(--pd-leading-title);
+  }
+
+  .type-page {
+    font-size: var(--pd-size-page);
+    letter-spacing: -0.025em;
+  }
+
+  .type-section {
+    font-size: var(--pd-size-section);
+    letter-spacing: -0.01em;
+  }
+
+  .type-item {
+    font-size: var(--pd-size-body);
+  }
+
+  .type-label, .type-price {
+    font-size: var(--pd-size-small);
+  }
+
+  .type-price {
+    font-weight: var(--pd-weight-emphasis);
+    font-variant-numeric: tabular-nums;
+  }
+}

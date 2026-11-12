@@ -27,7 +27,7 @@ interface HomeScreenProps {
 
 const productGrid = 'grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4';
 const productShelf = 'home-rail -mx-4 grid snap-x grid-flow-col auto-cols-[46%] gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary [&>article]:snap-start sm:-mx-6 sm:auto-cols-[13.5rem] sm:gap-4 sm:scroll-px-6 sm:px-6 lg:auto-cols-[15rem]';
-const sectionTitle = 'font-headline text-xl font-bold tracking-tight text-primary sm:text-2xl';
+const sectionTitle = 'type-section text-primary';
 const browseLink = 'inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-1 text-sm font-bold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary';
 
 function searchText(value: string) {
@@ -73,18 +73,18 @@ export function HomeScreen({
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="home-surface flex min-h-screen flex-col">
       <section aria-labelledby="home-greeting" className="home-hero">
         <Header onOpenMenu={onOpenMenu} />
-        <div className="relative mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 sm:pt-10 sm:pb-24">
-          <h1 id="home-greeting" className="font-logo text-[clamp(2.4rem,10vw,4.2rem)] leading-[1.12] font-normal text-white">
+        <div className="relative mx-auto max-w-6xl px-4 pt-6 sm:px-6 sm:pt-10">
+          <h1 id="home-greeting" className="type-display text-surface">
             {isAdmin ? 'Olá, ' + BUSINESS_INFO.adminDisplayName + '!' : 'Seja bem-vindo!'}
           </h1>
-          <p className="mt-2 max-w-[25rem] text-sm leading-snug text-cream sm:text-base">
+          <p className="mt-2 max-w-[25rem] text-sm leading-snug text-on-primary sm:text-base">
             {isAdmin ? 'O que vamos fazer hoje na ' + BUSINESS_INFO.name + '?' : 'Bolos, doces e salgados feitos por encomenda.'}
           </p>
           <label className="home-search mt-5 flex min-h-12 max-w-2xl items-center gap-2.5 rounded-full px-4 sm:mt-6">
             <Search size={19} strokeWidth={1.7} aria-hidden="true" className="shrink-0 text-primary" />
             <span className="sr-only">O que você procura?</span>
             <input type="search" value={searchQuery} onChange={event => setSearchQuery(event.target.value)}
-              placeholder="O que você procura?" className="min-h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-stone-600" />
+              placeholder="O que você procura?" className="min-h-12 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted" />
           </label>
         </div>
       </section>
@@ -96,7 +96,7 @@ export function HomeScreen({
             <section aria-labelledby="search-results" className="space-y-4 pt-2 sm:pt-4">
               <div>
                 <h2 id="search-results" className={sectionTitle}>Resultados para “{searchQuery.trim()}”</h2>
-                <p role="status" className="mt-1 text-sm text-stone-600">
+                <p role="status" className="mt-1 text-sm text-muted">
                   {filtered.length === 0 ? 'Nenhum produto encontrado.' : filtered.length + (filtered.length === 1 ? ' produto' : ' produtos')}
                 </p>
               </div>

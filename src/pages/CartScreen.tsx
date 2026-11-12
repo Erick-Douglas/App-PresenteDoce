@@ -11,8 +11,8 @@ interface CartScreenProps {
   onNavigate: (view: View) => void;
 }
 
-const field = 'w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base text-stone-900';
-const iconButton = 'flex size-10 items-center justify-center rounded-lg border border-stone-200 text-primary';
+const field = 'w-full rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base text-on-surface';
+const iconButton = 'flex size-10 items-center justify-center rounded-lg border border-outline text-primary';
 
 export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: CartScreenProps) {
   const [fulfillment, setFulfillment] = useState<'pickup' | 'delivery'>('pickup');
@@ -51,24 +51,24 @@ export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: C
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 pb-12 sm:px-8">
-      <header className="flex items-center gap-4 border-b border-stone-200 py-5">
+      <header className="flex items-center gap-4 border-b border-outline py-5">
         <button type="button" aria-label="Voltar ao catálogo" onClick={() => onNavigate('home')} className={iconButton}><ArrowLeft size={18} /></button>
-        <h1 className="font-headline text-2xl font-extrabold text-primary">A sua encomenda</h1>
+        <h1 className="type-page text-primary">A sua encomenda</h1>
       </header>
       {cart.length === 0 ? (
         <div className="space-y-4 py-10">
           <p>O carrinho está vazio.</p>
-          <button type="button" onClick={() => onNavigate('home')} className="rounded-xl bg-primary px-4 py-3 font-bold text-white">Ver catálogo</button>
+          <button type="button" onClick={() => onNavigate('home')} className="rounded-xl bg-primary px-4 py-3 font-bold text-on-strong">Ver catálogo</button>
         </div>
       ) : (
         <>
-          <ul className="divide-y divide-stone-200">
+          <ul className="divide-y divide-outline">
             {cart.map(item => (
               <li key={item.cartId} className="flex flex-wrap items-center gap-3 py-4">
                 {item.image && <img src={item.image} alt="" className="size-14 rounded-lg object-cover" />}
                 <div className="min-w-36 flex-1">
-                  <h2 className="font-semibold">{item.name}</h2>
-                  {item.variant || item.tamanho ? <p className="text-sm text-stone-600">{item.variant || item.tamanho}</p> : null}
+                  <h2 className="type-item">{item.name}</h2>
+                  {item.variant || item.tamanho ? <p className="text-sm text-muted">{item.variant || item.tamanho}</p> : null}
                   <p className="text-sm">{formatEuros(orderSubtotal([item]))}</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -81,8 +81,8 @@ export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: C
               </li>
             ))}
           </ul>
-          <form onSubmit={submit} onChange={() => { setMessage(''); setFeedback(''); setError(''); }} className="space-y-5 border-t border-stone-200 pt-6">
-            <h2 className="font-headline text-lg font-bold text-primary">Dados para o pedido</h2>
+          <form onSubmit={submit} onChange={() => { setMessage(''); setFeedback(''); setError(''); }} className="space-y-5 border-t border-outline pt-6">
+            <h2 className="type-section text-primary">Dados para o pedido</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1"><span>Nome</span><input name="name" required maxLength={100} autoComplete="name" className={field} /></label>
               <label className="space-y-1"><span>Telefone</span><input name="phone" type="tel" required maxLength={30} autoComplete="tel" className={field} /></label>
@@ -99,7 +99,7 @@ export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: C
                 <span>Morada, código postal e localidade</span>
                 <textarea name="address" required maxLength={400} autoComplete="street-address" rows={2} className={field} />
               </label>
-            ) : <p className="text-sm text-stone-600">Recolha em {BUSINESS_INFO.address}, em horário a combinar.</p>}
+            ) : <p className="text-sm text-muted">Recolha em {BUSINESS_INFO.address}, em horário a combinar.</p>}
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-1">
                 <span>Preferência de pagamento</span>
@@ -109,22 +109,22 @@ export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: C
               </label>
               {payment === 'cash' && <label className="space-y-1"><span>Troco para (opcional)</span><input name="changeFor" inputMode="decimal" maxLength={12} className={field} /></label>}
             </div>
-            <div className="rounded-xl bg-stone-50 p-4">
+            <div className="rounded-xl bg-subtle p-4">
               <p className="flex justify-between gap-4 font-bold"><span>Subtotal dos produtos</span><span>{formatEuros(subtotal)}</span></p>
-              {fulfillment === 'delivery' && <p className="mt-2 text-sm text-stone-600">Taxa de entrega e total final a confirmar no WhatsApp.</p>}
+              {fulfillment === 'delivery' && <p className="mt-2 text-sm text-muted">Taxa de entrega e total final a confirmar no WhatsApp.</p>}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button type="submit" value="open" className="rounded-xl bg-primary px-4 py-3 font-bold text-white">Continuar no WhatsApp</button>
-              <button type="submit" value="copy" className="rounded-xl border border-stone-300 px-4 py-3 font-semibold">Copiar mensagem</button>
+              <button type="submit" value="open" className="rounded-xl bg-primary px-4 py-3 font-bold text-on-strong">Continuar no WhatsApp</button>
+              <button type="submit" value="copy" className="rounded-xl border border-outline-strong px-4 py-3 font-bold">Copiar mensagem</button>
             </div>
-            <p className="text-sm text-stone-600">A encomenda é confirmada no atendimento. Os dados preenchidos são usados na mensagem de pedido.</p>
+            <p className="text-sm text-muted">A encomenda é confirmada no atendimento. Os dados preenchidos são usados na mensagem de pedido.</p>
             {error && <p role="alert" className="text-sm text-primary">{error}</p>}
-            {feedback && <p role="status" className="text-sm font-semibold">{feedback}</p>}
+            {feedback && <p role="status" className="text-sm font-bold">{feedback}</p>}
             {message && (
-              <details className="rounded-xl border border-stone-200 p-3">
-                <summary className="cursor-pointer font-semibold">Ver mensagem e opção de abertura</summary>
+              <details className="rounded-xl border border-outline p-3">
+                <summary className="cursor-pointer font-bold">Ver mensagem e opção de abertura</summary>
                 <p className="my-3 whitespace-pre-wrap break-words text-sm">{message}</p>
-                <a className="font-semibold text-primary underline" href={whatsappLink(BUSINESS_INFO.whatsapp, message)} target="_blank" rel="noopener noreferrer">Abrir mensagem no WhatsApp</a>
+                <a className="font-bold text-primary underline" href={whatsappLink(BUSINESS_INFO.whatsapp, message)} target="_blank" rel="noopener noreferrer">Abrir mensagem no WhatsApp</a>
               </details>
             )}
           </form>

@@ -19,11 +19,11 @@ export function CatalogCard({ product, inCart, favorite, onOpen, onFavorite, onC
   const cartAction = needsOptions ? 'Personalizar ' : inCart ? 'Retirar do carrinho ' : 'Adicionar ao carrinho ';
 
   return (
-    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white transition-shadow hover:shadow-md">
+    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-outline bg-surface transition-shadow hover:shadow-md">
       <h3 className="flex-1">
         <button type="button" onClick={() => onOpen(product)}
-          className="flex h-full w-full flex-col gap-3 text-left font-headline text-sm font-bold leading-snug text-stone-900 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
-          <span className="block aspect-[4/3] w-full overflow-hidden bg-stone-100">
+          className="type-label flex h-full w-full flex-col gap-3 text-left text-on-surface focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">
+          <span className="block aspect-[4/3] w-full overflow-hidden bg-muted-fill">
             <img src={product.image} alt="" loading="lazy" decoding="async"
               className="h-full w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]" referrerPolicy="no-referrer" />
           </span>
@@ -31,21 +31,21 @@ export function CatalogCard({ product, inCart, favorite, onOpen, onFavorite, onC
         </button>
       </h3>
       <button type="button" aria-label={'Favorito: ' + product.name} aria-pressed={favorite} onClick={() => onFavorite(product.id)}
-        className="absolute top-2 right-2 grid size-11 place-items-center rounded-full border border-white/65 bg-white/95 text-primary focus-visible:outline-2 focus-visible:outline-primary">
+        className="absolute top-2 right-2 grid size-11 place-items-center rounded-full border border-surface/65 bg-surface/95 text-primary focus-visible:outline-2 focus-visible:outline-primary">
         <Heart size={16} strokeWidth={1.7} className={favorite ? 'fill-primary' : ''} aria-hidden="true" />
       </button>
       <div className="flex items-end justify-between gap-1 px-3 pt-2 pb-3 sm:px-4">
-        <span className="pb-1 text-sm font-bold text-primary">
-          {product.configuravel && <span className="block text-[11px] font-semibold text-stone-600">A partir de</span>}
+        <span className="type-price pb-1 text-primary">
+          {product.configuravel && <span className="block text-xs font-bold text-muted">A partir de</span>}
           {formatEuros(product.price)}
         </span>
         <button type="button" onClick={() => onCart(product)} aria-label={cartAction + product.name}
           className={'grid size-11 shrink-0 place-items-center rounded-full border border-primary/15 focus-visible:outline-2 focus-visible:outline-primary ' +
-            (inCart ? 'bg-primary text-white' : 'bg-primary/5 text-primary hover:bg-primary/10')}>
+            (inCart ? 'bg-primary text-on-strong' : 'bg-primary/5 text-primary hover:bg-primary/10')}>
           <CartIcon size={18} strokeWidth={1.7} aria-hidden="true" />
         </button>
       </div>
-      {onEdit && <div className="border-t border-stone-100 px-3 py-1 sm:px-4"><ProductEditButton product={product} onEdit={onEdit} /></div>}
+      {onEdit && <div className="border-t border-muted-fill px-3 py-1 sm:px-4"><ProductEditButton product={product} onEdit={onEdit} /></div>}
     </article>
   );
 }
