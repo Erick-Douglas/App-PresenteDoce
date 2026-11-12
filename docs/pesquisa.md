@@ -26,9 +26,22 @@ Como uma confeitaria artesanal de produção pequena pode receber encomendas pel
 - A Nielsen Norman Group recomenda concentrar a interface nas ações relevantes e tornar visível o estado do sistema. A loja concentra a entrada no menu e confirma a sessão administrativa com uma saudação na vitrine. [Heurísticas de usabilidade](https://www.nngroup.com/articles/usability-heuristics-complex-applications/)
 - O menu usa Instrument Serif no título, Manrope no texto e uma superfície marfim com divisórias finas. O contato usa um retrato ilustrativo circular de 44 px, a palavra **WhatsApp** e uma seta que indica a abertura do canal.
 
+## Vitrine e plataforma por assinatura · 12/11/2026
+
+| Referência | O que se pode observar | Decisão para a Presente Doce |
+| --- | --- | --- |
+| [Badu Confeitaria](https://www.baduconfeitaria.com/) e [Saborella](https://saborella.pt/) | Confeitarias locais apresentam produtos reais e deixam a encomenda e seus prazos compreensíveis. Saborella encaminha a finalização para o WhatsApp. | Usar foto, preço e acesso a um produto publicado na abertura. O prazo fica junto da categoria a que se aplica. |
+| [Hotplate](https://www.hotplate.com/product) e [BakePorch](https://bakeporch.com/features) | Vitrines próprias para pequenos negócios de alimentação. Trabalham pré-encomendas e disponibilidade por lote ou agenda. | Reutilizar a vitrine por negócio e validar disponibilidade e horários num piloto. |
+| [Shopify Portugal](https://www.shopify.com/pt/precos) | Planos recorrentes para negócios com a própria loja. | Usar assinatura mensal por negócio como hipótese comercial do produto. Validar valor, suporte e ativação antes de publicar preços. |
+
+Os testes da Baymard em comércio móvel apontam problemas de interação e visibilidade em carrosséis automáticos. A vitrine da Presente Doce usa um produto em destaque, categorias compactas e cartões que levam ao detalhe ou ao carrinho. A saudação administrativa fica acima da busca sobre a foto. [Pesquisa da Baymard](https://baymard.com/research-articles/mobile-ecommerce-search-and-navigation)
+
+Para clientes, o produto atual é uma loja online de encomendas com checkout pelo WhatsApp. A oferta futura para lojistas é um SaaS de comércio por assinatura, com uma vitrine por negócio. A mensalidade do lojista e o pagamento da encomenda pelo cliente são fluxos independentes. [PRD](PRD.md)
+
 ## Segurança e arquitetura
 
 - Manter Vite e React na Vercel. Supabase oferece autenticação, catálogo persistente e imagens em uma mesma base de permissões. O navegador usa a chave pública, e as regras no banco limitam leitura e gravação. [Vite na Vercel](https://vercel.com/docs/frameworks/frontend/vite) · [Chaves do Supabase](https://supabase.com/docs/guides/api/api-keys) · [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security)
 - Controlar administração por uma lista de usuários mantida no banco, sem cadastro público no app. Testar permissões na camada de dados. Aplicar HTTPS, restrições de origem e cabeçalhos de segurança para limitar os recursos carregados. [OWASP Authorization](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
 - Aceitar imagens raster com limites, reprocessá-las antes do envio e dar acesso de gravação apenas a administradores. O bucket serve imagens do catálogo por URL. Documentos privados devem usar armazenamento separado. [Supabase Storage](https://supabase.com/docs/guides/storage/security/access-control) · [OWASP File Upload](https://cheatsheetseries.owasp.org/cheatsheets/File_Upload_Cheat_Sheet.html)
 - Para pagamento futuro, comparar checkout hospedado, notificações assinadas, idempotência e conciliação. O backend calculará e validará o total antes de iniciar um pagamento. A decisão sobre provedor e requisitos em Portugal será tomada nessa fase. [Stripe Checkout](https://docs.stripe.com/payments/checkout) · [Webhooks](https://docs.stripe.com/webhooks)
+- O limite de tentativas de senha precisa atuar em Supabase Auth, que recebe o login diretamente. A Vercel documenta mitigação automática de DDoS para o tráfego da loja. A interface evita envios simultâneos e, ao receber `429`, aguarda o intervalo indicado pelo provedor. Turnstile só vira proteção contra bots quando a validação é ativada no Supabase. [Limites no Supabase](https://supabase.com/docs/guides/auth/rate-limits) · [DDoS na Vercel](https://vercel.com/docs/vercel-firewall/ddos-mitigation) · [OWASP Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)

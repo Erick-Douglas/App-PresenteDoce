@@ -39,6 +39,9 @@ export const CATEGORIES = [
 export const SPLASH_IMAGE = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDcU-bD-fW5kjdaZ4fWds3h_Co6Ti_Y6UraFJ-2fZ4WV9DfqU6eXpvjsQ-e7SrNsDA6B-AGTogZJxVLO-ADQOCSrb2YvTBclYi-Spj0TV4N2qw1oArzgbGjeI1JLubwUiAVkkvOp8nWqVDqUlxq8myCQtUSwln3qTW4bB6B1fuCKY5l02tDQmBX05KrqYk1ugAiblD1HvPaofZmtrcjpBiR1X7Dqr0CuFf9SfzQ_MBQNfXJOyCZjsQqvMQ4WH34IRJgz9yTWcKfRfM';
 
 export const BUSINESS_INFO = {
+  name: 'Presente Doce',
+  description: 'Confeitaria artesanal por encomenda',
+  adminDisplayName: 'Gabriela',
   website: 'https://presente-doce.vercel.app/',
   whatsapp: '+351932732319',
   instagram: 'https://www.instagram.com/presentedoce.s2/',

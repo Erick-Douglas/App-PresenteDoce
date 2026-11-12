@@ -1,5 +1,5 @@
 import React from 'react';
-import { Share2, Menu } from 'lucide-react';
+import { Gift, Menu, Share2 } from 'lucide-react';
 import { BUSINESS_INFO } from '../config/constants';
 
 interface HeaderProps {
@@ -11,8 +11,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'Presente Doce',
-          text: 'Confeitaria artesanal por encomenda.',
+          title: BUSINESS_INFO.name,
+          text: BUSINESS_INFO.description,
           url: BUSINESS_INFO.website,
         });
       } catch { /* noop */ }
@@ -27,29 +27,23 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50 bg-transparent py-5">
-      <div className="max-w-[1200px] mx-auto px-6 flex justify-between items-center relative">
-        {/* Logo Centralizada */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-          <img src="/logo.png" alt="Presente Doce" className="object-contain h-12 drop-shadow-2xl brightness-110" />
-        </div>
-        <div className="flex items-center gap-1 text-white">
-          <button
-            type="button"
-            aria-label="Abrir menu"
-            onClick={onOpenMenu}
-            className="min-h-11 min-w-11 p-2 transition-all active:scale-95 flex items-center justify-center hover:text-white/80"
-          >
-            <Menu size={24} strokeWidth={1.5} />
-          </button>
-        </div>
-
+    <header className="bg-porcelain">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 sm:py-3.5">
+        <button type="button" aria-label="Abrir menu" onClick={onOpenMenu}
+          className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
+          <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
+        </button>
+        <span className="flex items-center gap-2 whitespace-nowrap text-primary">
+          <Gift size={17} strokeWidth={1.5} aria-hidden="true" />
+          <span className="font-editorial text-[1.7rem] leading-none sm:text-3xl">{BUSINESS_INFO.name}</span>
+        </span>
         <button
+          type="button"
           aria-label="Partilhar catálogo"
           onClick={handleShare}
-          className="p-2 transition-all active:scale-95 flex items-center gap-2 text-white hover:text-white/80"
+          className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary"
         >
-          <Share2 size={20} strokeWidth={1.5} />
+          <Share2 size={19} strokeWidth={1.6} aria-hidden="true" />
         </button>
       </div>
     </header>

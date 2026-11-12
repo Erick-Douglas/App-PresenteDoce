@@ -1,6 +1,6 @@
 # PRD — Presente Doce
 
-**Versão 0.3 · 12/11/2026**
+**Versão 0.4 · 12/11/2026**
 
 ## Produto
 
@@ -37,6 +37,18 @@ O app coleta dados de contacto para compor a mensagem. Carrinho e dados pessoais
 - Validar RLS e Storage em base de teste com papéis anônimo, autenticado sem autorização e administrador. Testar consulta de rascunho, alteração não autorizada, MIME e tamanho de arquivo, publicação e conflito de atualização.
 - Acompanhar pedidos confirmados por semana e tempo gasto por Gabriela com atualizações e correções de pedido. Definir a linha de base junto com ela.
 - Conferir preço, opções, disponibilidade e imagens com Gabriela antes do primeiro catálogo publicado via banco. Registrar o commit e o plano de reversão do frontend. Para dados, manter cópia antes de migrar produção.
+
+## Plataforma por assinatura para outros negócios
+
+Erick pretende oferecer a vitrine e o painel por mensalidade a confeitarias, tapiocarias e outros pequenos negócios de alimentação. A Presente Doce serve de piloto. A vitrine e o catálogo compartilham componentes, e o código concentra a configuração inicial de nome, descrição e contacto. A base e as permissões da produção atual atendem uma loja.
+
+| Etapa | Entrega | Verificação |
+| --- | --- | --- |
+| Piloto com duas lojas | Modelar lojas, membros e papéis. Resolver a loja por identificador público validado no servidor. Permitir configuração de marca, catálogo, categorias, contacto e disponibilidade por loja. Migrar a Presente Doce com cópia de recuperação. | Produtos, rascunhos, imagens e contas da loja A ficam fora das permissões da loja B. Testar leitura e escrita com visitante, operador e proprietário de cada loja. A segunda loja do piloto usa dados fictícios. |
+| Operação do lojista | Criar onboarding, convites geridos, gestão de catálogo, preferências de entrega e retirada, além de ativação e desativação de loja. Registrar ações administrativas com loja, ação e horário. | Medir tempo para publicar a primeira vitrine e atualizar um produto. Validar categorias e adicionais num negócio fora da confeitaria. Exigir segundo fator para acessos administrativos antes de abrir a operação a terceiros. |
+| Assinatura mensal | Associar plano e assinatura à loja. Usar checkout e portal de cobrança geridos. Conferir a assinatura de webhooks, registrar IDs de evento e aplicar permissões de plano no servidor. Definir estados de teste, ativo, atraso e cancelamento. | Reenvio e chegada fora de ordem de eventos convergem para o estado correto. A política de atraso e cancelamento preserva os dados e é comunicada ao lojista. [Stripe Billing](https://docs.stripe.com/billing/subscriptions/webhooks) |
+
+Cada tabela de dados de negócio e os caminhos de imagens precisam de escopo de loja. O banco deve verificar o vínculo ativo do usuário e a função em cada escrita. Rascunhos e dados pessoais exigem autorização por loja. A cobrança mensal da plataforma é independente do fluxo de encomenda do cliente. [Políticas no Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security)
 
 ## Referências
 

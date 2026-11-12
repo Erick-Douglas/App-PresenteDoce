@@ -1,74 +1,52 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { Menu, Heart, ShoppingCart } from 'lucide-react';
-import { Product, CartItem, View } from '../config/types';
+import { Menu } from 'lucide-react';
+import { CatalogCard } from '../components/CatalogCard';
+import type { CartItem, Product, View } from '../config/types';
 
 interface SavedScreenProps {
   products: Product[];
   cart: CartItem[];
   favorites: string[];
   onProductClick: (product: Product) => void;
-  onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
-  onToggleCartItem: (product: Product, e?: React.MouseEvent) => void;
+  onToggleFavorite: (id: string) => void;
+  onToggleCartItem: (product: Product) => void;
+  onEditProduct?: (id: string) => void;
   onOpenMenu: () => void;
   onNavigate: (view: View) => void;
 }
 
-export const SavedScreen: React.FC<SavedScreenProps> = ({
-  products, cart, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu, onNavigate,
-}) => {
-  const favoriteProducts = products.filter(p => favorites.includes(p.id));
+export function SavedScreen({
+  products, cart, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onEditProduct, onOpenMenu, onNavigate,
+}: SavedScreenProps) {
+  const saved = products.filter(product => favorites.includes(product.id));
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-screen pb-32 bg-white">
-      <header className="px-6 py-6 flex items-center sticky top-0 bg-white/80 backdrop-blur-md z-50 border-b border-primary/5">
-        <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary"><Menu size={20} /></button>
-        <h1 className="font-headline font-bold text-lg text-primary flex-1 text-center pr-8 tracking-widest uppercase">Favoritos</h1>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
+      <header className="sticky top-0 z-50 border-b border-stone-200 bg-porcelain/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center gap-2.5 px-4 py-3 sm:px-6">
+          <button type="button" aria-label="Abrir menu" onClick={onOpenMenu}
+            className="grid size-11 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
+            <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
+          </button>
+          <h1 className="font-editorial text-3xl leading-none text-primary sm:text-4xl">Favoritos</h1>
+        </div>
       </header>
 
-      <main className="p-6">
-        {favoriteProducts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 opacity-30 text-center space-y-4">
-            <div className="bg-primary/10 p-6 rounded-full"><Heart size={48} className="text-primary" /></div>
-            <p className="font-body text-sm font-bold">Você ainda não salvou nada.</p>
-            <button onClick={() => onNavigate('home')} className="text-primary text-[10px] font-bold tracking-widest underline">
-              Explorar produtos
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            {favoriteProducts.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white rounded-2xl overflow-hidden shadow-sm border border-primary/5 flex flex-col relative active:scale-95 transition-all"
-                onClick={() => onProductClick(product)}
-              >
-                <div className="aspect-square w-full overflow-hidden relative bg-stone-100">
-                  <img src={product.image} alt={product.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                  <div className="absolute top-2 right-2">
-                    <button onClick={(e) => onToggleFavorite(product.id, e)} className="p-2 bg-white/90 backdrop-blur-md rounded-full shadow-md text-primary">
-                      <Heart size={12} className={favorites.includes(product.id) ? 'fill-primary' : ''} />
-                    </button>
-                  </div>
-                </div>
-                <div className="p-3 space-y-0.5">
-                  <h4 className="font-headline font-semibold text-xs text-on-surface truncate leading-tight">{product.name}</h4>
-                  <div className="flex justify-between items-center mt-auto">
-                    <span className="font-headline font-bold text-sm text-primary">€ {product.price.toFixed(2)}</span>
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      className={`${cart.some(i => i.id === product.id) ? 'bg-gold text-primary' : 'bg-primary text-cream'} p-2 rounded-lg shadow-md transition-all flex items-center justify-center`}
-                      onClick={(e) => onToggleCartItem(product, e)}
-                    >
-                      <ShoppingCart size={14} />
-                    </motion.button>
-                  </div>
-                </div>
-              </div>
+      <div className="mx-auto max-w-6xl px-4 pt-5 sm:px-6">
+        {saved.length ? (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            {saved.map(product => (
+              <CatalogCard key={product.id} product={product} inCart={cart.some(item => item.id === product.id)} favorite
+                onOpen={onProductClick} onFavorite={onToggleFavorite} onCart={onToggleCartItem} onEdit={onEditProduct} />
             ))}
           </div>
+        ) : (
+          <div className="space-y-2 py-12 text-center text-sm text-stone-600">
+            <p>Você ainda não guardou produtos.</p>
+            <button type="button" onClick={() => onNavigate('home')} className="min-h-11 font-semibold text-primary underline">Explorar produtos</button>
+          </div>
         )}
-      </main>
+      </div>
     </motion.div>
   );
 }
