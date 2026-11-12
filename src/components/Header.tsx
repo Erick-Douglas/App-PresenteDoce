@@ -4,10 +4,9 @@ import { BUSINESS_INFO } from '../config/constants';
 
 interface HeaderProps {
   onOpenMenu: () => void;
-  onLogin?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenMenu, onLogin }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -43,7 +42,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu, onLogin }) => {
           >
             <Menu size={24} strokeWidth={1.5} />
           </button>
-          {onLogin && <button type="button" onClick={onLogin} className="min-h-11 rounded-xl bg-black/35 px-2.5 text-xs font-bold hover:bg-black/50">Entrar</button>}
         </div>
 
         <button

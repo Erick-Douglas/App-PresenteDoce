@@ -20,6 +20,12 @@ Como uma confeitaria artesanal de produção pequena pode receber encomendas pel
 | [BRUTA](https://www.bruta.store/contact) | Eventos corporativos têm fluxo de contacto com data e número de pessoas. | Referência de pesquisa. A entrega atual prioriza o catálogo e o checkout geral. |
 | [Hotplate](https://www.hotplate.com/) | Ferramenta de venda online para pequenos negócios de comida, com encomendas em janelas de venda. | Considerar agenda e limites de produção quando Gabriela confirmar a necessidade. |
 
+## Navegação e atendimento no celular · 12/11/2026
+
+- A pesquisa da Baymard observou que mensagens de chat iniciadas pelo site e botões fixos podem interromper a compra e cobrir o conteúdo móvel. Na Presente Doce, o contato aparece no fim do menu e abre quando a pessoa toca em **Falar com a confeitaria**. [Pesquisa da Baymard](https://baymard.com/research-articles/live-chat-usability-issues)
+- A Nielsen Norman Group recomenda concentrar a interface nas ações relevantes e tornar visível o estado do sistema. A loja concentra a entrada no menu e confirma a sessão administrativa com uma saudação na vitrine. [Heurísticas de usabilidade](https://www.nngroup.com/articles/usability-heuristics-complex-applications/)
+- O menu usa Instrument Serif no título, Manrope no texto e uma superfície marfim com divisórias finas. O contato usa um retrato ilustrativo circular de 44 px, a palavra **WhatsApp** e uma seta que indica a abertura do canal.
+
 ## Segurança e arquitetura
 
 - Manter Vite e React na Vercel. Supabase oferece autenticação, catálogo persistente e imagens em uma mesma base de permissões. O navegador usa a chave pública, e as regras no banco limitam leitura e gravação. [Vite na Vercel](https://vercel.com/docs/frameworks/frontend/vite) · [Chaves do Supabase](https://supabase.com/docs/guides/api/api-keys) · [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security)

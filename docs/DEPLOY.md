@@ -11,6 +11,12 @@
 
 Configure `VITE_CATALOG_SOURCE=supabase`, `VITE_CATALOG_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` no ambiente da Vercel. A variável antiga `VITE_SUPABASE_URL` é lida como fallback para previews já configurados. Use somente a chave publicável do projeto correto. A autorização de escrita fica no Supabase, com RLS no catálogo e no Storage.
 
+## Recuperação de senha
+
+1. Em **Supabase → Authentication → URL Configuration**, adicione `https://presente-doce.vercel.app/admin?recuperar=1` às URLs permitidas.
+2. Confirme que o e-mail de recuperação usa o endereço de confirmação do Supabase e que o destino é o domínio oficial. Ative `VITE_DIRECT_RECOVERY=true` em produção na Vercel e gere a nova build para apresentar a instrução de abrir o botão do e-mail. Durante a configuração, a loja oferece **Usar link manualmente** após o pedido.
+3. Valide com conta de teste o retorno para a loja e a mensagem de link expirado. A aplicação remove o fragmento da barra de endereço, mantém a sessão de recuperação em memória e verifica a permissão de administrador antes de alterar a senha. [Recuperação do Supabase](https://supabase.com/docs/guides/auth/passwords#resetting-a-password) · [URLs permitidas](https://supabase.com/docs/guides/auth/redirect-urls)
+
 ## Publicação
 
 1. Confirme o repositório, a branch e o projeto Vercel. Identifique o deploy ativo e a versão de retorno.
@@ -21,6 +27,6 @@ Configure `VITE_CATALOG_SOURCE=supabase`, `VITE_CATALOG_SUPABASE_URL` e `VITE_SU
 
 ## Reversão
 
-- A versão anterior à gestão integrada corresponde ao commit `bb2d59a`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/6tARpB25K1MnHZ7RS2CYfMJNudFM)
+- A versão anterior ao refinamento do acesso corresponde ao commit `8185522`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/6c4oYD2EYyNpJhh6im5PoMXh7DNF)
 - Em caso de problema de frontend, faça rollback para a última versão estável no mesmo projeto Vercel. Confirme que o domínio oficial serve o deploy esperado.
 - Preserve as edições do Supabase durante a reversão de frontend. Aplique migrações de dados em uma operação separada, com cópia de recuperação e aceite próprio. As versões aplicadas estão em `supabase/migrations`.
