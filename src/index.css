@@ -1,10 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lato:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
 @import "tailwindcss";
+
+@font-face {
+  font-family: 'Great Vibes';
+  src: url('/fonts/great-vibes-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
 
 @theme {
   --font-headline: "Lato", sans-serif;
   --font-body: "Lato", sans-serif;
-  --font-logo: "Great Vibes", cursive;
+  --font-logo: "Great Vibes", "Palatino Linotype", Georgia, serif;
   --font-editorial: "Lato", sans-serif;
   
   --color-primary: #800000; /* Bordô Absoluto */
@@ -37,10 +45,10 @@
 
   .home-hero {
     position: relative;
+    isolation: isolate;
     overflow: hidden;
     padding-block-start: env(safe-area-inset-top, 0px);
     background:
-      linear-gradient(180deg, transparent 71%, var(--color-cream) 100%),
       radial-gradient(ellipse 65% 76% at 98% 49%, rgb(213 103 26 / 34%), transparent 74%),
       linear-gradient(175deg, #24080d 0%, #4f070e 31%, var(--color-primary) 69%, #a04331 100%);
   }
@@ -48,6 +56,7 @@
   .home-hero::before {
     content: '';
     position: absolute;
+    z-index: -1;
     width: clamp(20rem, 52vw, 44rem);
     height: clamp(15rem, 30vw, 24rem);
     right: clamp(-14rem, -16vw, -7rem);
@@ -57,6 +66,15 @@
     box-shadow: 0 0 0 1rem rgb(251 206 0 / 7%), 0 0 0 2rem rgb(251 206 0 / 4%);
     transform: rotate(-27deg);
     mask-image: linear-gradient(#000 28%, transparent 86%);
+    pointer-events: none;
+  }
+
+  .home-hero::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 71% 0 0;
+    background: linear-gradient(180deg, transparent, var(--color-cream));
     pointer-events: none;
   }
 
