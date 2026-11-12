@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { ArrowUpRight, Calculator, Home, Info, LogIn, LogOut, Package, Plus, X } from 'lucide-react';
+import { Calculator, Home, Info, LogIn, LogOut, MessageCircle, Package, Plus, X } from 'lucide-react';
 import type { View } from '../config/types';
 import { BUSINESS_INFO } from '../config/constants';
 
@@ -57,7 +57,8 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
           </button>
         </div>
 
-        <nav aria-label="Menu principal" className="flex-1 space-y-1 overflow-y-auto overscroll-y-contain px-3 py-4">
+        <div className="overflow-y-auto overscroll-y-contain px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <nav aria-label="Menu principal" className="space-y-1">
           {menuItems.map(({ icon: Icon, label, action }) => (
             <button key={label} type="button" onClick={() => { dismiss(); action(); }}
               className="group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-stone-700 transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary">
@@ -67,15 +68,18 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
           ))}
         </nav>
 
-        <div className="mx-5 border-t border-stone-200 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <a href={'https://wa.me/' + BUSINESS_INFO.whatsapp.replace(/\D/g, '')} target="_blank" rel="noopener noreferrer"
-            className="group flex items-center gap-3 rounded-xl px-1 py-2 text-stone-800 transition-colors hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
-            <img src="/atendimento.jpg" alt="" width={44} height={44} loading="lazy" className="size-11 shrink-0 rounded-full object-cover" />
+            className="group mx-1 mt-4 flex items-center gap-3 rounded-2xl border border-emerald-900/15 bg-linear-to-br from-white to-emerald-50 px-3 py-3 text-stone-800 shadow-sm transition hover:border-emerald-700/35 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800">
+            <span className="relative shrink-0">
+              <img src="/atendimento.jpg" alt="" width={44} height={44} loading="lazy" className="size-11 rounded-full object-cover ring-1 ring-emerald-900/15" />
+              <span className="absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full bg-emerald-700 text-white ring-2 ring-white">
+                <MessageCircle size={12} strokeWidth={1.8} aria-hidden="true" />
+              </span>
+            </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-bold leading-snug">Falar com a confeitaria</span>
-              <span className="block text-xs text-stone-600">WhatsApp</span>
+              <span className="mt-0.5 block text-xs font-semibold text-emerald-800">WhatsApp</span>
             </span>
-            <ArrowUpRight size={16} strokeWidth={1.6} aria-hidden="true" className="shrink-0 text-stone-500 group-hover:text-primary" />
           </a>
         </div>
       </div>
