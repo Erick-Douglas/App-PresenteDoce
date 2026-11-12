@@ -31,8 +31,11 @@ type StorePanel = { type: 'login' | 'catalog' | 'pricing' } | { type: 'editor'; 
 
 const panelTitles = { login: 'Entrar na Presente Doce', catalog: 'Gerir catálogo', pricing: 'Precificação de receitas' };
 
-function isLegacyAdminPath() {
-  return window.location.pathname.replace(/\/$/, '') === '/admin';
+function entryPanel() {
+  const path = window.location.pathname.replace(/\/$/, '');
+  if (path === '/admin') return 'login';
+  if (path === '/precificacao') return 'pricing';
+  return null;
 }
 
 const views: View[] = ['welcome', 'home', 'product-list', 'product-details', 'cart', 'saved', 'categories-list', 'settings', 'contact'];
@@ -50,7 +53,7 @@ export default function App() {
   const [activeRecCategory, setActiveRecCategory] = useState('all');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [session, setSession] = useState<CatalogSession | null>(null);
-  const [panel, setPanel] = useState<StorePanel | null>(() => isLegacyAdminPath() ? { type: 'login' } : null);
+  const [panel, setPanel] = useState<StorePanel | null>(() => entryPanel() ? { type: 'login' } : null);
   const [notice, setNotice] = useState('');
   const [homeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
 
@@ -95,13 +98,15 @@ export default function App() {
   }, [currentView]);
 
   function closePanel() {
-    if (isLegacyAdminPath()) window.history.replaceState(window.history.state, '', '/' + window.location.hash);
+    if (entryPanel()) window.history.replaceState(window.history.state, '', '/' + window.location.hash);
     setPanel(null);
   }
 
   function handleLogin(next: CatalogSession) {
+    const destination = entryPanel();
     setSession(next);
     closePanel();
+    if (destination === 'pricing') setPanel({ type: 'pricing' });
     if (currentView === 'welcome') handleNavigate('home');
     setNotice('Acesso à gestão do catálogo ativo.');
   }
@@ -290,7 +295,7 @@ export default function App() {
           <StoreDialog title={panel.type === 'editor' ? (panel.id ? 'Editar produto' : 'Novo produto') : panelTitles[panel.type]} onClose={closePanel}>
             <Suspense fallback={<p role="status">A carregar…</p>}>
               {panel.type === 'login' && <AccountForm
-                initialRecovery={isLegacyAdminPath() && new URLSearchParams(window.location.search).get('recuperar') === '1'}
+                initialRecovery={entryPanel() === 'login' && new URLSearchParams(window.location.search).get('recuperar') === '1'}
                 onLogin={handleLogin}
               />}
               {panel.type === 'catalog' && session && <>
@@ -308,7 +313,7 @@ export default function App() {
                 onCancel={leaveEditor}
                 onChanged={onCatalogChanged}
               />}
-              {panel.type === 'pricing' && session && <PricingScreen embedded />}
+              {panel.type === 'pricing' && session && <PricingScreen />}
             </Suspense>
           </StoreDialog>
         )}

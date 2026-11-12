@@ -5,6 +5,7 @@
 - **GitHub.** `Erick-Douglas/App-PresenteDoce`. Pull requests geram previews, e o merge em `main` inicia o deploy de produção no projeto vinculado.
 - **Vercel.** Um projeto `app-presente-doce` hospeda a [loja](https://presente-doce.vercel.app/) e o [painel](https://presente-doce.vercel.app/admin). As URLs geradas para previews ficam disponíveis para revisão com acesso à Vercel. O endereço oficial usa somente a autenticação do aplicativo para entrar no painel.
 - **Supabase.** O projeto dedicado `gpwcuuqsvnsqudghkylb` guarda o catálogo, as imagens e a conta administrativa. A build de validação de 12/11/2026 e a produção usam essa mesma base para aproveitar as edições já feitas no painel. Alterações nela afetam o catálogo publicado. Para testes de escrita futuros, use dados fictícios em um ambiente separado.
+- **Exclusão.** Antes de liberar a edição integrada, confira a migração `20261112124748_presente_doce_catalog_delete.sql`. Ela restringe a exclusão pela API à conta que consta na lista privada de administradores. A interface pede confirmação e compara a versão atual do registro.
 
 ## Configuração do frontend
 
@@ -20,6 +21,6 @@ Configure `VITE_CATALOG_SOURCE=supabase`, `VITE_CATALOG_SUPABASE_URL` e `VITE_SU
 
 ## Reversão
 
-- A versão anterior à publicação de 12/11/2026 corresponde ao commit `f8fbcdf`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/DmgWjkEh86D8ni8WmEzVDsLkNRwx)
+- A versão anterior à gestão integrada corresponde ao commit `bb2d59a`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/6tARpB25K1MnHZ7RS2CYfMJNudFM)
 - Em caso de problema de frontend, faça rollback para a última versão estável no mesmo projeto Vercel. Confirme que o domínio oficial serve o deploy esperado.
 - Preserve as edições do Supabase durante a reversão de frontend. Aplique migrações de dados em uma operação separada, com cópia de recuperação e aceite próprio. As versões aplicadas estão em `supabase/migrations`.

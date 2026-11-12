@@ -25,7 +25,7 @@ Diminuir o retrabalho de atendimento e dar autonomia à Gabriela para manter o c
 
 1. Limpar o código legado, manter o fluxo de encomendas, acertar o destino da bio e aplicar controles de segurança.
 2. Preparar catálogo e painel, conectar uma base isolada, importar os produtos e validar a operação da Gabriela.
-3. O simulador de precificação reproduz as fórmulas de custo, lucro, markup e margem em `/precificacao`. Funciona sem login, com preenchimento manual e um rascunho local no navegador. A importação de ingredientes e receitas e o armazenamento compartilhado ficam para uma próxima entrega. O campo de preço do catálogo é o valor de venda aprovado por Gabriela.
+3. O simulador de precificação reproduz as fórmulas de custo, lucro, markup e margem no menu administrativo e pelo atalho `/precificacao`. Usa preenchimento manual e um rascunho local no navegador. A importação de ingredientes e receitas e o armazenamento compartilhado ficam para uma próxima entrega. O campo de preço do catálogo é o valor de venda aprovado por Gabriela.
 4. Planejar contas de clientes com e-mail, morada e histórico de pedidos próprio. Abrir cadastro quando o modelo de pedidos e o acesso aos dados de cada cliente estiverem definidos e verificados. Planejar agenda, estoque, pagamentos e faturas conforme o uso.
 
 O app coleta dados de contacto para compor a mensagem. Carrinho e dados pessoais do checkout ficam em memória durante a sessão. A loja não registra pedidos no banco nesta versão.

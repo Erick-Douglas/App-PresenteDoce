@@ -24,7 +24,7 @@ function readDraft(): Recipe {
   }
 }
 
-export default function PricingScreen({ embedded = false }: { embedded?: boolean }) {
+export default function PricingScreen() {
   const [recipe, setRecipe] = useState(readDraft);
   const [result, setResult] = useState<Pricing | null>(null);
   const [error, setError] = useState('');
@@ -73,12 +73,8 @@ export default function PricingScreen({ embedded = false }: { embedded?: boolean
   }
 
   return (
-    <div className={embedded ? 'space-y-5' : 'mx-auto min-h-screen max-w-3xl space-y-5 px-4 py-6 sm:px-8'}>
-      <header className="border-b border-stone-200 pb-4">
-        {!embedded && <><a href="/" className="text-sm font-semibold text-primary underline">Presente Doce</a>
-          <h1 className="font-headline text-2xl font-extrabold text-primary">Precificação de receitas</h1></>}
-        <p className="mt-2 text-sm text-stone-600">Calcule os custos e simule o preço de venda. Os valores ficam neste dispositivo e não alteram o catálogo.</p>
-      </header>
+    <div className="space-y-5">
+      <p className="text-sm text-stone-600">Calcule os custos e simule o preço de venda. Os valores ficam neste dispositivo e não alteram o catálogo.</p>
       <form onSubmit={calculate} className="space-y-5">
         <label className="block space-y-1"><span>Nome da receita (opcional)</span><input className={input} maxLength={100} value={recipe.title} onChange={event => update({ title: event.target.value })} /></label>
         <div className="grid gap-3 sm:grid-cols-2">
