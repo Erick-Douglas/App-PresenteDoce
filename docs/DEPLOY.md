@@ -34,6 +34,6 @@ Configure `VITE_CATALOG_SOURCE=supabase`, `VITE_CATALOG_SUPABASE_URL` e `VITE_SU
 
 ## Reversão
 
-- A versão anterior à nova vitrine corresponde ao commit `d433c52`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/6yoLQmsMm44LnEu67avwvJNXkzDf)
+- A versão anterior à reorganização da home corresponde ao commit `8e06caa`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/Em9e64MF5acMXmtcumykTvBfnbQM)
 - Em caso de problema de frontend, faça rollback para a última versão estável no mesmo projeto Vercel. Confirme que o domínio oficial serve o deploy esperado.
 - Preserve as edições do Supabase durante a reversão de frontend. Aplique migrações de dados em uma operação separada, com cópia de recuperação e aceite próprio. As versões aplicadas estão em `supabase/migrations`.

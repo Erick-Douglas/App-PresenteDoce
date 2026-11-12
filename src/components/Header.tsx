@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gift, Menu, Share2 } from 'lucide-react';
+import { Menu, Share2 } from 'lucide-react';
 import { BUSINESS_INFO } from '../config/constants';
 
 interface HeaderProps {
@@ -27,21 +27,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
   };
 
   return (
-    <header className="bg-porcelain">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6 sm:py-3.5">
+    <header className="bg-primary text-cream">
+      <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-3 px-3 sm:h-16 sm:px-6">
         <button type="button" aria-label="Abrir menu" onClick={onOpenMenu}
-          className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
+          className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cream">
           <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
         </button>
-        <span className="flex items-center gap-2 whitespace-nowrap text-primary">
-          <Gift size={17} strokeWidth={1.5} aria-hidden="true" />
-          <span className="font-editorial text-[1.7rem] leading-none sm:text-3xl">{BUSINESS_INFO.name}</span>
-        </span>
+        <img src="/logo.png" alt={BUSINESS_INFO.name} width={112} height={50} className="h-12 w-28 object-contain sm:w-32" />
         <button
           type="button"
           aria-label="Partilhar catálogo"
           onClick={handleShare}
-          className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary"
+          className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cream"
         >
           <Share2 size={19} strokeWidth={1.6} aria-hidden="true" />
         </button>

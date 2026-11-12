@@ -34,9 +34,15 @@ Como uma confeitaria artesanal de produção pequena pode receber encomendas pel
 | [Hotplate](https://www.hotplate.com/product) e [BakePorch](https://bakeporch.com/features) | Vitrines próprias para pequenos negócios de alimentação. Trabalham pré-encomendas e disponibilidade por lote ou agenda. | Reutilizar a vitrine por negócio e validar disponibilidade e horários num piloto. |
 | [Shopify Portugal](https://www.shopify.com/pt/precos) | Planos recorrentes para negócios com a própria loja. | Usar assinatura mensal por negócio como hipótese comercial do produto. Validar valor, suporte e ativação antes de publicar preços. |
 
-Os testes da Baymard em comércio móvel apontam problemas de interação e visibilidade em carrosséis automáticos. A vitrine da Presente Doce usa um produto em destaque, categorias compactas e cartões que levam ao detalhe ou ao carrinho. A saudação administrativa fica acima da busca sobre a foto. [Pesquisa da Baymard](https://baymard.com/research-articles/mobile-ecommerce-search-and-navigation)
+Os testes da Baymard em comércio móvel apontam problemas de interação e visibilidade em carrosséis automáticos. A Presente Doce aplica essa referência com uma capa fixa e prateleiras que a pessoa percorre quando quer ver mais produtos. [Pesquisa da Baymard](https://baymard.com/research-articles/mobile-ecommerce-search-and-navigation)
 
 Para clientes, o produto atual é uma loja online de encomendas com checkout pelo WhatsApp. A oferta futura para lojistas é um SaaS de comércio por assinatura, com uma vitrine por negócio. A mensalidade do lojista e o pagamento da encomenda pelo cliente são fluxos independentes. [PRD](PRD.md)
+
+## Home de encomendas · 12/11/2026
+
+- No catálogo da Amor aos Pedaços, a Glovo apresenta categorias de acesso rápido, uma seleção em destaque e depois os produtos por categoria. O Discovery Wall de 2026 usa coleções que as pessoas exploram por interesse. A Presente Doce aproveita a fila de categorias e a prateleira de produtos, com uma única loja. [Menu na Glovo](https://glovoapp.com/pt/pt/lisboa/stores/amor-aos-pedacos-lis) · [Discovery Wall](https://about.glovoapp.com/press/glovo-updates-discovery-wall-fast-track/)
+- A página da Padaria Portuguesa no Uber Eats dá lugares distintos à imagem do estabelecimento, à busca e aos artigos em destaque. A home móvel publicada pelo Uber em 2026 também agrupa os produtos em coleções. A Presente Doce coloca capa, busca, categorias e destaques nessa ordem. [Menu no Uber Eats](https://www.ubereats.com/pt/store/a-padaria-portuguesa-av-duque-davila/YCFwRlRtQ_mOQrvoZ2Yubw) · [Home móvel de 2026](https://www.uber.com/ad/en/blog/next-gen-restaurant-recommendation/)
+- Após a revisão de Erick, a assinatura gráfica original volta em escala menor sobre a faixa bordô. A capa reúne fotos do catálogo existente. A saudação da Gabriela aparece na área clara, imediatamente acima da busca. Os cartões trazem foto, nome, preço e ações de produto.
 
 ## Segurança e arquitetura
 
