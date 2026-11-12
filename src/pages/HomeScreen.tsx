@@ -21,8 +21,8 @@ interface HomeScreenProps {
 }
 
 const productGrid = 'grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4';
-const productShelf = 'scrollbar-hide -mx-4 grid snap-x grid-flow-col auto-cols-[46%] gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 [&>article]:snap-start sm:mx-0 sm:grid-flow-row sm:grid-cols-3 sm:gap-5 sm:overflow-visible sm:px-0';
-const sectionTitle = 'font-headline text-xl font-extrabold tracking-tight text-stone-900 sm:text-2xl';
+const productShelf = 'home-rail -mx-4 grid snap-x grid-flow-col auto-cols-[46%] gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary [&>article]:snap-start sm:-mx-6 sm:auto-cols-[13.5rem] sm:gap-4 sm:scroll-px-6 sm:px-6 lg:auto-cols-[15rem]';
+const sectionTitle = 'font-headline text-xl font-bold tracking-tight text-primary sm:text-2xl';
 const browseLink = 'inline-flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-1 text-sm font-bold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary';
 
 function searchText(value: string) {
@@ -34,8 +34,6 @@ export function HomeScreen({
   onToggleFavorite, onToggleCartItem, onNavigate,
 }: HomeScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const ranked = products.filter(product => product.topSeller).sort((a, b) => (a.topSeller ?? 0) - (b.topSeller ?? 0));
-  const highlights = ranked.length ? ranked.slice(0, 3) : products.slice(0, 3);
   const filtered = useMemo(() => {
     const query = searchText(searchQuery.trim());
     return query ? products.filter(product =>
@@ -49,6 +47,17 @@ export function HomeScreen({
     onNavigate('product-list');
   }
 
+  function jumpToCategory(category: string, index: number) {
+    const section = document.getElementById('home-category-' + index);
+    if (!section) {
+      showCategory(category);
+      return;
+    }
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    section.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'instant' : 'smooth' });
+    section.querySelector('h2')?.focus({ preventScroll: true });
+  }
+
   function card(product: Product) {
     return <CatalogCard key={product.id} product={product} inCart={cart.some(item => item.id === product.id)}
       favorite={favorites.includes(product.id)} onOpen={onProductClick} onFavorite={onToggleFavorite}
@@ -56,26 +65,21 @@ export function HomeScreen({
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-white pb-32">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="home-surface min-h-screen pb-32">
       <Header onOpenMenu={onOpenMenu} />
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div aria-hidden="true" className="mt-3 grid h-[9.75rem] grid-cols-[1.55fr_1fr] grid-rows-2 gap-1 overflow-hidden rounded-2xl bg-[#f6ebe3] sm:mt-5 sm:h-56 sm:grid-cols-[1.35fr_1fr_1fr] sm:grid-rows-1 sm:gap-1.5 sm:rounded-3xl">
-          <img src="/products/bc-6.jpg" alt="" fetchPriority="high" decoding="async"
-            className="row-span-2 h-full min-h-0 w-full object-cover object-[center_47%] sm:row-span-1" />
-          <img src="/products/br-1.jpg" alt="" decoding="async" className="h-full min-h-0 w-full object-cover object-[center_42%]" />
-          <img src="/products/sl-1.jpg" alt="" decoding="async" className="h-full min-h-0 w-full object-cover" />
-        </div>
+        <section aria-labelledby="home-greeting" className="home-welcome relative mt-2 overflow-hidden rounded-[1.5rem] border border-gold/30 px-5 py-5 text-cream shadow-sm sm:mt-4 sm:px-8 sm:py-7">
+          <h1 id="home-greeting" className="relative font-logo text-[2.85rem] leading-[1.16] font-normal sm:text-[3.65rem]">
+            {isAdmin ? 'Olá, ' + BUSINESS_INFO.adminDisplayName + '!' : 'Seja bem-vindo!'}
+          </h1>
+          <p className="relative mt-1 max-w-[23rem] text-sm leading-snug text-cream sm:text-base">
+            {isAdmin ? 'O que vamos fazer hoje na ' + BUSINESS_INFO.name + '?' : 'Bolos, doces e salgados feitos por encomenda.'}
+          </p>
+        </section>
 
         <div className="mt-4 space-y-3 sm:mt-5">
-          {isAdmin && (
-            <section aria-labelledby="admin-greeting" className="rounded-xl border border-primary/10 bg-primary/[0.04] px-3.5 py-2.5 sm:px-4">
-              <h1 id="admin-greeting" className="font-headline text-lg font-extrabold leading-snug text-primary">Olá, {BUSINESS_INFO.adminDisplayName}!</h1>
-              <p className="text-sm leading-snug text-stone-700">O que vamos fazer hoje na {BUSINESS_INFO.name}?</p>
-            </section>
-          )}
-          {!isAdmin && <h1 className="sr-only">{BUSINESS_INFO.name}</h1>}
-          <label className="flex min-h-12 items-center gap-2.5 rounded-full border border-stone-200 bg-stone-50 px-4 text-stone-700 focus-within:border-primary/35 focus-within:ring-2 focus-within:ring-primary/20">
+          <label className="flex min-h-12 items-center gap-2.5 rounded-full border border-primary/15 bg-white/90 px-4 text-stone-700 focus-within:border-primary/35 focus-within:ring-2 focus-within:ring-primary/20">
             <Search size={19} strokeWidth={1.7} aria-hidden="true" className="shrink-0 text-primary" />
             <span className="sr-only">O que você procura?</span>
             <input type="search" value={searchQuery} onChange={event => setSearchQuery(event.target.value)}
@@ -96,13 +100,18 @@ export function HomeScreen({
         ) : (
           <div className="space-y-7 pt-5 sm:space-y-9 sm:pt-6">
             <nav aria-labelledby="category-title">
-              <h2 id="category-title" className="sr-only">Categorias</h2>
-              <div className="grid grid-cols-5 gap-1.5 sm:flex sm:gap-6">
-                {CATEGORIES.map(category => (
-                  <button key={category.name} type="button" onClick={() => showCategory(category.name)}
-                    className="group flex min-w-0 flex-col items-center gap-1.5 rounded-xl px-0.5 py-1 text-center text-[11px] leading-tight font-bold text-stone-800 focus-visible:outline-2 focus-visible:outline-primary sm:w-24 sm:text-sm">
-                    <span className="block size-[clamp(2.65rem,14vw,3.5rem)] overflow-hidden rounded-[0.9rem] bg-primary/5 ring-1 ring-primary/10 group-hover:ring-primary/40 sm:size-[4.25rem]">
-                      <img src={category.image} alt="" width={68} height={68} decoding="async" className="size-full object-cover" />
+              <div className="flex items-center justify-between gap-2">
+                <h2 id="category-title" className={sectionTitle}>Categorias</h2>
+                <button type="button" onClick={() => showCategory('all')} className={browseLink}>
+                  Ver catálogo <ChevronRight size={16} aria-hidden="true" />
+                </button>
+              </div>
+              <div className="home-rail -mx-4 flex snap-x gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pt-1 pb-2 sm:-mx-6 sm:gap-5 sm:scroll-px-6 sm:px-6">
+                {CATEGORIES.map((category, index) => (
+                  <button key={category.name} type="button" onClick={() => jumpToCategory(category.name, index)}
+                    className="group flex w-[4.75rem] shrink-0 snap-start flex-col items-center gap-2 rounded-xl px-0.5 py-1 text-center text-xs leading-tight font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary sm:w-[5.5rem] sm:text-sm">
+                    <span className="block size-[4.25rem] rounded-full bg-linear-to-tr from-primary via-primary to-gold p-[2px] sm:size-[4.75rem]">
+                      <img src={category.image} alt="" width={72} height={72} decoding="async" className="size-full rounded-full border-2 border-cream object-cover" />
                     </span>
                     <span>{category.name}</span>
                   </button>
@@ -110,30 +119,18 @@ export function HomeScreen({
               </div>
             </nav>
 
-            {highlights.length > 0 && (
-              <section aria-labelledby="highlights-title" className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 id="highlights-title" className={sectionTitle}>Em destaque</h2>
-                  <button type="button" onClick={() => showCategory('all')} className={browseLink}>
-                    Ver catálogo <ChevronRight size={16} aria-hidden="true" />
-                  </button>
-                </div>
-                <div className={productShelf}>{highlights.map(card)}</div>
-              </section>
-            )}
-
-            {CATEGORIES.map(category => {
+            {CATEGORIES.map((category, index) => {
               const categoryProducts = products.filter(product => product.category === category.name);
               if (!categoryProducts.length) return null;
               return (
-                <section key={category.name} className="space-y-2">
+                <section key={category.name} id={'home-category-' + index} aria-labelledby={'home-category-title-' + index} className="scroll-mt-4 space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <h2 className={sectionTitle}>{category.name}</h2>
+                    <h2 id={'home-category-title-' + index} tabIndex={-1} className={sectionTitle}>{category.name}</h2>
                     <button type="button" aria-label={'Ver tudo em ' + category.name} onClick={() => showCategory(category.name)} className={browseLink}>
                       Ver tudo <ChevronRight size={16} aria-hidden="true" />
                     </button>
                   </div>
-                  <div className={productShelf + ' lg:grid-cols-4'}>{categoryProducts.map(card)}</div>
+                  <div tabIndex={0} role="group" aria-label={'Produtos de ' + category.name} className={productShelf}>{categoryProducts.map(card)}</div>
                 </section>
               );
             })}

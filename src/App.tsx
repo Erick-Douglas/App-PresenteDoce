@@ -328,7 +328,7 @@ export default function App() {
         )}
 
         {notice && !panel && (
-          <div role="status" className="fixed left-1/2 top-20 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-cream shadow-lg">
+          <div role="status" className="fixed bottom-28 left-1/2 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl border border-primary/15 bg-porcelain px-4 py-2 text-sm font-semibold text-primary shadow-lg">
             {notice}
             <button type="button" onClick={() => setNotice('')} aria-label="Dispensar aviso" className="p-2 text-lg leading-none">×</button>
           </div>
