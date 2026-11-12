@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, ChevronRight } from 'lucide-react';
 import { CategoryCover } from '../components/CategoryCover';
+import { CategoryEditButton } from '../components/CategoryEditButton';
 import type { CatalogCategory, View } from '../config/types';
 import { motion } from 'framer-motion';
 
@@ -8,11 +9,12 @@ interface CategoriesScreenProps {
   categories: CatalogCategory[];
   activeCategory: string;
   onSetCategory: (category: string) => void;
+  onEditCategory?: (id: string) => void;
   onOpenMenu: () => void;
   onNavigate: (view: View) => void;
 }
 
-export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ categories, onOpenMenu, onNavigate, activeCategory, onSetCategory }) => {
+export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ categories, onOpenMenu, onNavigate, activeCategory, onSetCategory, onEditCategory }) => {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="min-h-screen pb-24 bg-white">
       <header className="px-6 py-4 flex items-center sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
@@ -24,9 +26,9 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ categories, 
 
       <main className="px-6 py-8 space-y-4">
         {categories.map((cat) => (
+          <div className="flex items-center gap-2" key={cat.id ?? cat.name}>
           <button
             type="button"
-            key={cat.name}
             className={`flex w-full items-center gap-5 p-4 text-left bg-white rounded-xl shadow-sm active:scale-95 transition-transform border ${activeCategory === cat.name ? 'border-primary shadow-md' : 'border-primary/5'}`}
             onClick={() => { onSetCategory(cat.name); onNavigate('product-list'); }}
           >
@@ -39,6 +41,8 @@ export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ categories, 
             </div>
             <ChevronRight size={20} className="text-primary shrink-0" />
           </button>
+          <CategoryEditButton category={cat} onEdit={onEditCategory} />
+          </div>
         ))}
       </main>
     </motion.div>

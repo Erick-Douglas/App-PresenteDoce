@@ -11,9 +11,9 @@ if (env.VITE_CATALOG_SOURCE !== 'supabase') {
   }
 
   const catalog = new URL('/rest/v1/catalog_products', host);
-  catalog.search = 'select=id,details,published,version&published=eq.true&limit=1';
+  catalog.search = 'select=id,details,published,version&published=eq.true&order=display_order.asc.nullslast,created_at.asc,id.asc&limit=1';
   const categories = new URL('/rest/v1/catalog_categories', host);
-  categories.search = 'select=name&order=position.asc';
+  categories.search = 'select=id,name,cover,order_mode&order=display_order.asc.nullslast,position.asc';
   const options = { headers: { apikey: key }, signal: AbortSignal.timeout(10000) };
   const [productsResponse, categoriesResponse] = await Promise.all([fetch(catalog, options), fetch(categories, options)]);
   if (!productsResponse.ok) throw new Error('The public catalog API returned HTTP ' + productsResponse.status + '.');
@@ -22,7 +22,8 @@ if (env.VITE_CATALOG_SOURCE !== 'supabase') {
   if (!Array.isArray(rows) || !rows.every(row => row.published === true && typeof row.details?.name === 'string' && Number.isInteger(row.version))) {
     throw new Error('The public catalog API returned an unexpected response.');
   }
-  if (!Array.isArray(categoryRows) || !categoryRows.length || !categoryRows.every(row => typeof row.name === 'string') ||
+  if (!Array.isArray(categoryRows) || !categoryRows.every(row => typeof row.id === 'string' && typeof row.name === 'string' &&
+      ['simple', 'cake', 'brigadeiros', 'salgados'].includes(row.order_mode)) ||
       !rows.every(row => categoryRows.some(category => category.name === row.details.category))) {
     throw new Error('The public categories API returned an unexpected response.');
   }

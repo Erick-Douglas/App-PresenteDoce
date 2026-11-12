@@ -1,3 +1,5 @@
+export type ProductOrderMode = 'simple' | 'cake' | 'brigadeiros' | 'salgados';
+
 export interface Product {
   id: string;
   name: string;
@@ -6,6 +8,8 @@ export interface Product {
   category: string;
   image: string;
   tags?: string[];
+  topicIds?: string[];
+  orderMode?: ProductOrderMode;
   rating?: number;
   reviewsCount?: number;
   isNew?: boolean;
@@ -16,7 +20,7 @@ export interface Product {
   flavors?: string[];     // Sabores disponíveis
 }
 
-export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact';
+export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact' | 'catalog-admin';
 
 export interface CartItem extends Product {
   cartId: string;
@@ -33,7 +37,9 @@ export interface CartItem extends Product {
   variant?: string;   // Variante escolhida (Ex: Caixa com 6)
 }
 export interface CatalogCategory {
+  id?: string;
   name: string;
   image?: string;
+  orderMode?: ProductOrderMode;
 }
 

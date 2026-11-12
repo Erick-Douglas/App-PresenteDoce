@@ -7,6 +7,7 @@
 - **Supabase.** O projeto dedicado `gpwcuuqsvnsqudghkylb` guarda o catálogo, as imagens e a conta administrativa. A build de validação de 12/11/2026 e a produção usam essa mesma base para aproveitar as edições já feitas no painel. Alterações nela afetam o catálogo publicado. Para testes de escrita futuros, use dados fictícios em um ambiente separado.
 - **Exclusão.** Antes de liberar a edição integrada, confira a migração `20261112124748_presente_doce_catalog_delete.sql`. Ela restringe a exclusão pela API à conta que consta na lista privada de administradores. A interface pede confirmação e compara a versão atual do registro.
 - **Categorias.** Aplique `20261112184231_presente_doce_catalog_categories.sql` antes de promover a versão com criação de categorias. A migração preserva os produtos, regista as cinco categorias originais e exige uma categoria registada para cada produto. O catálogo lê os nomes publicamente e apenas o admin pode criar uma categoria. Na reversão do frontend, preserve a migração e os dados. Uma versão anterior pode omitir novas categorias da navegação.
+- **Gestão do catálogo.** Aplique `20261112210021_presente_doce_catalog_management.sql` antes da versão com **Gerir catálogo** em página própria. A migração mantém os nomes dos produtos, preços e opções e adiciona IDs de categoria, posições de exibição e tópicos. As operações administrativas verificam a conta e a revisão. Depois de renomear ou transferir produtos, use uma versão de correção compatível com `orderMode` e preserve os dados já guardados.
 
 ## Configuração do frontend
 
