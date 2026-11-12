@@ -261,7 +261,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-surface relative overflow-x-hidden">
+    <div className={'app-theme relative min-h-screen overflow-x-hidden font-sans text-base font-normal text-on-surface ' +
+      (currentView === 'home' ? 'bg-cream' : 'bg-porcelain')}>
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
