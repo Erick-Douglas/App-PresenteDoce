@@ -68,10 +68,10 @@ export function HomeScreen({
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex min-h-screen flex-col">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="home-surface flex min-h-screen flex-col">
       <section aria-labelledby="home-greeting" className="home-hero">
         <Header onOpenMenu={onOpenMenu} />
-        <div className="relative mx-auto max-w-6xl px-4 pt-6 pb-15 sm:px-6 sm:pt-10 sm:pb-20">
+        <div className="relative mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 sm:pt-10 sm:pb-24">
           <h1 id="home-greeting" className="font-logo text-[clamp(2.4rem,10vw,4.2rem)] leading-[1.12] font-normal text-white">
             {isAdmin ? 'Olá, ' + BUSINESS_INFO.adminDisplayName + '!' : 'Seja bem-vindo!'}
           </h1>
@@ -87,7 +87,7 @@ export function HomeScreen({
         </div>
       </section>
 
-      <div className="home-surface flex-1 pb-32">
+      <div className="flex-1 pb-32">
         {catalogNotice}
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           {filtered ? (
