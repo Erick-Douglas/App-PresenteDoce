@@ -72,7 +72,8 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
   const data = row?.details;
   const initialCategory = data ? categories.find(item => item.name === data.category) : categories[0];
   const [productId] = useState(() => row?.id ?? crypto.randomUUID());
-  const [version, setVersion] = useState(row?.version ?? null);
+  const [baseline, setBaseline] = useState(row);
+  const version = baseline?.version ?? null;
   const [categoryId, setCategoryId] = useState(initialCategory?.id ?? '');
   const [managingCategory, setManagingCategory] = useState(false);
   const [categoryDraft, setCategoryDraft] = useState<string | null>(null);
@@ -137,11 +138,23 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
       }
       setCategoryId(target?.id ?? '');
     }
-    if (!row) return;
+    if (!baseline) return;
     setBusy(true);
-    void getCatalogProduct(row.id, token).then(updated => {
-      if (updated.published === row.published && productContent(updated.details) === productContent(row.details)) {
-        setVersion(updated.version);
+    void getCatalogProduct(baseline.id, token).then(updated => {
+      const previous = baseline.details;
+      const affected = change.previous.name === previous.category;
+      const nextCategory = change.saved ?? change.destination;
+      const expectedCategory = affected ? nextCategory?.name : previous.category;
+      let expectedTopics = previous.topicIds ?? [];
+      if (affected && nextCategory) {
+        expectedTopics = change.saved
+          ? expectedTopics.filter(id => nextCategory.topics.some(topic => topic.id === id))
+          : nextCategory.topics.filter(topic => previous.tags?.some(tag => topicKey(tag) === topicKey(topic.name))).map(topic => topic.id);
+      }
+      if (updated.published === baseline.published && updated.details.category === expectedCategory &&
+          JSON.stringify([...(updated.details.topicIds ?? [])].sort()) === JSON.stringify([...expectedTopics].sort()) &&
+          productContent(updated.details) === productContent(previous)) {
+        setBaseline(updated);
       }
     }).catch(() => {}).finally(() => setBusy(false));
   }

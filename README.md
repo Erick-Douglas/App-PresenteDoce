@@ -14,7 +14,7 @@ O app web usa React, TypeScript e Vite. A Vercel publica o frontend. O Supabase 
 | `/admin` | Atalho para abrir o acesso na própria loja, incluindo os links de recuperação já usados. |
 | `/precificacao` | Atalho autenticado para o simulador de custo e margem com rascunho local. |
 
-A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. Na loja oficial, use **Menu → Entrar** e a conta da confeitaria. A página inicial saúda Gabriela após a autenticação. **Gerir catálogo** abre a lista com rascunhos e **Novo produto** abre o formulário. **Editar produto** aparece nos cartões e nos detalhes da vitrine.
+A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. Na loja oficial, use **Menu → Entrar** e a conta da confeitaria. A página inicial saúda Gabriela após a autenticação. **Gerir catálogo** abre uma página com produtos agrupados por categoria e filtros de estado. O editor de categoria gerencia o nome, os tópicos e a ordem da vitrine. A conta administradora também pode editar produtos e categorias diretamente na vitrine.
 
 ## Desenvolvimento
 

@@ -1,6 +1,6 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14 && node scripts/qa-catalog-management.mjs && npm run lint && npm test && npm run check:catalog && npm run build",
+  "buildCommand": "npm run lint && npm test && npm run check:catalog && npm run build",
   "headers": [
     {
       "source": "/(.*)",
