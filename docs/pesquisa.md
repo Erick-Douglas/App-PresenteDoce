@@ -42,7 +42,7 @@ Para clientes, o produto atual é uma loja online de encomendas com checkout pel
 
 - No catálogo da Amor aos Pedaços, a Glovo apresenta categorias de acesso rápido, uma seleção em destaque e depois os produtos por categoria. O Discovery Wall de 2026 usa coleções que as pessoas exploram por interesse. A Presente Doce aproveita a fila de categorias e a prateleira de produtos, com uma única loja. [Menu na Glovo](https://glovoapp.com/pt/pt/lisboa/stores/amor-aos-pedacos-lis) · [Discovery Wall](https://about.glovoapp.com/press/glovo-updates-discovery-wall-fast-track/)
 - A página da Padaria Portuguesa no Uber Eats dá lugares distintos à imagem do estabelecimento, à busca e aos artigos em destaque. A home móvel publicada pelo Uber em 2026 também agrupa os produtos em coleções. A Presente Doce coloca capa, busca, categorias e destaques nessa ordem. [Menu no Uber Eats](https://www.ubereats.com/pt/store/a-padaria-portuguesa-av-duque-davila/YCFwRlRtQ_mOQrvoZ2Yubw) · [Home móvel de 2026](https://www.uber.com/ad/en/blog/next-gen-restaurant-recommendation/)
-- Após a revisão de Erick, a assinatura gráfica original volta em escala menor sobre a faixa bordô. A capa reúne fotos do catálogo existente. A saudação da Gabriela aparece na área clara, imediatamente acima da busca. Os cartões trazem foto, nome, preço e ações de produto.
+- A revisão do manual da marca levou a home a usar Great Vibes na saudação, Lato na navegação e nos cartões e a paleta Bordô Absoluto, Cream Dream e Ouro Vivo. A abertura usa uma saudação sobre um fundo desenhado em CSS. A fila de atalhos redondos leva diretamente às prateleiras horizontais de cada categoria.
 
 ## Segurança e arquitetura
 

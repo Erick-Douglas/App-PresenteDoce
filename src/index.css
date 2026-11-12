@@ -1,24 +1,64 @@
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Instrument+Serif&family=Manrope:wght@400;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,800;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lato:wght@400;700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-headline: "Plus Jakarta Sans", sans-serif;
-  --font-body: "Manrope", sans-serif;
+  --font-headline: "Lato", sans-serif;
+  --font-body: "Lato", sans-serif;
   --font-logo: "Great Vibes", cursive;
-  --font-editorial: "Instrument Serif", Georgia, serif;
+  --font-editorial: "Lato", sans-serif;
   
   --color-primary: #800000; /* Bordô Absoluto */
   --color-primary-container: #FBCE00; /* Ouro Vivo */
   --color-on-primary: #FFF6DB; /* Cream Dream */
-  --color-cream: #FFFDD0;
+  --color-cream: #FFF6DB;
   --color-porcelain: #FFFCF7;
-  --color-gold: #FFD700;
+  --color-gold: #FBCE00;
   --color-surface: #FFFFFF; /* Changed to pure white */
   --color-on-surface: #1A1A1A;
   --color-on-surface-variant: #4A4A4A;
   --color-surface-container-highest: #f4edd4;
   --color-surface-container-low: #f9f2dc;
   --color-surface-container-lowest: #ffffff;
+}
+
+@layer components {
+  .brand-wordmark {
+    background-color: var(--color-primary);
+    -webkit-mask: url('/logo.png') center / contain no-repeat;
+    mask: url('/logo.png') center / contain no-repeat;
+  }
+
+  .home-surface {
+    background:
+      radial-gradient(ellipse 32rem 16rem at 95% 0%, color-mix(in srgb, var(--color-gold) 18%, transparent), transparent 78%),
+      linear-gradient(180deg, var(--color-cream) 0, var(--color-porcelain) 29rem);
+  }
+
+  .home-welcome {
+    background:
+      radial-gradient(ellipse at 96% 8%, color-mix(in srgb, var(--color-gold) 19%, transparent), transparent 66%),
+      linear-gradient(115deg, color-mix(in srgb, var(--color-primary) 73%, black), var(--color-primary) 68%);
+  }
+
+  .home-welcome::before {
+    content: '';
+    position: absolute;
+    width: 18rem;
+    height: 12rem;
+    right: -8rem;
+    top: -4.5rem;
+    border: 1px solid color-mix(in srgb, var(--color-gold) 32%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0.8rem color-mix(in srgb, var(--color-gold) 8%, transparent),
+      0 0 0 1.65rem color-mix(in srgb, var(--color-gold) 5%, transparent);
+    transform: rotate(-27deg);
+    pointer-events: none;
+  }
+
+  .home-rail {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-primary) 26%, var(--color-cream)) transparent;
+  }
 }
 
 @layer base {
