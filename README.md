@@ -18,6 +18,8 @@ npm run build
 
 A raiz abre o catálogo. A rota /admin abre o painel. O catálogo inicial em código fica ativo até selecionar explicitamente o catálogo do Supabase no ambiente. A rota administrativa indica quando precisa de configuração. Com o catálogo Supabase ativo, erros de carregamento aparecem na loja para evitar voltar a apresentar produtos que Gabriela retirou do catálogo.
 
+A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, rendimento, lucro, markup e margem da planilha. O rascunho é guardado apenas no navegador se a pessoa usar a opção de guardar. O simulador é independente do login e do catálogo.
+
 ## Conectar o catálogo persistente
 
 1. Use um projeto Supabase dedicado à Presente Doce. Faça a primeira aplicação das duas migrações de supabase/migrations, em ordem, em um projeto de teste. A segunda migração importa os produtos existentes e preserva linhas que já tenham o mesmo ID.

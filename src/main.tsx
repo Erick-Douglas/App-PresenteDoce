@@ -4,12 +4,14 @@ import App from './App';
 import './index.css';
 
 const Admin = lazy(() => import('./pages/AdminScreen'));
-const isAdmin = window.location.pathname.replace(/\/$/, '') === '/admin';
+const Pricing = lazy(() => import('./pages/PricingScreen'));
+const path = window.location.pathname.replace(/\/$/, '');
+const Screen = path === '/admin' ? Admin : path === '/precificacao' ? Pricing : App;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Suspense fallback={<p className="p-4" role="status">A carregar…</p>}>
-      {isAdmin ? <Admin /> : <App />}
+      <Screen />
     </Suspense>
   </StrictMode>,
 );

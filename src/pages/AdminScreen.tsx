@@ -188,7 +188,10 @@ export default function AdminScreen() {
     <main className="mx-auto min-h-screen max-w-3xl space-y-5 px-4 py-6 sm:px-8">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 pb-4">
         <div><a href="/" className="text-sm font-semibold text-primary underline">Presente Doce</a><h1 className="font-headline text-2xl font-extrabold">Gestão do catálogo</h1></div>
-        {token && <button type="button" onClick={logout} className={secondary}>Sair</button>}
+        <div className="flex flex-wrap gap-2">
+          <a href="/precificacao" className={secondary}>Precificação</a>
+          {token && <button type="button" onClick={logout} className={secondary}>Sair</button>}
+        </div>
       </header>
       {!catalogConfigured ? (
         <p role="status">A gestão do catálogo será disponibilizada quando a base de dados estiver ligada.</p>

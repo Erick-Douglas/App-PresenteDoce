@@ -1,6 +1,6 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "npm run lint && npm test && npm run build",
+  "buildCommand": "npm run lint && npm test && node tests/catalog-live.mjs && npm run build",
   "headers": [
     {
       "source": "/(.*)",
@@ -35,11 +35,24 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/precificacao",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ],
   "rewrites": [
     {
       "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/precificacao",
       "destination": "/index.html"
     }
   ]
