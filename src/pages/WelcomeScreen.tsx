@@ -1,20 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Instagram, Facebook, MessageCircle } from 'lucide-react';
+import { Instagram, Facebook, Menu, MessageCircle } from 'lucide-react';
 import { SPLASH_IMAGE, BUSINESS_INFO } from '../config/constants';
 import { View } from '../config/types';
 
 interface WelcomeScreenProps {
   onNavigate: (view: View) => void;
-  onLogin?: () => void;
+  onOpenMenu: () => void;
 }
 
-export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onLogin }) => {
+export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onOpenMenu }) => {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="relative h-screen flex flex-col items-center justify-center overflow-hidden bg-primary">
       <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
         style={{ backgroundImage: `url('${SPLASH_IMAGE}')` }} />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
+      <button type="button" aria-label="Abrir menu" onClick={onOpenMenu} className="absolute top-5 left-5 z-20 grid size-11 place-items-center rounded-full text-cream hover:bg-white/10">
+        <Menu size={24} strokeWidth={1.5} />
+      </button>
 
       <div className="relative z-20 w-full px-6 pb-6 flex flex-col items-center text-center space-y-4">
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-2">
@@ -32,7 +35,6 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onLogi
             className="w-full max-w-xs py-4 bg-gold text-primary rounded-2xl font-headline font-black text-sm uppercase tracking-[0.1em] shadow-xl active:scale-95 transition-transform">
             Ver Cardápio
           </button>
-          {onLogin && <button type="button" onClick={onLogin} className="min-h-11 px-4 font-headline text-sm font-bold text-cream underline">Entrar</button>}
 
           {/* Redes sociais abaixo do botão */}
           <div className="flex justify-center gap-5 pt-1">

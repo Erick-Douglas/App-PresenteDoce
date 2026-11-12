@@ -1,5 +1,5 @@
 import type { Product } from '../../config/types';
-import { readAdminLinkToken, type AdminLinkType } from './adminLink';
+import { readManualRecoveryToken } from './adminLink';
 
 const configuredUrl = String(import.meta.env.VITE_CATALOG_SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
@@ -60,23 +60,24 @@ async function assertCatalogAdmin(token: string) {
   }
 }
 
-export async function redeemAdminLink(link: string, type: AdminLinkType) {
-  const tokenHash = readAdminLinkToken(link, serviceUrl, type);
+export async function redeemManualRecoveryLink(link: string) {
+  const tokenHash = readManualRecoveryToken(link, serviceUrl);
   const result = await request<{ access_token: string }>('/auth/v1/verify', {
     method: 'POST',
-    body: JSON.stringify({ token_hash: tokenHash, type }),
+    body: JSON.stringify({ token_hash: tokenHash, type: 'recovery' }),
   }).catch(() => {
     throw new Error('Este link não pôde ser validado. Use o endereço completo do e-mail mais recente, antes de abrir o link.');
   });
-  await assertCatalogAdmin(result.access_token);
   return result.access_token;
 }
 
-export async function requestAdminRecovery(email: string) {
-  await request('/auth/v1/recover', { method: 'POST', body: JSON.stringify({ email }) });
+export async function requestAdminRecovery(email: string, redirectTo: string) {
+  const query = new URLSearchParams({ redirect_to: redirectTo });
+  await request('/auth/v1/recover?' + query, { method: 'POST', body: JSON.stringify({ email }) });
 }
 
 export async function setAdminPassword(token: string, password: string) {
+  await assertCatalogAdmin(token);
   await request('/auth/v1/user', { method: 'PUT', body: JSON.stringify({ password }) }, token);
 }
 

@@ -11,8 +11,7 @@ interface HomeScreenProps {
   cart: CartItem[];
   favorites: string[];
   onOpenMenu: () => void;
-  onLogin?: () => void;
-  homeBgConfig: { type: 'color' | 'image'; value: string };
+  isAdmin: boolean;
   onSetCategory: (cat: string) => void;
   onProductClick: (product: Product) => void;
   onEditProduct?: (id: string) => void;
@@ -23,7 +22,7 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
   products, cart, favorites,
-  onOpenMenu, onLogin, homeBgConfig,
+  onOpenMenu, isAdmin,
   onSetCategory, onProductClick, onEditProduct, onToggleFavorite, onToggleCartItem, onNavigate,
 }) => {
   const topSellersImages = useMemo(() => [1, 2, 3]
@@ -85,7 +84,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen pb-32 bg-stone-50">
-      <Header onOpenMenu={onOpenMenu} onLogin={onLogin} />
+      <Header onOpenMenu={onOpenMenu} />
       
       <main>
         {/* ── Hero Carousel ── */}
@@ -125,6 +124,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* ── Conteúdo principal ── */}
         <div className="-mt-8 bg-stone-50 rounded-t-[32px] md:rounded-t-[48px] relative z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] pt-8 min-h-screen">
           <div className="max-w-[1200px] mx-auto space-y-6">
+            {isAdmin && (
+              <section aria-labelledby="admin-greeting" className="mx-4 rounded-3xl border border-stone-200 bg-porcelain px-5 py-5 md:mx-6 md:px-8 md:py-6">
+                <h1 id="admin-greeting" className="font-editorial text-4xl leading-none text-primary md:text-5xl">Olá, Gabriela!</h1>
+                <p className="mt-2.5 text-sm leading-relaxed text-stone-700 md:text-base">O que vamos fazer hoje na Presente Doce?</p>
+              </section>
+            )}
 
             {/* Renderização condicional baseada na busca */}
             {filteredProducts ? (

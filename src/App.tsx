@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useEffect, useLayoutEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 
@@ -6,6 +6,7 @@ import { useCart } from './features/cart/useCart';
 import { useCatalog } from './features/products/useCatalog';
 import { useFavorites } from './features/products/useFavorites';
 import { signOut, toProduct, type CatalogRow, type CatalogSession } from './features/products/catalogApi';
+import { readRecoveryCallback } from './features/products/adminLink';
 
 import { Product, View, CartItem } from './config/types';
 
@@ -22,7 +23,7 @@ import { Sidebar } from './components/Sidebar';
 import { FloatingCart } from './components/FloatingCart';
 import { StoreDialog } from './components/StoreDialog';
 
-const AccountForm = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.AccountForm })));
+const AccountForm = lazy(() => import('./pages/AccountForm'));
 const CatalogManagement = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.CatalogManagement })));
 const CatalogEditor = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.CatalogEditor })));
 const PricingScreen = lazy(() => import('./pages/PricingScreen'));
@@ -53,13 +54,17 @@ export default function App() {
   const [activeRecCategory, setActiveRecCategory] = useState('all');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [session, setSession] = useState<CatalogSession | null>(null);
-  const [panel, setPanel] = useState<StorePanel | null>(() => entryPanel() ? { type: 'login' } : null);
+  const [recoveryCallback, setRecoveryCallback] = useState(() => readRecoveryCallback(new URL(window.location.href)));
+  const [panel, setPanel] = useState<StorePanel | null>(() => entryPanel() || recoveryCallback ? { type: 'login' } : null);
   const [notice, setNotice] = useState('');
-  const [homeBgConfig] = useState({ type: 'color' as 'color' | 'image', value: '#800000' });
 
   const { cart, cartTotal, showSuccessToast, addToCart, updateQuantity, toggleCartItem, updateCartItem } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
   const { products, status, reload, applyChange } = useCatalog();
+
+  useLayoutEffect(() => {
+    if (recoveryCallback) window.history.replaceState(window.history.state, '', '/admin?recuperar=1');
+  }, [recoveryCallback]);
 
   useEffect(() => {
     if (!session) return;
@@ -98,6 +103,8 @@ export default function App() {
   }, [currentView]);
 
   function closePanel() {
+    if (recoveryCallback && 'token' in recoveryCallback) void signOut(recoveryCallback.token).catch(() => {});
+    setRecoveryCallback(null);
     if (entryPanel()) window.history.replaceState(window.history.state, '', '/' + window.location.hash);
     setPanel(null);
   }
@@ -107,8 +114,8 @@ export default function App() {
     setSession(next);
     closePanel();
     if (destination === 'pricing') setPanel({ type: 'pricing' });
-    if (currentView === 'welcome') handleNavigate('home');
-    setNotice('Acesso à gestão do catálogo ativo.');
+    handleNavigate('home');
+    setNotice('');
   }
 
   function handleLogout() {
@@ -187,7 +194,7 @@ export default function App() {
         )}
         <main className="min-h-screen flex flex-col">
           <AnimatePresence mode="wait">
-            {currentView === 'welcome' && <WelcomeScreen key="welcome" onNavigate={handleNavigate} onLogin={session ? undefined : openLogin} />}
+            {currentView === 'welcome' && <WelcomeScreen key="welcome" {...commonProps} />}
 
             {currentView === 'home' && (
               <HomeScreen
@@ -195,8 +202,7 @@ export default function App() {
                 products={products}
                 cart={cart}
                 favorites={favorites}
-                homeBgConfig={homeBgConfig}
-                onLogin={session ? undefined : openLogin}
+                isAdmin={!!session}
                 {...commonProps}
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
@@ -296,7 +302,9 @@ export default function App() {
             <Suspense fallback={<p role="status">A carregar…</p>}>
               {panel.type === 'login' && <AccountForm
                 initialRecovery={entryPanel() === 'login' && new URLSearchParams(window.location.search).get('recuperar') === '1'}
+                callback={recoveryCallback}
                 onLogin={handleLogin}
+                onRecoveryComplete={() => setRecoveryCallback(null)}
               />}
               {panel.type === 'catalog' && session && <>
                 {notice && <p role="status" className="mb-4 font-semibold text-primary">{notice}</p>}

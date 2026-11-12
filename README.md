@@ -14,7 +14,7 @@ O app web usa React, TypeScript e Vite. A Vercel publica o frontend. O Supabase 
 | `/admin` | Atalho para abrir o acesso na própria loja, incluindo os links de recuperação já usados. |
 | `/precificacao` | Atalho autenticado para o simulador de custo e margem com rascunho local. |
 
-A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. Na loja oficial, use **Menu → Entrar** e a conta da confeitaria. Após a entrada, **Gerir catálogo** abre a lista com rascunhos e **Novo produto** abre o formulário. **Editar produto** também aparece nos cartões e nos detalhes da vitrine.
+A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. Na loja oficial, use **Menu → Entrar** e a conta da confeitaria. A página inicial saúda Gabriela após a autenticação. **Gerir catálogo** abre a lista com rascunhos e **Novo produto** abre o formulário. **Editar produto** aparece nos cartões e nos detalhes da vitrine.
 
 ## Desenvolvimento
 
@@ -49,8 +49,7 @@ A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, re
 
 ## Operação
 
-- No primeiro acesso, abra /admin e selecione Ativar acesso. Copie o endereço do convite do Supabase sem abri-lo. Cole-o no painel e defina a palavra-passe. O painel valida o convite no Supabase e verifica a autorização antes de aceitar a nova palavra-passe.
-- Para recuperar a senha, use Esqueci a senha no painel e solicite o e-mail de recuperação. Copie o endereço do botão do novo e-mail sem abri-lo, cole em Redefinir senha e defina uma nova senha. O painel aceita apenas o link de recuperação do projeto configurado.
+- Use **Menu → Entrar → Esqueci a senha** e solicite o e-mail de recuperação. Com o redirecionamento confirmado no Supabase, o botão do e-mail abre a nova senha. Durante a configuração do redirecionamento, **Usar link manualmente** aparece depois do pedido e aceita o endereço do botão do e-mail antes de o abrir. [Configuração](docs/DEPLOY.md#recuperação-de-senha)
 - A lista privada de administradores controla gravação no Postgres e upload no Storage por RLS. Para remover o acesso de uma conta, retire seu UUID da lista e encerre suas sessões no Supabase Auth.
 - A sessão fica em memória enquanto a pessoa navega pela loja. Recarregar a página exige entrar novamente. Use **Sair da conta** ao terminar. Edição e exclusão conferem a versão do registro antes de gravar. **Excluir produto** exige confirmação. Para ocultar temporariamente, desmarque **Mostrar no catálogo público** e guarde.
 - Fotos de produto são públicas por URL. O painel reprocessa JPG, PNG e WebP para WebP e limita o tamanho. Envie somente imagens de catálogo. Preserve as imagens antigas até conferir referências e backups antes de removê-las no Storage.
