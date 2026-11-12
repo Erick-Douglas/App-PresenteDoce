@@ -15,7 +15,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onOpen
       <div className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
         style={{ backgroundImage: `url('${SPLASH_IMAGE}')` }} />
       <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/50 to-transparent z-10" />
-      <button type="button" aria-label="Abrir menu" onClick={onOpenMenu} className="absolute top-5 left-5 z-20 grid size-11 place-items-center rounded-full text-cream hover:bg-white/10">
+      <button type="button" aria-label="Abrir menu" onClick={onOpenMenu} className="absolute top-5 left-5 z-20 grid size-11 place-items-center rounded-full text-on-primary hover:bg-surface/10">
         <Menu size={24} strokeWidth={1.5} />
       </button>
 
@@ -24,7 +24,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onOpen
           <div className="flex justify-center">
             <img src="/logo.png" alt="Logo" className="h-28 sm:h-36 w-auto object-contain drop-shadow-2xl brightness-110" />
           </div>
-          <p className="font-body text-cream/90 text-sm sm:text-base leading-relaxed font-medium max-w-[280px] mx-auto">
+          <p className="text-on-primary/90 text-sm sm:text-base leading-relaxed font-normal max-w-[280px] mx-auto">
             Feitos com carinho para surpreender em cada detalhe.
           </p>
         </motion.div>
@@ -32,7 +32,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onOpen
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="w-full flex flex-col items-center space-y-3">
           {/* Botão */}
           <button onClick={() => onNavigate('home')}
-            className="w-full max-w-xs py-4 bg-gold text-primary rounded-2xl font-headline font-black text-sm uppercase tracking-[0.1em] shadow-xl active:scale-95 transition-transform">
+            className="type-label w-full max-w-xs py-4 bg-gold text-on-accent rounded-2xl shadow-xl active:scale-95 transition-transform">
             Ver Cardápio
           </button>
 
@@ -44,13 +44,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate, onOpen
               { icon: MessageCircle, href: `https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, label: 'WhatsApp' },
             ].map(({ icon: Icon, href, label }) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer"
-                className="w-10 h-10 bg-white/10 border border-white/20 rounded-full flex items-center justify-center text-cream/70 hover:text-cream hover:bg-white/20 transition-all">
+                className="w-10 h-10 bg-surface/10 border border-surface/20 rounded-full flex items-center justify-center text-on-primary/70 hover:text-on-primary hover:bg-surface/20 transition-all">
                 <Icon size={18} />
               </a>
             ))}
           </div>
 
-          <p className="text-cream/50 font-body text-[10px] tracking-widest uppercase">
+          <p className="text-on-primary/50 text-xs tracking-widest uppercase">
             © 2026 Presente Doce
           </p>
         </motion.div>

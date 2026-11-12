@@ -1,0 +1,101 @@
+@font-face {
+  font-family: 'Lato';
+  src: url('/fonts/lato-latin-400-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Lato';
+  src: url('/fonts/lato-latin-700-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Great Vibes';
+  src: url('/fonts/great-vibes-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@layer theme {
+  :root {
+    --pd-font-body: 'Lato', system-ui, sans-serif;
+    --pd-font-display: 'Great Vibes', 'Palatino Linotype', Georgia, serif;
+    --pd-weight-regular: 400;
+    --pd-weight-emphasis: 700;
+
+    --pd-size-display: clamp(2.4rem, 10vw, 4.2rem);
+    --pd-size-page: clamp(1.625rem, 5.6vw, 2.125rem);
+    --pd-size-section: clamp(1.125rem, 4.6vw, 1.375rem);
+    --pd-size-body: 1rem;
+    --pd-size-small: 0.875rem;
+    --pd-size-caption: 0.75rem;
+    --pd-leading-display: 1.12;
+    --pd-leading-title: 1.2;
+    --pd-leading-body: 1.5;
+
+    --pd-color-brand: #800000;
+    --pd-color-cream: #fff6db;
+    --pd-color-accent: #fbce00;
+    --pd-color-on-strong: #ffffff;
+    --pd-color-canvas: #fffcf7;
+    --pd-color-surface: #ffffff;
+    --pd-color-subtle: #fafaf9;
+    --pd-color-muted-fill: #f5f5f4;
+    --pd-color-ink: #1a1a1a;
+    --pd-color-muted: #57534e;
+    --pd-color-border: #e7e5e4;
+    --pd-color-border-strong: #d6d3d1;
+    --pd-color-overlay: #0c0a09;
+
+    --pd-hero-warm: #b7653d;
+    --pd-hero-honey: #ecc28a;
+    --pd-hero-glow: #d5671a;
+    --pd-hero-transition: clamp(2rem, 7.5vw, 2.5rem);
+    --pd-hero-after-search: clamp(0.875rem, 3.3vw, 1.25rem);
+    --pd-glass-tint: #ffe5d1;
+    --pd-glass-shadow: #2b090d;
+  }
+
+  :root, .app-theme {
+    --pd-color-on-brand: var(--pd-color-cream);
+    --pd-color-on-accent: var(--pd-color-brand);
+    --pd-hero-top: color-mix(in srgb, var(--pd-color-brand) 20%, #1b0b10);
+    --pd-hero-mid: color-mix(in srgb, var(--pd-color-brand) 70%, #270a12);
+    --pd-hero-edge: color-mix(in srgb, var(--pd-color-brand) 91%, #bc572f);
+  }
+}
+
+@theme inline {
+  --font-sans: var(--pd-font-body);
+  --font-weight-normal: var(--pd-weight-regular);
+  --font-weight-bold: var(--pd-weight-emphasis);
+
+  --text-xs: var(--pd-size-caption);
+  --text-xs--line-height: var(--pd-leading-body);
+  --text-sm: var(--pd-size-small);
+  --text-sm--line-height: var(--pd-leading-body);
+  --text-base: var(--pd-size-body);
+  --text-base--line-height: var(--pd-leading-body);
+
+  --color-primary: var(--pd-color-brand);
+  --color-cream: var(--pd-color-cream);
+  --color-gold: var(--pd-color-accent);
+  --color-on-primary: var(--pd-color-on-brand);
+  --color-on-accent: var(--pd-color-on-accent);
+  --color-on-strong: var(--pd-color-on-strong);
+  --color-porcelain: var(--pd-color-canvas);
+  --color-surface: var(--pd-color-surface);
+  --color-subtle: var(--pd-color-subtle);
+  --color-muted-fill: var(--pd-color-muted-fill);
+  --color-on-surface: var(--pd-color-ink);
+  --color-muted: var(--pd-color-muted);
+  --color-outline: var(--pd-color-border);
+  --color-outline-strong: var(--pd-color-border-strong);
+  --color-overlay: var(--pd-color-overlay);
+}

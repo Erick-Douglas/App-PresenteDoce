@@ -88,9 +88,9 @@ export function AuthChallenge({ onToken }: { onToken: (token: string) => void })
     <div>
       <div ref={container} />
       {failed && (
-        <div className="space-y-1 text-sm text-stone-700">
+        <div className="space-y-1 text-sm text-on-surface">
           <p role="status">A verificação de segurança não carregou.</p>
-          <button type="button" className="min-h-11 font-semibold text-primary underline" onClick={() => {
+          <button type="button" className="min-h-11 font-bold text-primary underline" onClick={() => {
             setFailed(false);
             setRetry(value => value + 1);
           }}>Tentar novamente</button>

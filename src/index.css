@@ -1,33 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap');
 @import "tailwindcss";
-
-@font-face {
-  font-family: 'Great Vibes';
-  src: url('/fonts/great-vibes-latin.woff2') format('woff2');
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-}
-
-@theme {
-  --font-headline: "Lato", sans-serif;
-  --font-body: "Lato", sans-serif;
-  --font-logo: "Great Vibes", "Palatino Linotype", Georgia, serif;
-  --font-editorial: "Lato", sans-serif;
-  
-  --color-primary: #800000; /* Bordô Absoluto */
-  --color-primary-container: #FBCE00; /* Ouro Vivo */
-  --color-on-primary: #FFF6DB; /* Cream Dream */
-  --color-cream: #FFF6DB;
-  --color-porcelain: #FFFCF7;
-  --color-gold: #FBCE00;
-  --color-surface: #FFFFFF; /* Changed to pure white */
-  --color-on-surface: #1A1A1A;
-  --color-on-surface-variant: #4A4A4A;
-  --color-surface-container-highest: #f4edd4;
-  --color-surface-container-low: #f9f2dc;
-  --color-surface-container-lowest: #ffffff;
-}
+@import "./design-system/tokens.css";
+@import "./design-system/typography.css";
 
 @layer components {
   .brand-wordmark {
@@ -37,9 +10,7 @@
   }
 
   .home-surface {
-    background:
-      radial-gradient(ellipse 35rem 21rem at 95% 25rem, rgb(251 206 0 / 11%), transparent 80%),
-      linear-gradient(180deg, var(--color-cream) 25rem, var(--color-porcelain) 52rem);
+    background: var(--pd-color-cream);
   }
 
   .home-hero {
@@ -47,44 +18,73 @@
     isolation: isolate;
     overflow: hidden;
     padding-block-start: env(safe-area-inset-top, 0px);
+    padding-block-end: calc(var(--pd-hero-after-search) + var(--pd-hero-transition));
+    background: linear-gradient(
+      to bottom,
+      var(--pd-hero-top),
+      var(--pd-hero-mid) 40%,
+      var(--pd-hero-edge) calc(100% - var(--pd-hero-transition) - 0.375rem)
+    );
   }
 
   .home-hero::before {
     content: '';
     position: absolute;
     z-index: -1;
-    inset: 0;
+    inset: 0 0 var(--pd-hero-transition);
     background:
-      radial-gradient(ellipse clamp(12rem, 35vw, 34rem) 15rem at 104% 29%, transparent 97.8%, rgb(251 206 0 / 17%) 98.1%, transparent 98.55%),
-      radial-gradient(ellipse 65% 78% at 98% 50%, rgb(213 103 26 / 29%), transparent 77%),
-      linear-gradient(175deg, #24080d, #500a10 32%, var(--color-primary) 63%, #a34432);
-    mask-image: linear-gradient(180deg, #000 60%, rgb(0 0 0 / 95%) 69%, rgb(0 0 0 / 66%) 79%, rgb(0 0 0 / 24%) 90%, transparent 100%);
+      radial-gradient(ellipse clamp(12rem, 35vw, 34rem) 15rem at 104% 29%, transparent 97.8%, color-mix(in srgb, var(--pd-color-accent) 17%, transparent) 98.1%, transparent 98.55%),
+      radial-gradient(ellipse 65% 78% at 98% 50%, color-mix(in srgb, var(--pd-hero-glow) 29%, transparent), transparent 77%);
+    mask-image: linear-gradient(#000 32%, transparent);
     pointer-events: none;
   }
 
+  .home-hero::after {
+    --transition-direction: 180deg;
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: auto 0 0;
+    height: var(--pd-hero-transition);
+    background: linear-gradient(
+      var(--transition-direction),
+      var(--pd-hero-edge) 5%,
+      var(--pd-hero-warm) 42%,
+      var(--pd-hero-honey) 75%,
+      var(--pd-color-cream) 97%
+    );
+    pointer-events: none;
+  }
+
+  @supports (background: linear-gradient(180deg in oklab, red, blue)) {
+    .home-hero::after {
+      --transition-direction: 180deg in oklab;
+    }
+  }
+
   .home-search {
-    border: 1px solid rgb(255 255 255 / 78%);
+    border: 1px solid color-mix(in srgb, var(--pd-color-surface) 78%, transparent);
     background:
-      linear-gradient(175deg, rgb(255 255 255 / 53%), transparent 48%),
-      linear-gradient(110deg, rgb(255 250 240 / 89%), rgb(255 229 209 / 79%));
+      linear-gradient(175deg, color-mix(in srgb, var(--pd-color-surface) 53%, transparent), transparent 48%),
+      linear-gradient(110deg, color-mix(in srgb, var(--pd-color-canvas) 89%, transparent), color-mix(in srgb, var(--pd-glass-tint) 79%, transparent));
     -webkit-backdrop-filter: blur(18px) saturate(1.2);
     backdrop-filter: blur(18px) saturate(1.2);
-    color: #382222;
+    color: var(--pd-color-ink);
     box-shadow:
-      inset 0 1px 2px rgb(255 255 255 / 95%),
-      inset 0 -2px 4px rgb(111 47 30 / 16%),
-      0 2px 2px rgb(43 9 13 / 25%),
-      0 8px 20px rgb(43 9 13 / 22%);
+      inset 0 1px 2px color-mix(in srgb, var(--pd-color-surface) 95%, transparent),
+      inset 0 -2px 4px color-mix(in srgb, var(--pd-glass-shadow) 16%, transparent),
+      0 2px 2px color-mix(in srgb, var(--pd-glass-shadow) 25%, transparent),
+      0 8px 20px color-mix(in srgb, var(--pd-glass-shadow) 22%, transparent);
   }
 
   .home-search:focus-within {
-    outline: 2px solid var(--color-cream);
+    outline: 2px solid var(--pd-color-cream);
     outline-offset: 3px;
   }
 
   .home-rail {
     scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--color-primary) 26%, var(--color-cream)) transparent;
+    scrollbar-color: color-mix(in srgb, var(--pd-color-brand) 26%, var(--pd-color-cream)) transparent;
   }
 }
 
@@ -96,9 +96,12 @@
   }
 
   body {
-    background-color: #fafaf9; /* bg-stone-50 */
-    color: var(--color-on-surface);
-    font-family: var(--font-body);
+    background-color: var(--pd-color-canvas);
+    color: var(--pd-color-ink);
+    font-family: var(--pd-font-body);
+    font-size: var(--pd-size-body);
+    font-weight: var(--pd-weight-regular);
+    line-height: var(--pd-leading-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;

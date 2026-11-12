@@ -1,10 +1,12 @@
 # PRD — Presente Doce
 
-**Versão 0.4 · 12/11/2026**
+**Versão 0.5 · 12/11/2026**
 
 ## Produto
 
 A Presente Doce é uma **loja online de encomendas de confeitaria artesanal**. A arquitetura é de **loja de vendedor único** com catálogo, carrinho e encaminhamento para o WhatsApp. O app é o destino principal do link da bio. O cliente escolhe produtos e envia o pedido. Gabriela confirma disponibilidade, entrega e pagamento no atendimento.
+
+A classificação técnica atual é **web app de encomendas diretas para negócios de alimentação**, na categoria de e-commerce alimentar. A Presente Doce usa checkout assistido via WhatsApp, com recolha ou entrega. A classificação segue o uso de *online ordering* para pedidos pelo canal próprio do negócio. [Square Online Ordering](https://squareup.com/us/en/online-ordering)
 
 **Link oficial da bio:** [presente-doce.vercel.app](https://presente-doce.vercel.app/)  
 **Texto sugerido:** Confeitaria artesanal por encomenda. Consulte o catálogo e faça o pedido pelo WhatsApp.
@@ -41,6 +43,10 @@ O app coleta dados de contacto para compor a mensagem. Carrinho e dados pessoais
 ## Plataforma por assinatura para outros negócios
 
 Erick pretende oferecer a vitrine e o painel por mensalidade a confeitarias, tapiocarias e outros pequenos negócios de alimentação. A Presente Doce serve de piloto. A vitrine e o catálogo compartilham componentes, e o código concentra a configuração inicial de nome, descrição e contacto. A base e as permissões da produção atual atendem uma loja.
+
+A oferta futura é um **SaaS vertical de encomendas diretas para negócios de alimentação**, com marca própria por loja. O modelo vende a assinatura ao lojista, que opera sua vitrine para os clientes. Flipdish é uma referência de mercado para site com marca própria, gestão de menu e pedidos diretos por assinatura. [Flipdish Online Ordering](https://www.flipdish.com/gb/best-online-ordering)
+
+O tema da Presente Doce é editável pelo código. A etapa de personalização no painel pode reutilizar os tokens para cores e tipografia, com valores validados e escopo por loja. [Design System](DESIGN_SYSTEM.md)
 
 | Etapa | Entrega | Verificação |
 | --- | --- | --- |

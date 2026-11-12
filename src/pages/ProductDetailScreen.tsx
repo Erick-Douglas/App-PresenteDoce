@@ -53,7 +53,7 @@ const RECHEIOS_BT = [
 // ── Badge "Obrigatório" ───────────────────────────────────────────────────────
 function RequiredBadge({ done }: { done: boolean }) {
   return (
-    <span className={`flex items-center gap-1 text-[11px] font-black px-2.5 py-1 rounded transition-colors ${done ? 'bg-primary text-cream' : 'bg-red-500 text-white'}`}>
+    <span className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded transition-colors ${done ? 'bg-primary text-on-primary' : 'bg-red-500 text-on-strong'}`}>
       {done && <Check size={10} strokeWidth={3} />}
       Obrigatório
     </span>
@@ -72,8 +72,8 @@ function RadioRow({ label, priceLabel, selected, onClick }: {
       <div className={`w-[22px] h-[22px] rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? 'border-primary shadow-[0_0_0_4px_rgba(128,0,0,0.1)]' : 'border-black/20'}`}>
         {selected && <div className="w-[12px] h-[12px] rounded-full bg-primary" />}
       </div>
-      <span className="flex-1 font-body text-[14px] text-black leading-snug">{label}</span>
-      {priceLabel && <span className="font-bold text-[14px] text-primary shrink-0">{priceLabel}</span>}
+      <span className="flex-1 text-sm text-on-surface leading-snug">{label}</span>
+      {priceLabel && <span className="font-bold text-sm text-primary shrink-0">{priceLabel}</span>}
     </button>
   );
 }
@@ -88,10 +88,10 @@ function CheckRow({ label, priceLabel, selected, onClick }: {
       className="w-full flex items-center gap-3 py-3.5 border-b border-black/[0.05] last:border-0 active:bg-black/[0.02] transition-colors text-left"
     >
       <div className={`w-[22px] h-[22px] rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? 'border-primary bg-primary shadow-[0_0_0_4px_rgba(128,0,0,0.1)]' : 'border-black/20'}`}>
-        {selected && <Check size={12} strokeWidth={3} className="text-white" />}
+        {selected && <Check size={12} strokeWidth={3} className="text-on-strong" />}
       </div>
-      <span className="flex-1 font-body text-[14px] text-black leading-snug">{label}</span>
-      {priceLabel && <span className="font-bold text-[14px] text-primary shrink-0">{priceLabel}</span>}
+      <span className="flex-1 text-sm text-on-surface leading-snug">{label}</span>
+      {priceLabel && <span className="font-bold text-sm text-primary shrink-0">{priceLabel}</span>}
     </button>
   );
 }
@@ -101,13 +101,13 @@ function Section({ title, done, optional, hint, children }: {
   title: string; done?: boolean; optional?: boolean; hint?: string; children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white">
+    <div className="bg-surface">
       <div className="px-6 pt-5 pb-1 flex justify-between items-center gap-3">
-        <h3 className="font-headline font-black text-[17px] text-black leading-tight">{title}</h3>
+        <h2 className="type-section text-on-surface">{title}</h2>
         {!optional && <RequiredBadge done={!!done} />}
-        {optional && <span className="text-[11px] font-bold text-black/30 px-2.5 py-1 border border-black/10 rounded">Opcional</span>}
+        {optional && <span className="text-xs font-bold text-muted px-2.5 py-1 border border-black/10 rounded">Opcional</span>}
       </div>
-      {hint && <p className="px-6 pb-1 text-[12px] text-black/40 font-body">{hint}</p>}
+      {hint && <p className="px-6 pb-1 text-xs text-muted">{hint}</p>}
       <div className="px-6 pb-2">{children}</div>
     </div>
   );
@@ -221,19 +221,19 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const fmtExtra = (extra: number) => '+' + formatEuros(extra);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-stone-50">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-subtle">
 
       {/* Botões flutuantes */}
       <div className="fixed top-0 inset-x-0 z-50 flex justify-between items-center p-4 pointer-events-none">
         <button
           onClick={onBack}
-          className="w-10 h-10 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-md active:scale-90 transition-transform pointer-events-auto border border-black/5"
+          className="w-10 h-10 bg-surface/95 backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-md active:scale-90 transition-transform pointer-events-auto border border-black/5"
         >
           <ArrowLeft size={18} />
         </button>
         <button
           onClick={(e) => onToggleFavorite(product.id, e)}
-          className={`w-10 h-10 rounded-full shadow-md backdrop-blur-md transition-all active:scale-125 flex items-center justify-center pointer-events-auto border ${isFav ? 'bg-primary text-cream border-primary' : 'bg-white/95 text-primary border-black/5'}`}
+          className={`w-10 h-10 rounded-full shadow-md backdrop-blur-md transition-all active:scale-125 flex items-center justify-center pointer-events-auto border ${isFav ? 'bg-primary text-on-primary border-primary' : 'bg-surface/95 text-primary border-black/5'}`}
         >
           <Heart size={18} className={isFav ? 'fill-cream' : ''} />
         </button>
@@ -244,43 +244,43 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         {/* ── Imagem ── */}
         <div className="md:sticky md:top-0 md:h-screen md:w-[42%] shrink-0">
-          <div className="aspect-square md:h-screen md:w-full w-full bg-stone-100">
+          <div className="aspect-square md:h-screen md:w-full w-full bg-muted-fill">
             <img src={product.image} alt={product.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
           </div>
         </div>
 
         {/* ── Formulário ── */}
         <div className="flex-1 md:overflow-y-auto md:h-screen">
-          <div className="relative -mt-12 md:mt-0 rounded-t-[32px] md:rounded-t-none overflow-hidden bg-white shadow-[0_-12px_40px_rgba(0,0,0,0.06)] md:shadow-none pb-36">
+          <div className="relative -mt-12 md:mt-0 rounded-t-[32px] md:rounded-t-none overflow-hidden bg-surface shadow-[0_-12px_40px_rgba(0,0,0,0.06)] md:shadow-none pb-36">
 
             {/* Cabeçalho: nome, descrição, preço */}
-            <div className="px-6 pt-6 pb-4 bg-white border-b border-black/[0.04]">
+            <div className="px-6 pt-6 pb-4 bg-surface border-b border-black/[0.04]">
               <div className="flex gap-2 mb-2 flex-wrap">
                 {product.isNew && (
-                  <span className="bg-gold/20 text-primary font-headline font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Novo ✨</span>
+                  <span className="bg-gold/20 text-primary font-bold text-xs px-2 py-0.5 rounded-full uppercase tracking-widest">Novo ✨</span>
                 )}
                 {isConfiguravel && (
-                  <span className="bg-primary/10 text-primary font-headline font-black text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Personalizável 🎨</span>
+                  <span className="bg-primary/10 text-primary font-bold text-xs px-2 py-0.5 rounded-full uppercase tracking-widest">Personalizável 🎨</span>
                 )}
               </div>
-              <h2 className="font-headline font-black text-[22px] text-black tracking-tight leading-tight mb-1">{product.name}</h2>
+              <h1 className="type-page mb-1 text-on-surface">{product.name}</h1>
               <ProductEditButton product={product} onEdit={onEditProduct} />
-              <p className="font-body text-[13px] text-black/50 leading-relaxed mb-3">{product.description}</p>
+              <p className="text-sm text-muted leading-relaxed mb-3">{product.description}</p>
 
               {/* Preço total — bem visível */}
               <div className="flex items-baseline gap-2">
                 {isConfiguravel && ((hasBoxOptions && !variant) || (!hasBoxOptions && !tamanho)) ? (
-                  <span className="font-body text-[13px] text-black/40">Selecione uma opção para ver o preço</span>
+                  <span className="text-sm text-muted">Selecione uma opção para ver o preço</span>
                 ) : (
                   <>
-                    <span className="font-headline font-black text-[28px] text-primary leading-none">
+                    <span className="type-page text-primary tabular-nums">
                       {formatEuros(calculatedPrice)}
                     </span>
                     {quantity > 1 && (
-                      <span className="font-body text-[12px] text-black/40">{quantity}x</span>
+                      <span className="text-xs text-muted">{quantity}x</span>
                     )}
                     {isConfiguravel && ((hasBoxOptions && variant) || (!hasBoxOptions && tamanho)) && (
-                      <span className="font-body text-[12px] text-black/40">estimado</span>
+                      <span className="text-xs text-muted">estimado</span>
                     )}
                   </>
                 )}
@@ -337,7 +337,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                       maxLength={300}
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Especifique quantidades ou outros detalhes aqui..."
-                    className="w-full h-24 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
+                    className="w-full h-24 bg-subtle rounded-xl p-3.5 text-base text-on-surface border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-muted mt-1"
                   />
                 </Section>
               </div>
@@ -401,7 +401,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                       maxLength={200}
                     onChange={(e) => setTema(e.target.value)}
                     placeholder="Ex: Mickey Mouse, azul e amarelo. Enviarei 2 fotos de referência no WhatsApp."
-                    className="w-full h-24 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
+                    className="w-full h-24 bg-subtle rounded-xl p-3.5 text-base text-on-surface border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-muted mt-1"
                   />
                 </Section>
 
@@ -412,7 +412,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                       maxLength={300}
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Alguma informação adicional?"
-                    className="w-full h-20 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
+                    className="w-full h-20 bg-subtle rounded-xl p-3.5 text-base text-on-surface border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-muted mt-1"
                   />
                 </Section>
               </div>
@@ -423,7 +423,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               <div className="divide-y divide-black/[0.06]">
                 <div className="px-6 py-4 bg-green-50 flex gap-3 items-center">
                   <Check size={16} className="text-green-600 shrink-0" />
-                  <p className="font-body text-[13px] text-green-700 font-semibold">Produto artesanal, pronto para encomendar.</p>
+                  <p className="text-sm text-green-700 font-bold">Produto artesanal, pronto para encomendar.</p>
                 </div>
                 <Section title="Observações" optional>
                   <textarea
@@ -431,7 +431,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                       maxLength={300}
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Algo especial que devemos saber?"
-                    className="w-full h-20 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
+                    className="w-full h-20 bg-subtle rounded-xl p-3.5 text-base text-on-surface border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-muted mt-1"
                   />
                 </Section>
               </div>
@@ -445,7 +445,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                       maxLength={300}
                   onChange={(e) => setObservations(e.target.value)}
                   placeholder="Alguma preferência ou pedido especial?"
-                  className="w-full h-20 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
+                  className="w-full h-20 bg-subtle rounded-xl p-3.5 text-base text-on-surface border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-muted mt-1"
                 />
               </Section>
             )}
@@ -454,15 +454,15 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       </div>
 
       {/* ── Barra de ação fixa ── */}
-      <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-lg border-t border-black/[0.04] shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
+      <div className="fixed bottom-0 inset-x-0 bg-surface/95 backdrop-blur-lg border-t border-black/[0.04] shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
         <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center gap-4">
           {/* Quantidade */}
-          <div className="flex items-center bg-stone-100 rounded-full h-12 px-2 shrink-0 gap-1">
-            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center text-black/40 hover:text-primary transition-colors rounded-full">
+          <div className="flex items-center bg-muted-fill rounded-full h-12 px-2 shrink-0 gap-1">
+            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary transition-colors rounded-full">
               <Minus size={16} />
             </button>
-            <span className="w-7 text-center font-headline font-black text-[15px] text-black">{quantity}</span>
-            <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center text-black/40 hover:text-primary transition-colors rounded-full">
+            <span className="w-7 text-center font-bold text-base text-on-surface">{quantity}</span>
+            <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary transition-colors rounded-full">
               <Plus size={16} />
             </button>
           </div>
@@ -471,10 +471,10 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           <button
             onClick={handleAdd}
             disabled={!canAdd}
-            className={`flex-1 h-12 rounded-full flex items-center justify-between px-5 font-headline font-bold text-[14px] tracking-wide transition-all ${
+            className={`flex-1 h-12 rounded-full flex items-center justify-between px-5 font-bold text-sm tracking-wide transition-all ${
               canAdd
-                ? 'bg-primary text-cream shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98]'
-                : 'bg-black/10 text-black/30 cursor-not-allowed'
+                ? 'bg-primary text-on-primary shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98]'
+                : 'bg-black/10 text-muted cursor-not-allowed'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -482,7 +482,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               <span>{editingItem ? 'Atualizar Produto' : (isConfiguravel ? 'Adicionar encomenda' : 'Adicionar')}</span>
             </div>
             {calculatedPrice > 0 && (
-              <span className={`font-black text-[15px] ${canAdd ? 'text-gold' : 'text-black/30'}`}>
+              <span className={`font-bold text-base ${canAdd ? 'text-gold' : 'text-muted'}`}>
                 {formatEuros(calculatedPrice)}
               </span>
             )}

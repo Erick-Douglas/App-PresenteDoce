@@ -16,32 +16,29 @@ interface CategoriesScreenProps {
 
 export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ categories, onOpenMenu, onNavigate, activeCategory, onSetCategory, onEditCategory }) => {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="min-h-screen pb-24 bg-white">
-      <header className="px-6 py-4 flex items-center sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="min-h-screen pb-24 bg-surface">
+      <header className="px-6 py-4 flex items-center sticky top-0 bg-surface/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
         <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary">
           <Menu size={20} />
         </button>
-        <h1 className="font-headline font-black text-sm text-primary flex-1 text-center pr-8 tracking-widest uppercase">Categorias</h1>
+        <h1 className="type-page flex-1 pr-8 text-center text-primary">Categorias</h1>
       </header>
 
       <main className="px-6 py-8 space-y-4">
         {categories.map((cat) => (
           <div className="flex items-center gap-2" key={cat.id ?? cat.name}>
-          <button
-            type="button"
-            className={`flex w-full items-center gap-5 p-4 text-left bg-white rounded-xl shadow-sm active:scale-95 transition-transform border ${activeCategory === cat.name ? 'border-primary shadow-md' : 'border-primary/5'}`}
-            onClick={() => { onSetCategory(cat.name); onNavigate('product-list'); }}
-          >
-            <div className="w-20 h-20 rounded-full overflow-hidden shadow-md border-2 border-gold/20 shrink-0">
-              <CategoryCover category={cat} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-headline font-bold text-xl text-primary">{cat.name}</h3>
-              <p className="font-body text-on-surface-variant text-sm italic truncate">Confira nossa seleção de {cat.name.toLowerCase()}</p>
-            </div>
-            <ChevronRight size={20} className="text-primary shrink-0" />
-          </button>
-          <CategoryEditButton category={cat} onEdit={onEditCategory} />
+            <button
+              type="button"
+              className={`flex w-full min-w-0 items-center gap-4 p-4 text-left bg-surface rounded-xl shadow-sm active:scale-95 transition-transform border ${activeCategory === cat.name ? 'border-primary shadow-md' : 'border-primary/5'}`}
+              onClick={() => { onSetCategory(cat.name); onNavigate('product-list'); }}
+            >
+              <span className="size-16 shrink-0 overflow-hidden rounded-full border-2 border-gold/20 shadow-md">
+                <CategoryCover category={cat} />
+              </span>
+              <span className="type-section min-w-0 flex-1 break-words text-primary">{cat.name}</span>
+              <ChevronRight size={20} className="shrink-0 text-primary" aria-hidden="true" />
+            </button>
+            <CategoryEditButton category={cat} onEdit={onEditCategory} />
           </div>
         ))}
       </main>

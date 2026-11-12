@@ -66,13 +66,13 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">Gerir catálogo</h1>
-          <p className="mt-1 text-sm text-stone-600">{categories.length} {categories.length === 1 ? 'categoria' : 'categorias'} · {rows.length} {rows.length === 1 ? 'produto' : 'produtos'}</p>
+          <h1 className="type-page text-primary">Gerir catálogo</h1>
+          <p className="mt-1 text-sm text-muted">{categories.length} {categories.length === 1 ? 'categoria' : 'categorias'} · {rows.length} {rows.length === 1 ? 'produto' : 'produtos'}</p>
         </div>
         <button type="button" className={catalogPrimary + ' inline-flex items-center gap-2'} onClick={onNew}><Plus size={17} aria-hidden="true" /> Novo produto</button>
       </div>
       {newName !== null && (
-        <form onSubmit={create} className="space-y-2 rounded-2xl border border-stone-200 bg-white p-4">
+        <form onSubmit={create} className="space-y-2 rounded-2xl border border-outline bg-surface p-4">
           <div className="flex flex-wrap items-end gap-2">
             <label className="min-w-44 flex-1 space-y-1 text-sm">
               <span>Nome da categoria</span>
@@ -88,15 +88,15 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
         <nav aria-label="Filtrar por categoria" className="flex flex-wrap items-start gap-1 md:flex-col">
           {[{ id: '', name: 'Todas' }, ...categories].map(category => (
             <button key={category.id} type="button" aria-pressed={current === category.id}
-              className="min-h-11 rounded-xl px-3 text-left text-sm text-stone-700 hover:bg-primary/5 aria-pressed:bg-primary/8 aria-pressed:font-bold aria-pressed:text-primary md:w-full"
+              className="min-h-11 rounded-xl px-3 text-left text-sm text-on-surface hover:bg-primary/5 aria-pressed:bg-primary/8 aria-pressed:font-bold aria-pressed:text-primary md:w-full"
               onClick={() => setSelected(category.id)}>{category.name}</button>
           ))}
           <button type="button" className={smallAction} onClick={() => setNewName('')}><Plus size={16} aria-hidden="true" /> Nova categoria</button>
         </nav>
         <section aria-label="Produtos por categoria" className="min-w-0 space-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <label className="flex min-w-40 flex-1 items-center gap-2 rounded-xl border border-stone-200 bg-white px-3">
-              <Search size={16} aria-hidden="true" className="text-stone-500" />
+            <label className="flex min-w-40 flex-1 items-center gap-2 rounded-xl border border-outline bg-surface px-3">
+              <Search size={16} aria-hidden="true" className="text-muted" />
               <span className="sr-only">Procurar produto</span>
               <input type="search" className="min-h-11 min-w-0 flex-1 bg-transparent text-base" value={query}
                 onChange={event => setQuery(event.target.value)} placeholder="Procurar produto" />
@@ -107,14 +107,14 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
                 onClick={() => setFilter(id)}>{label}</button>)}
             </div>
           </div>
-          {!groups.length && <p className="py-4 text-sm text-stone-600">Nenhum produto corresponde à seleção.</p>}
+          {!groups.length && <p className="py-4 text-sm text-muted">Nenhum produto corresponde à seleção.</p>}
           {groups.map(({ category, products }) => {
             const open = current === category.id || !!term || filter !== 'all' || expanded.has(category.id);
             const forced = current === category.id || !!term || filter !== 'all';
             return (
-              <section key={category.id} aria-label={category.name} className="rounded-2xl border border-stone-200 bg-white">
+              <section key={category.id} aria-label={category.name} className="rounded-2xl border border-outline bg-surface">
                 <div className="flex flex-wrap items-center justify-between gap-x-2 px-3 py-2 sm:px-4">
-                  <h2 className="break-words font-headline text-lg font-bold text-primary">{category.name}</h2>
+                  <h2 className="type-section break-words text-primary">{category.name}</h2>
                   <div className="flex flex-wrap items-center gap-1">
                     <button type="button" className={smallAction} aria-label={'Editar categoria ' + category.name} onClick={() => onEditCategory(category.id)}>
                       <Pencil size={16} aria-hidden="true" /> Editar categoria
@@ -126,13 +126,13 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
                   </div>
                 </div>
                 {open && (products.length ? (
-                  <ul className="divide-y divide-stone-100 border-t border-stone-100">
+                  <ul className="divide-y divide-muted-fill border-t border-muted-fill">
                     {products.map(row => (
                       <li key={row.id} className="flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
                         {row.details.image && <img src={imageUrl(row.details.image)} alt="" loading="lazy" className="size-10 shrink-0 rounded-lg object-cover sm:size-12" />}
                         <div className="min-w-0 flex-1">
                           <p className="break-words text-sm">{row.details.name}</p>
-                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-600">
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
                             <span className="tabular-nums">{formatEuros(row.details.price)}</span>
                             <span className={'rounded-full px-2 py-0.5 ' + (row.published ? 'bg-emerald-50 text-emerald-900' : 'bg-amber-50 text-amber-900')}>
                               {row.published ? 'Publicado' : 'Rascunho'}
@@ -145,7 +145,7 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
                       </li>
                     ))}
                   </ul>
-                ) : <p className="border-t border-stone-100 px-4 py-3 text-sm text-stone-600">Ainda não há produtos nesta categoria.</p>)}
+                ) : <p className="border-t border-muted-fill px-4 py-3 text-sm text-muted">Ainda não há produtos nesta categoria.</p>)}
               </section>
             );
           })}

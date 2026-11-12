@@ -33,6 +33,10 @@ A raiz abre o catálogo. O formulário de entrada informa quando falta configura
 
 A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, rendimento, lucro, markup e margem da planilha. O rascunho é guardado apenas no navegador se a pessoa usar a opção de guardar. O simulador é independente do login e do catálogo.
 
+## Design System
+
+O [Design System](docs/DESIGN_SYSTEM.md) documenta o tema usado pela vitrine e pelo painel. Edite a paleta, as fontes e a escala em [tokens.css](src/design-system/tokens.css).
+
 ## Conectar o catálogo persistente
 
 1. Use um projeto Supabase dedicado à Presente Doce. Faça a primeira aplicação das duas migrações de supabase/migrations, em ordem, em um projeto de teste. A segunda migração importa os produtos existentes e preserva linhas que já tenham o mesmo ID.

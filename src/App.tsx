@@ -227,7 +227,7 @@ export default function App() {
 
   const commonProps = { onNavigate: handleNavigate, onOpenMenu: () => setIsMenuOpen(true) };
   const catalogNotice = status !== 'ready' && (
-    <div className={'flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-800 ' +
+    <div className={'flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface ' +
       (currentView === 'home' ? 'mx-auto max-w-6xl px-4 py-2 sm:px-6' : 'justify-center bg-amber-50 p-3')} role="status">
       {status === 'loading' ? 'A carregar o catálogo…' : 'Catálogo temporariamente indisponível.'}
       {status === 'error' && <button type="button" onClick={reload} className="font-bold text-primary underline">Tentar novamente</button>}
@@ -261,7 +261,8 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white relative overflow-x-hidden">
+    <div className={'app-theme relative min-h-screen overflow-x-hidden font-sans text-base font-normal text-on-surface ' +
+      (currentView === 'home' ? 'bg-cream' : 'bg-porcelain')}>
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
@@ -388,7 +389,7 @@ export default function App() {
             )}
             {currentView === 'catalog-admin' && (
               <motion.div key="catalog-admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="min-h-screen bg-porcelain text-stone-800">
+                className="min-h-screen bg-porcelain text-on-surface">
                 <header className="border-b border-primary/10 bg-cream">
                   <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6">
                     <span role="img" aria-label="Presente Doce" className="brand-wordmark h-10 w-28 text-primary" />
@@ -414,7 +415,7 @@ export default function App() {
                         <section className="max-w-3xl space-y-4">
                           <div>
                             <button type="button" className="min-h-11 text-sm font-bold text-primary underline" onClick={leaveEditor}>Voltar ao catálogo</button>
-                            <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">{editorTitle}</h1>
+                            <h1 className="type-page text-primary">{editorTitle}</h1>
                           </div>
                           {editorContent()}
                         </section>
@@ -422,8 +423,8 @@ export default function App() {
                     </Suspense>
                   ) : adminStatus : (
                     <section className="space-y-3">
-                      <h1 className="font-headline text-3xl font-bold text-primary">Gerir catálogo</h1>
-                      <button type="button" className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-white"
+                      <h1 className="type-page text-primary">Gerir catálogo</h1>
+                      <button type="button" className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-on-strong"
                         onClick={openLogin}>Entrar para gerir o catálogo</button>
                     </section>
                   )}
@@ -449,7 +450,7 @@ export default function App() {
         )}
 
         {notice && !panel && (
-          <div role="status" className="fixed bottom-28 left-1/2 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl border border-primary/15 bg-porcelain px-4 py-2 text-sm font-semibold text-primary shadow-lg">
+          <div role="status" className="fixed bottom-28 left-1/2 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl border border-primary/15 bg-porcelain px-4 py-2 text-sm font-bold text-primary shadow-lg">
             {notice}
             <button type="button" onClick={() => setNotice('')} aria-label="Dispensar aviso" className="p-2 text-lg leading-none">×</button>
           </div>
@@ -470,9 +471,9 @@ export default function App() {
               exit={{ opacity: 0, y: 100 }}
               className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-screen-xl px-6 z-[100] flex justify-center pointer-events-none"
             >
-              <div className="bg-primary text-cream px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 backdrop-blur-md">
+              <div className="bg-primary text-on-primary px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-surface/10 backdrop-blur-md">
                 <div className="w-6 h-6 bg-gold rounded-full flex items-center justify-center text-primary"><Plus size={14} /></div>
-                <span className="font-headline font-bold text-[11px] tracking-wide">Adicionado ao carrinho</span>
+                <span className="font-bold text-xs tracking-wide">Adicionado ao carrinho</span>
               </div>
             </motion.div>
           )}

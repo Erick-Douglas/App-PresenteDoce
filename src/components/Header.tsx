@@ -27,10 +27,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
   };
 
   return (
-    <header className="relative text-cream">
+    <header className="relative text-on-primary">
       <div className="mx-auto flex h-[3.75rem] max-w-6xl items-center justify-between gap-3 px-3 sm:h-16 sm:px-6">
         <button type="button" aria-label="Abrir menu" onClick={onOpenMenu}
-          className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cream">
+          className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-cream">
           <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
         </button>
         <span role="img" aria-label={BUSINESS_INFO.name} className="brand-wordmark h-12 w-28 sm:w-32" />
@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMenu }) => {
           type="button"
           aria-label="Partilhar catálogo"
           onClick={handleShare}
-          className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cream"
+          className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/10 focus-visible:outline-2 focus-visible:outline-cream"
         >
           <Share2 size={19} strokeWidth={1.6} aria-hidden="true" />
         </button>

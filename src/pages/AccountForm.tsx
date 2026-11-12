@@ -10,10 +10,10 @@ import {
 
 const recoveryUrl = new URL('/admin?recuperar=1', BUSINESS_INFO.website).href;
 const directRecovery = import.meta.env.VITE_DIRECT_RECOVERY === 'true';
-const primary = 'min-h-11 rounded-xl bg-primary px-4 py-2.5 text-center text-sm font-bold text-white hover:bg-primary/90 disabled:opacity-50';
-const secondary = 'min-h-11 w-fit rounded-lg px-1 text-sm font-semibold text-primary underline decoration-primary/35 underline-offset-4 hover:decoration-primary disabled:opacity-50';
-const field = 'mt-1 block w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-base focus:border-primary focus:outline-2 focus:outline-primary/40';
-const label = 'block text-sm font-semibold text-stone-700';
+const primary = 'min-h-11 rounded-xl bg-primary px-4 py-2.5 text-center text-sm font-bold text-on-strong hover:bg-primary/90 disabled:opacity-50';
+const secondary = 'min-h-11 w-fit rounded-lg px-1 text-sm font-bold text-primary underline decoration-primary/35 underline-offset-4 hover:decoration-primary disabled:opacity-50';
+const field = 'mt-1 block w-full rounded-xl border border-outline-strong bg-surface px-3 py-2.5 text-base focus:border-primary focus:outline-2 focus:outline-primary/40';
+const label = 'block text-sm font-bold text-on-surface';
 
 type Step = 'login' | 'request' | 'sent' | 'manual' | 'reset';
 type AuthStep = 'login' | 'request';
@@ -152,17 +152,17 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       <input name="email" type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} className={field} />
     </label>
   );
-  const feedback = error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>;
+  const feedback = error && <p role="alert" className="text-sm font-bold text-primary">{error}</p>;
   const authCheck = <>
     {retrySeconds === 0 && <AuthChallenge key={authStep + ':' + challengeVersion} onToken={setCaptchaToken} />}
-    {retrySeconds > 0 && <p className="text-sm text-stone-700">Nova tentativa em {retrySeconds} s.</p>}
+    {retrySeconds > 0 && <p className="text-sm text-on-surface">Nova tentativa em {retrySeconds} s.</p>}
   </>;
 
   if (!catalogConfigured) return <p role="status">O acesso fica disponível quando a base de dados estiver ligada.</p>;
 
   if (step === 'request') return (
     <form onSubmit={sendRecovery} className="space-y-4">
-      <p className="text-sm text-stone-600">Indique o e-mail da sua conta para receber um link de recuperação.</p>
+      <p className="text-sm text-muted">Indique o e-mail da sua conta para receber um link de recuperação.</p>
       {emailField}
       {feedback}
       {authCheck}
@@ -175,8 +175,8 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
 
   if (step === 'sent') return (
     <section className="space-y-3">
-      <h3 className="text-sm font-bold text-stone-800">Confira o seu e-mail</h3>
-      <p role="status" className="text-sm leading-relaxed text-stone-600">
+      <h3 className="type-item text-on-surface">Confira o seu e-mail</h3>
+      <p role="status" className="text-sm leading-relaxed text-muted">
         {directRecovery
           ? 'Se o endereço estiver cadastrado, abra o botão do e-mail para escolher a nova senha.'
           : 'Se o endereço estiver cadastrado, você receberá um e-mail. Use a recuperação manual com o endereço do botão.'}
@@ -190,16 +190,16 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
 
   if (step === 'reset' || step === 'manual') return (
     <form onSubmit={changePassword} className="space-y-4">
-      <h3 className="text-sm font-bold text-stone-800">Escolha uma nova senha</h3>
+      <h3 className="type-item text-on-surface">Escolha uma nova senha</h3>
       {step === 'manual' && !recoveryToken && (
         <>
-          <p className="text-sm text-stone-600">Copie o endereço do botão do e-mail e cole-o aqui antes de o abrir.</p>
+          <p className="text-sm text-muted">Copie o endereço do botão do e-mail e cole-o aqui antes de o abrir.</p>
           <label className={label}>Link de recuperação<input name="accessLink" type="password" required autoComplete="off" className={field} /></label>
         </>
       )}
       <label className={label}>Nova senha<input name="newPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
       <label className={label}>Confirmar senha<input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
-      <p className="text-xs text-stone-600">Use pelo menos 12 caracteres.</p>
+      <p className="text-xs text-muted">Use pelo menos 12 caracteres.</p>
       {feedback}
       <div className="flex flex-wrap items-center gap-x-4">
         <button type="submit" className={primary} disabled={busy}>{busy ? 'A guardar…' : 'Guardar senha'}</button>
@@ -212,7 +212,7 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
     <form onSubmit={login} className="space-y-4">
       {emailField}
       <label className={label}>Senha<input name="password" type="password" required autoComplete="current-password" className={field} /></label>
-      {notice && <p role="status" className="text-sm text-stone-700">{notice}</p>}
+      {notice && <p role="status" className="text-sm text-on-surface">{notice}</p>}
       {feedback}
       {authCheck}
       <div className="flex flex-wrap items-center gap-x-4">

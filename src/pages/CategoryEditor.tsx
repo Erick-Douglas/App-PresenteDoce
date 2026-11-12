@@ -5,11 +5,11 @@ import {
 } from '../features/products/catalogApi';
 import { moveCatalogItem } from '../features/products/catalogFields';
 
-export const catalogPrimary = 'min-h-11 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white hover:bg-primary/90 disabled:opacity-50';
-export const catalogSecondary = 'min-h-11 rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm font-bold text-primary hover:border-primary/30 disabled:opacity-50';
-export const catalogField = 'w-full min-w-0 rounded-xl border border-stone-300 bg-white px-3 py-2 text-base';
+export const catalogPrimary = 'min-h-11 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-on-strong hover:bg-primary/90 disabled:opacity-50';
+export const catalogSecondary = 'min-h-11 rounded-xl border border-outline bg-surface px-3 py-2.5 text-sm font-bold text-primary hover:border-primary/30 disabled:opacity-50';
+export const catalogField = 'w-full min-w-0 rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base';
 const actionIcon = 'grid size-11 shrink-0 place-items-center rounded-xl text-primary hover:bg-primary/5 disabled:opacity-35';
-const panel = 'space-y-4 rounded-2xl border border-stone-200 bg-white p-4 sm:p-5';
+const panel = 'space-y-4 rounded-2xl border border-outline bg-surface p-4 sm:p-5';
 const normalize = (text: string) => text.normalize('NFC').trim().replace(/\s+/g, ' ');
 
 export function categoryNameFrom(value: string) {
@@ -31,9 +31,9 @@ function SortList({ items, onMove, empty }: {
   onMove: (index: number, offset: -1 | 1) => void;
   empty: string;
 }) {
-  if (!items.length) return <p className="text-sm text-stone-600">{empty}</p>;
+  if (!items.length) return <p className="text-sm text-muted">{empty}</p>;
   return (
-    <ul className="divide-y divide-stone-100">
+    <ul className="divide-y divide-muted-fill">
       {items.map((item, index) => (
         <li key={item.id} className="flex min-h-12 items-center gap-1">
           <span className="min-w-0 flex-1 break-words text-sm">{item.name}</span>
@@ -162,15 +162,15 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
             </label>
             <section aria-label="Tópicos da categoria">
               <div className="flex flex-wrap items-center gap-x-3">
-                <h3 className="font-headline text-lg font-bold text-primary">Tópicos da categoria</h3>
+                <h3 className="type-section text-primary">Tópicos da categoria</h3>
                 <button type="button" disabled={!!topicEditor || topics.length >= 100}
                   onClick={() => { setError(''); setTopicEditor({ id: '', name: '' }); }}
                   className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-primary hover:bg-primary/5 disabled:opacity-40">
                   <Plus size={16} aria-hidden="true" /> Adicionar tópico
                 </button>
               </div>
-              {!topics.length && !topicEditor && <p className="text-sm text-stone-600">Ainda não há tópicos.</p>}
-              <ul className="divide-y divide-stone-100">
+              {!topics.length && !topicEditor && <p className="text-sm text-muted">Ainda não há tópicos.</p>}
+              <ul className="divide-y divide-muted-fill">
                 {topics.map(topic => (
                   <li key={topic.id}>
                     {topicEditor?.id === topic.id ? topicForm : (
@@ -191,21 +191,21 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
         )}
         {section === 'products' && (
           <section className={panel} aria-label="Ordem dos produtos">
-            <p className="text-sm text-stone-600">A vitrine mostra os produtos publicados nesta ordem.</p>
+            <p className="text-sm text-muted">A vitrine mostra os produtos publicados nesta ordem.</p>
             <SortList items={productOrder} empty="Esta categoria ainda não tem produtos."
               onMove={(index, offset) => setProductOrder(current => moveCatalogItem(current, index, offset))} />
           </section>
         )}
         {section === 'categories' && (
           <section className={panel} aria-label="Ordem das categorias">
-            <p className="text-sm text-stone-600">Esta ordem aparece nos atalhos e no catálogo da loja.</p>
+            <p className="text-sm text-muted">Esta ordem aparece nos atalhos e no catálogo da loja.</p>
             <SortList items={categoryOrder.map(item => item.id === category.id ? { ...item, name: name || category.name } : item)}
               empty="Ainda não há categorias." onMove={(index, offset) => setCategoryOrder(current => moveCatalogItem(current, index, offset))} />
           </section>
         )}
         {deleting && (
           <section className={panel} aria-label="Confirmar exclusão de categoria">
-            <h3 className="text-lg font-bold text-primary">Excluir {category.name}?</h3>
+            <h3 className="type-section text-primary">Excluir {category.name}?</h3>
             {originalProducts.length > 0 && <>
               <label className="block max-w-md space-y-1 text-sm">
                 <span>Mover {originalProducts.length} {originalProducts.length === 1 ? 'produto' : 'produtos'} para</span>
@@ -214,7 +214,7 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
                   {categories.filter(item => item.id !== category.id).map(item => <option value={item.id} key={item.id}>{item.name}</option>)}
                 </select>
               </label>
-              <p className="text-sm text-stone-600">Os produtos mantêm preços e opções de encomenda. Os tópicos passam para a categoria de destino quando existe um tópico com o mesmo nome.</p>
+              <p className="text-sm text-muted">Os produtos mantêm preços e opções de encomenda. Os tópicos passam para a categoria de destino quando existe um tópico com o mesmo nome.</p>
             </>}
             <div className="flex flex-wrap gap-2">
               <button type="button" className={catalogSecondary} onClick={() => { setDeleting(false); setError(''); }}>Cancelar exclusão</button>
