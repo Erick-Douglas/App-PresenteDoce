@@ -188,6 +188,13 @@ export default function App() {
   };
 
   const commonProps = { onNavigate: handleNavigate, onOpenMenu: () => setIsMenuOpen(true) };
+  const catalogNotice = status !== 'ready' && (
+    <div className={'flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-800 ' +
+      (currentView === 'home' ? 'mx-auto max-w-6xl px-4 py-2 sm:px-6' : 'justify-center bg-amber-50 p-3')} role="status">
+      {status === 'loading' ? 'A carregar o catálogo…' : 'Catálogo temporariamente indisponível.'}
+      {status === 'error' && <button type="button" onClick={reload} className="font-bold text-primary underline">Tentar novamente</button>}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-white relative overflow-x-hidden">
@@ -204,12 +211,7 @@ export default function App() {
           onPricing={() => setPanel({ type: 'pricing' })}
         />
 
-        {status !== 'ready' && (
-          <div className="flex items-center justify-center gap-3 bg-amber-50 p-3 text-sm text-stone-800" role="status">
-            {status === 'loading' ? 'A carregar o catálogo…' : 'Catálogo temporariamente indisponível.'}
-            {status === 'error' && <button type="button" onClick={reload} className="font-bold text-primary underline">Tentar novamente</button>}
-          </div>
-        )}
+        {currentView !== 'home' && catalogNotice}
         <main className="min-h-screen flex flex-col">
           <AnimatePresence mode="wait">
             {currentView === 'welcome' && <WelcomeScreen key="welcome" {...commonProps} />}
@@ -222,6 +224,7 @@ export default function App() {
                 cart={cart}
                 favorites={favorites}
                 isAdmin={!!session}
+                catalogNotice={catalogNotice}
                 {...commonProps}
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
