@@ -2,13 +2,14 @@ begin;
 
 create schema presente_doce_private;
 revoke all on schema presente_doce_private from public, anon, authenticated;
+grant usage on schema presente_doce_private to authenticated;
 
 create table presente_doce_private.catalog_admins (
   user_id uuid primary key references auth.users (id) on delete cascade
 );
 alter table presente_doce_private.catalog_admins enable row level security;
 
-create function public.is_catalog_admin()
+create function presente_doce_private.is_catalog_admin()
 returns boolean
 language sql
 stable
@@ -18,6 +19,18 @@ as $$
   select exists (
     select 1 from presente_doce_private.catalog_admins where user_id = (select auth.uid())
   );
+$$;
+revoke all on function presente_doce_private.is_catalog_admin() from public, anon, authenticated;
+grant execute on function presente_doce_private.is_catalog_admin() to authenticated;
+
+create function public.is_catalog_admin()
+returns boolean
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select presente_doce_private.is_catalog_admin();
 $$;
 revoke all on function public.is_catalog_admin() from public, anon, authenticated;
 grant execute on function public.is_catalog_admin() to authenticated;
@@ -77,14 +90,14 @@ create policy "published catalog readable" on public.catalog_products
 for select to anon, authenticated using (published);
 
 create policy "catalog admins read all products" on public.catalog_products
-for select to authenticated using ((select public.is_catalog_admin()));
+for select to authenticated using ((select presente_doce_private.is_catalog_admin()));
 
 create policy "catalog admins create products" on public.catalog_products
-for insert to authenticated with check ((select public.is_catalog_admin()));
+for insert to authenticated with check ((select presente_doce_private.is_catalog_admin()));
 
 create policy "catalog admins update products" on public.catalog_products
-for update to authenticated using ((select public.is_catalog_admin()))
-with check ((select public.is_catalog_admin()));
+for update to authenticated using ((select presente_doce_private.is_catalog_admin()))
+with check ((select presente_doce_private.is_catalog_admin()));
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('catalog-images', 'catalog-images', true, 5242880, array['image/webp']);
@@ -93,7 +106,7 @@ create policy "catalog admins upload images" on storage.objects
 for insert to authenticated with check (
   bucket_id = 'catalog-images'
   and name ~ '^catalog/[a-f0-9-]{36}\.webp$'
-  and (select public.is_catalog_admin())
+  and (select presente_doce_private.is_catalog_admin())
 );
 
 commit;
