@@ -9,6 +9,7 @@ export const catalogEnabled = import.meta.env.VITE_CATALOG_SOURCE === 'supabase'
 export const catalogConfigured = catalogEnabled && !!(serviceUrl && publicKey.startsWith('sb_publishable_'));
 
 const productsPath = '/rest/v1/catalog_products';
+const categoriesPath = '/rest/v1/catalog_categories';
 const bucketPath = '/storage/v1/object/catalog-images/';
 
 export interface CatalogRow {
@@ -18,7 +19,7 @@ export interface CatalogRow {
   version: number;
 }
 
-async function request<T>(path: string, options: RequestInit = {}, token?: string): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, token?: string, conflictMessage?: string): Promise<T> {
   if (!catalogConfigured) throw new Error('O ambiente do catálogo ainda precisa de configuração.');
   const headers = new Headers(options.headers);
   headers.set('apikey', publicKey);
@@ -28,7 +29,7 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
   if (!response.ok) {
     if (response.status === 401) throw new Error('Sessão ou credenciais inválidas. Confirme o acesso e volte a entrar.');
     if (response.status === 403) throw new Error('A sua conta não tem permissão para esta ação.');
-    if (response.status === 409) throw new Error('O produto pode já ter sido guardado. Atualize a lista antes de tentar novamente.');
+    if (response.status === 409) throw new Error(conflictMessage ?? 'O produto pode já ter sido guardado. Atualize a lista antes de tentar novamente.');
     if (response.status === 429) throw new AuthRateLimitError(authRetryAfter(response.headers.get('retry-after')));
     throw new Error('Não foi possível concluir a operação. Verifique os dados e tente novamente.');
   }
@@ -94,6 +95,19 @@ export function listCatalog(token?: string, signal?: AbortSignal) {
   const query = '?select=id,details,published,version&order=created_at.asc,id.asc' +
     (token ? '' : '&published=eq.true');
   return request<CatalogRow[]>(productsPath + query, { signal }, token);
+}
+
+export function listCatalogCategories(signal?: AbortSignal) {
+  return request<{ name: string }[]>(categoriesPath + '?select=name&order=position.asc', { signal });
+}
+
+export async function createCatalogCategory(name: string, token: string) {
+  const [category] = await request<{ name: string }[]>(categoriesPath + '?select=name', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({ name }),
+  }, token, 'Já existe uma categoria com esse nome. Atualize o catálogo para a selecionar.');
+  return category;
 }
 
 export async function getCatalogProduct(id: string, token: string, signal?: AbortSignal) {

@@ -1,13 +1,15 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Search } from 'lucide-react';
-import { BUSINESS_INFO, CATEGORIES } from '../config/constants';
-import type { CartItem, Product, View } from '../config/types';
+import { BUSINESS_INFO } from '../config/constants';
+import type { CartItem, CatalogCategory, Product, View } from '../config/types';
 import { CatalogCard } from '../components/CatalogCard';
+import { CategoryCover } from '../components/CategoryCover';
 import { Header } from '../components/Header';
 
 interface HomeScreenProps {
   products: Product[];
+  categories: CatalogCategory[];
   cart: CartItem[];
   favorites: string[];
   onOpenMenu: () => void;
@@ -30,7 +32,7 @@ function searchText(value: string) {
 }
 
 export function HomeScreen({
-  products, cart, favorites, onOpenMenu, isAdmin, onSetCategory, onProductClick, onEditProduct,
+  products, categories, cart, favorites, onOpenMenu, isAdmin, onSetCategory, onProductClick, onEditProduct,
   onToggleFavorite, onToggleCartItem, onNavigate,
 }: HomeScreenProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,11 +109,11 @@ export function HomeScreen({
                 </button>
               </div>
               <div className="home-rail -mx-4 flex snap-x gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pt-1 pb-2 sm:-mx-6 sm:gap-5 sm:scroll-px-6 sm:px-6">
-                {CATEGORIES.map((category, index) => (
+                {categories.map((category, index) => (
                   <button key={category.name} type="button" onClick={() => jumpToCategory(category.name, index)}
                     className="group flex w-[4.75rem] shrink-0 snap-start flex-col items-center gap-2 rounded-xl px-0.5 py-1 text-center text-xs leading-tight font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary sm:w-[5.5rem] sm:text-sm">
                     <span className="block size-[4.25rem] rounded-full bg-linear-to-tr from-primary via-primary to-gold p-[2px] sm:size-[4.75rem]">
-                      <img src={category.image} alt="" width={72} height={72} decoding="async" className="size-full rounded-full border-2 border-cream object-cover" />
+                      <CategoryCover category={category} className="border-2 border-cream" />
                     </span>
                     <span>{category.name}</span>
                   </button>
@@ -119,7 +121,7 @@ export function HomeScreen({
               </div>
             </nav>
 
-            {CATEGORIES.map((category, index) => {
+            {categories.map((category, index) => {
               const categoryProducts = products.filter(product => product.category === category.name);
               if (!categoryProducts.length) return null;
               return (

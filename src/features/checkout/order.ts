@@ -12,6 +12,7 @@ export interface CheckoutDetails {
 
 const paymentNames = { cash: 'Dinheiro', mbway: 'MB WAY', wise: 'Wise' };
 const euros = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' });
+export const currencySymbol = euros.formatToParts(0).find(part => part.type === 'currency')?.value;
 
 export function formatEuros(value: number) {
   return euros.format(value);

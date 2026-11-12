@@ -57,7 +57,7 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
           </button>
         </div>
 
-        <nav aria-label="Menu principal" className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav aria-label="Menu principal" className="flex-1 space-y-1 overflow-y-auto overscroll-y-contain px-3 py-4">
           {menuItems.map(({ icon: Icon, label, action }) => (
             <button key={label} type="button" onClick={() => { dismiss(); action(); }}
               className="group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-stone-700 transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary">
