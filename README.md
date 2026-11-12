@@ -10,11 +10,11 @@ O app web usa React, TypeScript e Vite. A Vercel publica o frontend. O Supabase 
 
 | Rota | Uso |
 | --- | --- |
-| `/` | Catálogo e encomendas por WhatsApp |
-| `/admin` | Entrada com a conta da confeitaria, edição de produtos e publicação |
-| `/precificacao` | Simulador de custo e margem com rascunho local |
+| `/` | Catálogo, encomendas por WhatsApp e acesso pelo menu **Entrar**. A conta administrativa recebe ferramentas de gestão na loja. |
+| `/admin` | Atalho para abrir o acesso na própria loja, incluindo os links de recuperação já usados. |
+| `/precificacao` | Atalho autenticado para o simulador de custo e margem com rascunho local. |
 
-A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. A conta da confeitaria entra no painel de produção pelo Supabase Auth.
+A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. Na loja oficial, use **Menu → Entrar** e a conta da confeitaria. Após a entrada, **Gerir catálogo** abre a lista com rascunhos e **Novo produto** abre o formulário. **Editar produto** também aparece nos cartões e nos detalhes da vitrine.
 
 ## Desenvolvimento
 
@@ -29,7 +29,7 @@ npm run check:catalog
 npm run build
 ~~~
 
-A raiz abre o catálogo. A rota /admin abre o painel. O catálogo inicial em código fica ativo até selecionar explicitamente o catálogo do Supabase no ambiente. A rota administrativa indica quando precisa de configuração. Com o catálogo Supabase ativo, erros de carregamento aparecem na loja para evitar voltar a apresentar produtos que Gabriela retirou do catálogo.
+A raiz abre o catálogo. O formulário de entrada informa quando falta configurar o Supabase. O catálogo inicial em código fica ativo até selecionar explicitamente o catálogo do Supabase no ambiente. Com o catálogo Supabase ativo, erros de carregamento aparecem na loja para evitar voltar a apresentar produtos que Gabriela retirou do catálogo.
 
 A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, rendimento, lucro, markup e margem da planilha. O rascunho é guardado apenas no navegador se a pessoa usar a opção de guardar. O simulador é independente do login e do catálogo.
 
@@ -52,7 +52,7 @@ A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, re
 - No primeiro acesso, abra /admin e selecione Ativar acesso. Copie o endereço do convite do Supabase sem abri-lo. Cole-o no painel e defina a palavra-passe. O painel valida o convite no Supabase e verifica a autorização antes de aceitar a nova palavra-passe.
 - Para recuperar a senha, use Esqueci a senha no painel e solicite o e-mail de recuperação. Copie o endereço do botão do novo e-mail sem abri-lo, cole em Redefinir senha e defina uma nova senha. O painel aceita apenas o link de recuperação do projeto configurado.
 - A lista privada de administradores controla gravação no Postgres e upload no Storage por RLS. Para remover o acesso de uma conta, retire seu UUID da lista e encerre suas sessões no Supabase Auth.
-- O painel guarda a sessão em memória. Recarregar a página exige entrar novamente. Use a opção Sair ao terminar. Uma publicação concorre com outras edições por versão do registro.
+- A sessão fica em memória enquanto a pessoa navega pela loja. Recarregar a página exige entrar novamente. Use **Sair da conta** ao terminar. Edição e exclusão conferem a versão do registro antes de gravar. **Excluir produto** exige confirmação. Para ocultar temporariamente, desmarque **Mostrar no catálogo público** e guarde.
 - Fotos de produto são públicas por URL. O painel reprocessa JPG, PNG e WebP para WebP e limita o tamanho. Envie somente imagens de catálogo. Preserve as imagens antigas até conferir referências e backups antes de removê-las no Storage.
 - No checkout, o cliente envia a mensagem e recebe confirmação da loja pelo WhatsApp. A taxa de entrega é combinada com a Gabriela. O app mantém a seleção ao abrir o WhatsApp em outra aba e permite copiar a mensagem. A seleção e os dados são descartados ao recarregar.
 - Para reverter o frontend, use o deploy anterior no projeto Vercel. Trate reversão de dados como uma operação independente. Preserve as edições feitas no catálogo e confirme a versão de recuperação antes de qualquer alteração na base.

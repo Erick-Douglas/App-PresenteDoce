@@ -1,9 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { CATEGORIES } from '../config/constants';
 import type { Product } from '../config/types';
 import {
-  catalogConfigured, imageUrl, listCatalog, redeemAdminLink, requestAdminRecovery, saveProduct, setAdminPassword,
-  signIn, signOut, uploadProductImage, type CatalogRow,
+  catalogConfigured, deleteProduct, getCatalogProduct, imageUrl, listCatalog, redeemAdminLink, requestAdminRecovery,
+  saveProduct, setAdminPassword, signIn, signOut, uploadProductImage, type CatalogRow, type CatalogSession,
 } from '../features/products/catalogApi';
 import type { AdminLinkType } from '../features/products/adminLink';
 import { formatEuros } from '../features/checkout/order';
@@ -21,10 +21,11 @@ function priceFrom(value: string) {
   return Number(normalized);
 }
 
-function ProductForm({ row, token, onSaved, onCancel }: {
+function ProductForm({ row, token, onSaved, onDeleted, onCancel }: {
   row: CatalogRow | null;
   token: string;
   onSaved: (row: CatalogRow) => void;
+  onDeleted: (id: string) => void;
   onCancel: () => void;
 }) {
   const data = row?.details;
@@ -38,6 +39,21 @@ function ProductForm({ row, token, onSaved, onCancel }: {
   const [image, setImage] = useState(data?.image ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function remove() {
+    if (!row || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await deleteProduct(row, token);
+      onDeleted(row.id);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Não foi possível excluir o produto.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function updateVariant(index: number, value: Partial<Variant>) {
     setVariants(current => current.map((option, i) => i === index ? { ...option, ...value } : option));
@@ -107,8 +123,7 @@ function ProductForm({ row, token, onSaved, onCancel }: {
   const configurable = ['Bolos Temáticos', 'Brigadeiros', 'Salgados'].includes(category);
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-stone-200 bg-white p-4 sm:p-6">
-      <h2 className="font-headline text-xl font-bold text-primary">{row ? 'Editar produto' : 'Novo produto'}</h2>
+    <form onSubmit={submit}>
       <fieldset disabled={busy} className="space-y-4">
         <label className="block space-y-1"><span>Nome</span><input name="name" required maxLength={100} defaultValue={data?.name} className={field} /></label>
         <label className="block space-y-1"><span>Descrição</span><textarea name="description" rows={4} required maxLength={3000} defaultValue={data?.description} className={field} /></label>
@@ -146,34 +161,42 @@ function ProductForm({ row, token, onSaved, onCancel }: {
         {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
         <div className="flex flex-col gap-2 sm:flex-row">
           <button className={primary} type="submit">{busy ? 'A guardar…' : 'Guardar produto'}</button>
-          <button className={secondary} type="button" onClick={onCancel}>Voltar à lista</button>
+          <button className={secondary} type="button" onClick={onCancel}>Voltar</button>
+          {row && !confirmDelete && <button className="rounded-xl px-4 py-3 font-semibold text-primary underline" type="button" onClick={() => setConfirmDelete(true)}>Excluir produto</button>}
         </div>
+        {row && confirmDelete && (
+          <section aria-label="Confirmar exclusão" className="space-y-3 rounded-xl border border-red-200 bg-red-50 p-4">
+            <p><strong>Excluir {row.details.name}?</strong> A exclusão é permanente. Para ocultar o produto temporariamente, desmarque a publicação e guarde.</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" className={secondary} onClick={() => { setConfirmDelete(false); setError(''); }}>Cancelar exclusão</button>
+              <button type="button" className={primary} onClick={remove}>Confirmar exclusão</button>
+            </div>
+          </section>
+        )}
       </fieldset>
     </form>
   );
 }
 
-export default function AdminScreen() {
-  const [token, setToken] = useState('');
-  const [rows, setRows] = useState<CatalogRow[]>([]);
-  const [edit, setEdit] = useState<CatalogRow | 'new' | null>(null);
+export function AccountForm({ initialRecovery, onLogin }: {
+  initialRecovery: boolean;
+  onLogin: (session: CatalogSession) => void;
+}) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [passwordMode, setPasswordMode] = useState<AdminLinkType | null>(() =>
-    new URLSearchParams(window.location.search).get('recuperar') === '1' ? 'recovery' : null
+    initialRecovery ? 'recovery' : null
   );
   const [passwordSession, setPasswordSession] = useState('');
   const [recoveryNotice, setRecoveryNotice] = useState('');
+  const active = useRef(false);
   const recovering = passwordMode === 'recovery';
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<'all' | 'published' | 'draft'>('all');
-  const published = rows.filter(row => row.published).length;
-  const query = searchText(search);
-  const visibleRows = rows.filter(row =>
-    (status === 'all' || row.published === (status === 'published')) &&
-    searchText(row.details.name + ' ' + row.details.category).includes(query)
-  );
+
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; };
+  }, []);
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -183,8 +206,8 @@ export default function AdminScreen() {
     const form = new FormData(event.currentTarget);
     try {
       const session = await signIn(String(form.get('email') ?? '').trim(), String(form.get('password') ?? ''));
-      setRows(await listCatalog(session));
-      setToken(session);
+      if (active.current) onLogin(session);
+      else void signOut(session.token).catch(() => {});
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível entrar.');
     } finally {
@@ -243,123 +266,148 @@ export default function AdminScreen() {
     }
   }
 
-  function logout() {
-    void signOut(token).catch(() => {});
-    setToken('');
-    setRows([]);
-    setEdit(null);
+  if (!catalogConfigured) return <p role="status">O acesso será disponibilizado quando a base de dados estiver ligada.</p>;
+
+  return passwordMode ? (
+    <section className="space-y-4">
+      <h2 className="font-headline text-lg font-bold">{recovering ? 'Redefinir senha' : 'Ativar acesso'}</h2>
+      {recovering && !passwordSession && (
+        <form onSubmit={sendRecovery} className="space-y-3 rounded-xl bg-stone-50 p-3">
+          <h3 className="font-semibold">1. Peça o e-mail de recuperação</h3>
+          <label className="block space-y-1"><span>E-mail da conta</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
+          <button type="submit" className={secondary} disabled={busy}>Enviar e-mail de recuperação</button>
+          {recoveryNotice && <p role="status" className="text-sm">{recoveryNotice}</p>}
+        </form>
+      )}
+      <form onSubmit={changePassword} className="space-y-4">
+        {recovering && <h3 className="font-semibold">2. Escolha a nova senha</h3>}
+        {!passwordSession && (
+          <>
+            <p className="text-sm text-stone-600">No e-mail {recovering ? 'de recuperação' : 'de convite'} do Supabase, copie o endereço do botão sem abrir o link. Cole-o aqui.</p>
+            <label className="block space-y-1"><span>{recovering ? 'Link do e-mail de recuperação' : 'Link de convite'}</span><input name="accessLink" type="password" required autoComplete="off" className={field} /></label>
+          </>
+        )}
+        <label className="block space-y-1"><span>Nova senha (mínimo de 12 caracteres)</span><input name="newPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
+        <label className="block space-y-1"><span>Confirmar nova senha</span><input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
+        {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+        <div className="flex flex-wrap gap-2">
+          <button type="submit" className={primary} disabled={busy}>{busy ? 'A guardar…' : recovering ? 'Guardar nova senha' : 'Ativar conta'}</button>
+          <button type="button" className={secondary} disabled={busy || !!passwordSession} onClick={() => { setError(''); backToLogin(); }}>Voltar</button>
+        </div>
+      </form>
+    </section>
+  ) : (
+    <form onSubmit={login} className="space-y-4">
+      <label className="block space-y-1"><span>E-mail</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
+      <label className="block space-y-1"><span>Senha</span><input name="password" type="password" required autoComplete="current-password" className={field} /></label>
+      {notice && <p role="status" className="text-sm font-semibold">{notice}</p>}
+      {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className={primary} disabled={busy}>{busy ? 'A entrar…' : 'Entrar'}</button>
+        <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setPasswordMode('recovery'); }}>Esqueci a senha</button>
+        <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setPasswordMode('invite'); }}>Ativar acesso</button>
+      </div>
+    </form>
+  );
+}
+
+export function CatalogEditor({ productId, token, onCancel, onChanged }: {
+  productId?: string;
+  token: string;
+  onCancel: () => void;
+  onChanged: (id: string, row: CatalogRow | null) => void;
+}) {
+  const [row, setRow] = useState<CatalogRow | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!productId) return;
+    const controller = new AbortController();
+    getCatalogProduct(productId, token, controller.signal)
+      .then(setRow)
+      .catch(cause => {
+        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Não foi possível abrir o produto.');
+      });
+    return () => controller.abort();
+  }, [productId, token]);
+
+  if (error) return <p role="alert" className="text-primary">{error}</p>;
+  if (productId && !row) return <p role="status">A carregar produto…</p>;
+  return (
+    <ProductForm
+      row={row}
+      token={token}
+      onCancel={onCancel}
+      onSaved={saved => onChanged(saved.id, saved)}
+      onDeleted={id => onChanged(id, null)}
+    />
+  );
+}
+
+export function CatalogManagement({ token, onNew, onEdit }: {
+  token: string;
+  onNew: () => void;
+  onEdit: (id: string) => void;
+}) {
+  const [rows, setRows] = useState<CatalogRow[]>([]);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(true);
+  const [attempt, setAttempt] = useState(0);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState<'all' | 'published' | 'draft'>('all');
+  const published = rows.filter(row => row.published).length;
+  const query = searchText(search);
+  const visibleRows = rows.filter(row =>
+    (status === 'all' || row.published === (status === 'published')) &&
+    searchText(row.details.name + ' ' + row.details.category).includes(query)
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setBusy(true);
     setError('');
-    setNotice('');
-  }
+    listCatalog(token, controller.signal)
+      .then(setRows)
+      .catch(cause => {
+        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar.');
+      })
+      .finally(() => { if (!controller.signal.aborted) setBusy(false); });
+    return () => controller.abort();
+  }, [token, attempt]);
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl space-y-5 px-4 py-6 sm:px-8">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 pb-4">
-        <div><a href="/" className="text-sm font-semibold text-primary underline">Presente Doce</a><h1 className="font-headline text-2xl font-extrabold">Gestão do catálogo</h1></div>
+    <section className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-headline text-xl font-bold">Produtos</h2>
         <div className="flex flex-wrap gap-2">
-          <a href="/precificacao" className={secondary}>Precificação</a>
-          {token && <button type="button" onClick={logout} className={secondary}>Sair</button>}
+          <button type="button" disabled={busy} className={secondary} onClick={() => setAttempt(value => value + 1)}>Atualizar lista</button>
+          <button type="button" className={primary} onClick={onNew}>Novo produto</button>
         </div>
-      </header>
-      {!catalogConfigured ? (
-        <p role="status">A gestão do catálogo será disponibilizada quando a base de dados estiver ligada.</p>
-      ) : !token ? (
-        passwordMode ? (
-          <section className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
-            <h2 className="font-headline text-lg font-bold">{recovering ? 'Redefinir senha' : 'Ativar acesso'}</h2>
-            {recovering && !passwordSession && (
-              <form onSubmit={sendRecovery} className="space-y-3 rounded-xl bg-stone-50 p-3">
-                <h3 className="font-semibold">1. Peça o e-mail de recuperação</h3>
-                <label className="block space-y-1"><span>E-mail da conta</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
-                <button type="submit" className={secondary} disabled={busy}>Enviar e-mail de recuperação</button>
-                {recoveryNotice && <p role="status" className="text-sm">{recoveryNotice}</p>}
-              </form>
-            )}
-            <form onSubmit={changePassword} className="space-y-4">
-              {recovering && <h3 className="font-semibold">2. Escolha a nova senha</h3>}
-              {!passwordSession && (
-                <>
-                  <p className="text-sm text-stone-600">No e-mail {recovering ? 'de recuperação' : 'de convite'} do Supabase, copie o endereço do botão sem abrir o link. Cole-o aqui.</p>
-                  <label className="block space-y-1"><span>{recovering ? 'Link do e-mail de recuperação' : 'Link de convite'}</span><input name="accessLink" type="password" required autoComplete="off" className={field} /></label>
-                </>
-              )}
-              <label className="block space-y-1"><span>Nova senha (mínimo de 12 caracteres)</span><input name="newPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
-              <label className="block space-y-1"><span>Confirmar nova senha</span><input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
-              {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-              <div className="flex flex-wrap gap-2">
-                <button type="submit" className={primary} disabled={busy}>{busy ? 'A guardar…' : recovering ? 'Guardar nova senha' : 'Ativar conta'}</button>
-                <button type="button" className={secondary} disabled={busy || !!passwordSession} onClick={() => { setError(''); backToLogin(); }}>Voltar</button>
-              </div>
-            </form>
-          </section>
-        ) : (
-          <form onSubmit={login} className="max-w-md space-y-4 rounded-2xl border border-stone-200 p-4 sm:p-6">
-            <label className="block space-y-1"><span>E-mail</span><input name="email" type="email" required autoComplete="username" className={field} /></label>
-            <label className="block space-y-1"><span>Senha</span><input name="password" type="password" required autoComplete="current-password" className={field} /></label>
-            {notice && <p role="status" className="text-sm font-semibold">{notice}</p>}
-            {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-            <div className="flex flex-wrap gap-2">
-              <button type="submit" className={primary} disabled={busy}>{busy ? 'A entrar…' : 'Entrar'}</button>
-              <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setPasswordMode('recovery'); }}>Esqueci a senha</button>
-              <button type="button" className={secondary} disabled={busy} onClick={() => { setError(''); setPasswordMode('invite'); }}>Ativar acesso</button>
+      </div>
+      {busy && <p role="status">A carregar produtos…</p>}
+      {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
+      <dl className="grid grid-cols-3 gap-2 rounded-xl bg-stone-50 p-3 text-sm">
+        <div><dt>Total</dt><dd className="font-bold">{rows.length}</dd></div>
+        <div><dt>Publicados</dt><dd className="font-bold">{published}</dd></div>
+        <div><dt>Rascunhos</dt><dd className="font-bold">{rows.length - published}</dd></div>
+      </dl>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="block space-y-1"><span>Pesquisar nome ou categoria</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} className={field} /></label>
+        <label className="block space-y-1"><span>Estado</span><select value={status} onChange={event => setStatus(event.target.value as typeof status)} className={field}><option value="all">Todos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
+      </div>
+      {!busy && !error && !visibleRows.length && <p>{rows.length ? 'Nenhum produto corresponde aos filtros.' : 'Ainda não há produtos.'}</p>}
+      <ul className="divide-y divide-stone-200">
+        {visibleRows.map(row => (
+          <li key={row.id} className="flex items-center gap-3 py-3">
+            {row.details.image && <img src={imageUrl(row.details.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />}
+            <div className="min-w-0 flex-1">
+              <p className="break-words font-semibold">{row.details.name}</p>
+              <p className="text-sm text-stone-600">{row.details.category} · {formatEuros(row.details.price)} · {row.published ? 'Publicado' : 'Rascunho'}</p>
             </div>
-          </form>
-        )
-      ) : edit ? (
-        <ProductForm
-          key={edit === 'new' ? 'new' : edit.id}
-          row={edit === 'new' ? null : edit}
-          token={token}
-          onCancel={() => setEdit(null)}
-          onSaved={row => {
-            setRows(current => current.some(item => item.id === row.id)
-              ? current.map(item => item.id === row.id ? row : item)
-              : [...current, row]);
-            setNotice(row.published ? 'Produto publicado no catálogo.' : 'Rascunho guardado.');
-            setEdit(null);
-          }}
-        />
-      ) : (
-        <section className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-headline text-xl font-bold">Produtos</h2>
-            <div className="flex flex-wrap gap-2">
-              <button type="button" disabled={busy} className={secondary} onClick={async () => {
-                setBusy(true);
-                setError('');
-                try { setRows(await listCatalog(token)); }
-                catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível atualizar.'); }
-                finally { setBusy(false); }
-              }}>Atualizar lista</button>
-              <button type="button" className={primary} onClick={() => setEdit('new')}>Novo produto</button>
-            </div>
-          </div>
-          {notice && <p role="status" className="text-sm font-semibold">{notice}</p>}
-          {error && <p role="alert" className="text-sm font-semibold text-primary">{error}</p>}
-          <dl className="grid grid-cols-3 gap-2 rounded-xl bg-stone-50 p-3 text-sm">
-            <div><dt>Total</dt><dd className="font-bold">{rows.length}</dd></div>
-            <div><dt>Publicados</dt><dd className="font-bold">{published}</dd></div>
-            <div><dt>Rascunhos</dt><dd className="font-bold">{rows.length - published}</dd></div>
-          </dl>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="block space-y-1"><span>Pesquisar nome ou categoria</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} className={field} /></label>
-            <label className="block space-y-1"><span>Estado</span><select value={status} onChange={event => setStatus(event.target.value as typeof status)} className={field}><option value="all">Todos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option></select></label>
-          </div>
-          {!visibleRows.length && <p>{rows.length ? 'Nenhum produto corresponde aos filtros.' : 'Ainda não há produtos.'}</p>}
-          <ul className="divide-y divide-stone-200">
-            {visibleRows.map(row => (
-              <li key={row.id} className="flex items-center gap-3 py-3">
-                {row.details.image && <img src={imageUrl(row.details.image)} alt="" className="size-14 shrink-0 rounded-lg object-cover" />}
-                <div className="min-w-0 flex-1">
-                  <p className="break-words font-semibold">{row.details.name}</p>
-                  <p className="text-sm text-stone-600">{row.details.category} · {formatEuros(row.details.price)} · {row.published ? 'Publicado' : 'Rascunho'}</p>
-                </div>
-                <button type="button" aria-label={'Editar ' + row.details.name} className={secondary} onClick={() => setEdit(row)}>Editar</button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </main>
+            <button type="button" aria-label={'Editar ' + row.details.name} className={secondary} onClick={() => onEdit(row.id)}>Editar</button>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

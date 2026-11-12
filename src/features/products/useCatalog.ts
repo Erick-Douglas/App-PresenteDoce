@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PRODUCTS } from './data';
-import { catalogEnabled, listCatalog, toProduct } from './catalogApi';
+import { catalogEnabled, listCatalog, toProduct, type CatalogRow } from './catalogApi';
 import type { Product } from '../../config/types';
 
 export function useCatalog() {
@@ -23,5 +23,15 @@ export function useCatalog() {
     return () => controller.abort();
   }, [attempt]);
 
-  return { products, status, reload: () => setAttempt(value => value + 1) };
+  function applyChange(id: string, row: CatalogRow | null) {
+    const updated = row?.published ? toProduct(row) : null;
+    setProducts(current => {
+      if (!updated) return current.filter(product => product.id !== id);
+      if (!current.some(product => product.id === id)) return [...current, updated];
+      return current.map(product => product.id === id ? updated : product);
+    });
+    setAttempt(value => value + 1);
+  }
+
+  return { products, status, reload: () => setAttempt(value => value + 1), applyChange };
 }

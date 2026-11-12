@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
 import { CATEGORIES } from '../config/constants';
 import { Product, CartItem, View } from '../config/types';
+import { ProductEditButton } from '../components/ProductEditButton';
 
 interface ProductListScreenProps {
   products: Product[];
@@ -11,6 +12,7 @@ interface ProductListScreenProps {
   activeRecCategory: string;
   onSetCategory: (cat: string) => void;
   onProductClick: (product: Product) => void;
+  onEditProduct?: (id: string) => void;
   onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
   onToggleCartItem: (product: Product, e?: React.MouseEvent) => void;
   onOpenMenu: () => void;
@@ -19,7 +21,7 @@ interface ProductListScreenProps {
 
 export const ProductListScreen: React.FC<ProductListScreenProps> = ({
   products: catalogProducts, cart, favorites, activeRecCategory,
-  onSetCategory, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu,
+  onSetCategory, onProductClick, onEditProduct, onToggleFavorite, onToggleCartItem, onOpenMenu,
 }) => {
   const products = activeRecCategory === 'all'
     ? catalogProducts
@@ -157,6 +159,7 @@ export const ProductListScreen: React.FC<ProductListScreenProps> = ({
                 {/* Info */}
                 <div className="p-4 flex-1 flex flex-col gap-2 bg-white">
                   <h4 className="font-headline font-bold text-[13px] text-on-surface leading-snug line-clamp-2">{product.name}</h4>
+                  <ProductEditButton product={product} onEdit={onEditProduct} />
                   <div className="flex justify-between items-center mt-auto pt-2">
                     <div>
                       {product.configuravel
