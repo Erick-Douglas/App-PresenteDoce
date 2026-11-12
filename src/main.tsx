@@ -1,16 +1,17 @@
-import {StrictMode, useEffect} from 'react';
-import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
+import { lazy, StrictMode, Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
 import './index.css';
 
-// Handle browser back button
-window.addEventListener('popstate', (e) => {
-  // Prevent default back navigation - app handles its own routing
-  e.preventDefault();
-});
+const Admin = lazy(() => import('./pages/AdminScreen'));
+const Pricing = lazy(() => import('./pages/PricingScreen'));
+const path = window.location.pathname.replace(/\/$/, '');
+const Screen = path === '/admin' ? Admin : path === '/precificacao' ? Pricing : App;
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Suspense fallback={<p className="p-4" role="status">A carregar…</p>}>
+      <Screen />
+    </Suspense>
   </StrictMode>,
 );

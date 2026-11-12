@@ -2,10 +2,10 @@ import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Heart, ShoppingCart, ChevronRight } from 'lucide-react';
 import { CATEGORIES } from '../config/constants';
-import { PRODUCTS } from '../features/products/data';
 import { Product, CartItem, View } from '../config/types';
 
 interface ProductListScreenProps {
+  products: Product[];
   cart: CartItem[];
   favorites: string[];
   activeRecCategory: string;
@@ -18,12 +18,12 @@ interface ProductListScreenProps {
 }
 
 export const ProductListScreen: React.FC<ProductListScreenProps> = ({
-  cart, favorites, activeRecCategory,
+  products: catalogProducts, cart, favorites, activeRecCategory,
   onSetCategory, onProductClick, onToggleFavorite, onToggleCartItem, onOpenMenu,
 }) => {
   const products = activeRecCategory === 'all'
-    ? PRODUCTS
-    : PRODUCTS.filter(p => p.category === activeRecCategory);
+    ? catalogProducts
+    : catalogProducts.filter(p => p.category === activeRecCategory);
 
   const tabsRef = useRef<HTMLDivElement>(null);
 

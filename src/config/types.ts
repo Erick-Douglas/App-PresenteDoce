@@ -1,5 +1,3 @@
-export type Category = 'Bolos Caseiros' | 'Bolos Temáticos' | 'Doces' | 'Salgados' | 'Boxes Surpresa';
-
 export interface Product {
   id: string;
   name: string;
@@ -7,6 +5,7 @@ export interface Product {
   price: number;
   category: string;
   image: string;
+  tags?: string[];
   rating?: number;
   reviewsCount?: number;
   isNew?: boolean;

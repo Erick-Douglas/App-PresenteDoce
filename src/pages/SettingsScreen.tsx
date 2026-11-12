@@ -11,16 +11,10 @@ interface SettingsScreenProps {
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu }) => {
-  const aboutItems = [
-    { label: 'Nossa proposta', value: 'Criamos presentes doces e encomendas especiais com um processo simples e direto.' },
-    { label: 'Como funciona', value: 'Você escolhe os itens, informa nome e telefone e conclui tudo pelo WhatsApp.' },
-    { label: 'Retirada', value: BUSINESS_INFO.address },
-  ];
-
   const contactItems = [
-    { icon: MessageCircle, label: 'WhatsApp', sub: BUSINESS_INFO.whatsapp, onClick: () => window.open(`https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank') },
-    { icon: Phone, label: 'Ligar para a loja', sub: 'Atendimento prioritário', onClick: () => window.open(`tel:${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank') },
-    { icon: Instagram, label: 'Instagram', sub: '@presentedoce.s2', onClick: () => window.open(BUSINESS_INFO.instagram, '_blank') },
+    { icon: MessageCircle, label: 'WhatsApp', sub: BUSINESS_INFO.whatsapp, onClick: () => window.open(`https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank', 'noopener,noreferrer') },
+    { icon: Phone, label: 'Ligar para a loja', sub: 'Atendimento prioritário', onClick: () => window.open(`tel:${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank', 'noopener,noreferrer') },
+    { icon: Instagram, label: 'Instagram', sub: '@presentedoce.s2', onClick: () => window.open(BUSINESS_INFO.instagram, '_blank', 'noopener,noreferrer') },
   ];
 
   return (
@@ -28,7 +22,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
       <header className="px-6 py-4 flex items-center sticky top-0 bg-white/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
         <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary"><Menu size={20} /></button>
         <h1 className="font-headline font-black text-sm text-primary flex-1 text-center pr-8 tracking-widest uppercase">
-          {mode === 'about' ? 'Sobre nós' : 'Fale conosco'}
+          {mode === 'about' ? 'Sobre nós' : 'Contactos'}
         </h1>
       </header>
 
@@ -46,7 +40,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
               <h3 className="font-headline font-black text-xs text-black/40 pl-2 tracking-wider uppercase">Nossa Filosofia</h3>
               <div className="bg-white rounded-2xl p-4 shadow-xl shadow-black/5 border border-primary/10 flex flex-col gap-3">
                 <p className="font-body text-sm text-black/70 leading-relaxed">
-                  Acreditamos que a confeitaria é uma forma de expressar afeto. Trabalhamos apenas com ingredientes selecionados para garantir a máxima qualidade.
+                  Somos uma confeitaria artesanal por encomenda. Preparamos bolos, doces e salgados para celebrar.
                 </p>
               </div>
             </div>
@@ -60,10 +54,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
                 </div>
                 <div className="flex flex-col gap-1 py-4 px-5">
                   <span className="font-headline font-bold text-[13px] text-primary">2. Finalize no WhatsApp</span>
-                  <span className="text-[11px] text-black/50">Ao concluir, a sua encomenda é enviada diretamente para o nosso atendimento.</span>
+                  <span className="text-[11px] text-black/50">Envie a mensagem no WhatsApp e aguarde a confirmação de disponibilidade, entrega e pagamento.</span>
                 </div>
                 <div className="flex flex-col gap-1 py-4 px-5">
-                  <span className="font-headline font-bold text-[13px] text-primary">3. Recolha na loja</span>
+                  <span className="font-headline font-bold text-[13px] text-primary">3. Combine a recolha ou entrega</span>
                   <span className="text-[11px] text-black/50">{BUSINESS_INFO.address}</span>
                 </div>
               </div>
@@ -73,7 +67,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
 
         {mode === 'contact' && (
           <section className="space-y-3">
-            <h3 className="font-headline font-black text-[10px] text-black/40 pl-2 tracking-wider">Canais de contato</h3>
+            <h3 className="font-headline font-black text-[10px] text-black/40 pl-2 tracking-wider">Canais de contacto</h3>
             <div className="bg-white rounded-2xl p-1 shadow-xl shadow-black/5 border border-primary/5 divide-y divide-primary/5">
               {contactItems.map((item) => (
                 <button key={item.label} className="w-full flex items-center gap-4 py-4 px-4 active:bg-primary/5 transition-colors text-left group" onClick={item.onClick}>

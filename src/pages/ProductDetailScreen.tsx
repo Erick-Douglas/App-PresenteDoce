@@ -128,7 +128,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const [tema, setTema] = useState(editingItem?.tema || '');
   const [variant, setVariant] = useState(editingItem?.variant || '');
   const [selectedFlavors, setSelectedFlavors] = useState<string[]>(editingItem?.selectedFlavors || []);
-  const [sauce] = useState('');
+  const sauce = editingItem?.selectedSauce ?? '';
 
   React.useEffect(() => {
     if (editingItem) {
@@ -158,6 +158,8 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   const isSimples = product.simples === true;
   const isConfiguravel = product.configuravel === true;
 
+  const tamanhos = product.category === 'Bolos Temáticos' && product.variants?.length ? product.variants : TAMANHOS;
+
   // Preço calculado dinamicamente
   const calculatedPrice = useMemo(() => {
     if (!isConfiguravel) return product.price * quantity;
@@ -167,12 +169,12 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       return vPrice * quantity;
     }
 
-    const basePrice = TAMANHOS.find(t => t.label === tamanho)?.price ?? 0;
+    const basePrice = tamanhos.find(t => t.label === tamanho)?.price ?? 0;
     const massaExtra = MASSAS_BT.find(m => m.label === massa)?.extra ?? 0;
     const r1Extra = RECHEIOS_BT.find(r => r.label === recheio1)?.extra ?? 0;
     const r2Extra = recheio2 && recheio2 !== recheio1 ? (RECHEIOS_BT.find(r => r.label === recheio2)?.extra ?? 0) : 0;
     return (basePrice + massaExtra + r1Extra + r2Extra) * quantity;
-  }, [isConfiguravel, product.price, quantity, tamanho, massa, recheio1, recheio2, variant, product.category, product.variants]);
+  }, [isConfiguravel, product.price, quantity, tamanho, massa, recheio1, recheio2, variant, product.category, product.variants, tamanhos]);
 
   // Lógica: 1º clique = seleciona, 2º no mesmo = duplica ("só esse"), 3º = cancela
   const handleRecheioSelect = (r: string) => {
@@ -192,7 +194,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   };
 
   const canAdd = !isConfiguravel || 
-    (['Brigadeiros', 'Salgados'].includes(product.category) ? variant !== '' : (tamanho !== '' && massa !== '' && recheio1 !== ''));
+    (['Brigadeiros', 'Salgados'].includes(product.category) ? !!product.variants?.some(option => option.label === variant) : (tamanhos.some(option => option.label === tamanho) && massa !== '' && recheio1 !== ''));
 
   const handleAdd = () => {
     if (!canAdd) return;
@@ -331,6 +333,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 <Section title="Observações" optional hint="Ex: Quero 10 de Ninho e 15 de Brigadeiro">
                   <textarea
                     value={observations}
+                      maxLength={300}
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Especifique quantidades ou outros detalhes aqui..."
                     className="w-full h-24 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
@@ -345,7 +348,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
                 {/* Tamanho */}
                 <Section title="Selecione o tamanho" done={!!tamanho}>
-                  {TAMANHOS.map(t => (
+                  {tamanhos.map(t => (
                     <RadioRow
                       key={t.label}
                       label={t.label}
@@ -394,6 +397,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 <Section title="Tema / Referência" optional hint="Descreva o tema ou informe que enviará fotos pelo WhatsApp.">
                   <textarea
                     value={tema}
+                      maxLength={200}
                     onChange={(e) => setTema(e.target.value)}
                     placeholder="Ex: Mickey Mouse, azul e amarelo. Enviarei 2 fotos de referência no WhatsApp."
                     className="w-full h-24 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
@@ -404,6 +408,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 <Section title="Observações" optional>
                   <textarea
                     value={observations}
+                      maxLength={300}
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Alguma informação adicional?"
                     className="w-full h-20 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
@@ -422,6 +427,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 <Section title="Observações" optional>
                   <textarea
                     value={observations}
+                      maxLength={300}
                     onChange={(e) => setObservations(e.target.value)}
                     placeholder="Algo especial que devemos saber?"
                     className="w-full h-20 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
@@ -435,6 +441,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               <Section title="Observações" optional>
                 <textarea
                   value={observations}
+                      maxLength={300}
                   onChange={(e) => setObservations(e.target.value)}
                   placeholder="Alguma preferência ou pedido especial?"
                   className="w-full h-20 bg-stone-50 rounded-xl p-3.5 font-body text-[13px] text-black border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-black/25 mt-1"
