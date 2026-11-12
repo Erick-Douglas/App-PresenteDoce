@@ -17,7 +17,7 @@ Como uma confeitaria artesanal de produção pequena pode receber encomendas pel
 | [Larrysa’s Bakery](https://www.larrysasbakery.com/) | Pastelaria caseira na Pontinha com montra, categorias e WhatsApp. | Abrir o catálogo a partir do link principal e dar acesso claro a atendimento. |
 | [Saborella](https://saborella.pt/) | Confeitaria familiar. O site organiza o catálogo e encaminha encomendas ao WhatsApp. | Enviar um resumo pronto para conferência e comunicar que o atendimento confirma o pedido. |
 | [Badu Confeitaria](https://baduconfeitaria.com/) | Explica escolha, confirmação e entrega/recolha em passos separados. | Mostrar a etapa seguinte e evitar prometer preço de entrega ou disponibilidade sem confirmação. |
-| [BRUTA](https://www.bruta.store/contact) | Eventos corporativos têm fluxo de contacto com data e número de pessoas. | Oferecer entrada para empresas com data, quantidade e local no pedido de orçamento. |
+| [BRUTA](https://www.bruta.store/contact) | Eventos corporativos têm fluxo de contacto com data e número de pessoas. | Referência de pesquisa. A entrega atual prioriza o catálogo e o checkout geral. |
 | [Hotplate](https://www.hotplate.com/) | Ferramenta de venda online para pequenos negócios de comida, com encomendas em janelas de venda. | Considerar agenda e limites de produção quando Gabriela confirmar a necessidade. |
 
 ## Segurança e arquitetura

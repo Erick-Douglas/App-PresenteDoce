@@ -3,7 +3,6 @@ import { Menu, MessageCircle, Phone, Instagram, MapPin } from 'lucide-react';
 import { View } from '../config/types';
 import { BUSINESS_INFO } from '../config/constants';
 import { motion } from 'framer-motion';
-import { BusinessOrdersLink } from '../components/BusinessOrdersLink';
 
 interface SettingsScreenProps {
   mode: 'about' | 'contact';
@@ -41,7 +40,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
               <h3 className="font-headline font-black text-xs text-black/40 pl-2 tracking-wider uppercase">Nossa Filosofia</h3>
               <div className="bg-white rounded-2xl p-4 shadow-xl shadow-black/5 border border-primary/10 flex flex-col gap-3">
                 <p className="font-body text-sm text-black/70 leading-relaxed">
-                  Somos uma confeitaria artesanal por encomenda. Preparamos pedidos para celebrações e empresas.
+                  Somos uma confeitaria artesanal por encomenda. Preparamos bolos, doces e salgados para celebrar.
                 </p>
               </div>
             </div>
@@ -68,7 +67,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
 
         {mode === 'contact' && (
           <section className="space-y-3">
-            <BusinessOrdersLink />
             <h3 className="font-headline font-black text-[10px] text-black/40 pl-2 tracking-wider">Canais de contacto</h3>
             <div className="bg-white rounded-2xl p-1 shadow-xl shadow-black/5 border border-primary/5 divide-y divide-primary/5">
               {contactItems.map((item) => (

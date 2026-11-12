@@ -1,7 +1,7 @@
 import type { Product } from '../../config/types';
 import { readAdminLinkToken, type AdminLinkType } from './adminLink';
 
-const configuredUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').trim();
+const configuredUrl = String(import.meta.env.VITE_CATALOG_SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
 const serviceUrl = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(configuredUrl) ? configuredUrl.replace(/\/$/, '') : '';
 export const catalogEnabled = import.meta.env.VITE_CATALOG_SOURCE === 'supabase';

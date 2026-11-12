@@ -1,23 +1,23 @@
 # PRD — Presente Doce
 
-**Versão 0.1 · 11/11/2026**
+**Versão 0.2 · 12/11/2026**
 
 ## Produto
 
 A Presente Doce é uma **loja online de encomendas de confeitaria artesanal**. A arquitetura é de **loja de vendedor único** com catálogo, carrinho e encaminhamento para o WhatsApp. O app é o destino principal do link da bio. O cliente escolhe produtos e envia o pedido. Gabriela confirma disponibilidade, entrega e pagamento no atendimento.
 
 **Link oficial da bio:** [presente-doce.vercel.app](https://presente-doce.vercel.app/)  
-**Texto sugerido:** Confeitaria artesanal por encomenda. Para celebrações e empresas. Consulte o catálogo e faça o pedido pelo WhatsApp.
+**Texto sugerido:** Confeitaria artesanal por encomenda. Consulte o catálogo e faça o pedido pelo WhatsApp.
 
 ## Objetivo e público
 
-Diminuir o retrabalho de atendimento e dar autonomia à Gabriela para manter o catálogo pelo celular. A loja atende encomendas de pessoas e pequenos eventos. Uma entrada específica acolhe pedidos de empresas que precisam de quantidade, data e orçamento combinados.
+Diminuir o retrabalho de atendimento e dar autonomia à Gabriela para manter o catálogo pelo celular. A loja atende encomendas de pessoas e pequenos eventos. Nesta entrega, a prioridade é editar produtos e publicar o catálogo no endereço oficial.
 
 | Frente | Requisitos desta entrega | Aceite |
 | --- | --- | --- |
-| Loja | Manter a navegação e o catálogo inicial. Usar a base publicada quando configurada. Dar acesso direto ao catálogo e a encomendas empresariais. | Alterações de um produto publicado aparecem na loja. Rascunhos e produtos retirados do catálogo ficam fora da consulta pública. O endereço oficial funciona sem fragmento. |
+| Loja | Abrir o catálogo Supabase no domínio oficial. | Alterações de um produto publicado aparecem ao recarregar a loja. Rascunhos e produtos retirados ficam fora da consulta pública. |
 | Checkout | Manter recolha, entrega e preferência de pagamento. Resumir itens, personalizações, contacto e subtotal. Informar quando entrega e total dependem de confirmação. Abrir o WhatsApp sem apagar o pedido e oferecer cópia da mensagem. | Pedidos de recolha e entrega são preparados sem conta. Voltar do WhatsApp permite retomar o carrinho. O app informa que o pedido só é confirmado no atendimento. |
-| Painel móvel | Acesso administrativo em `/admin`. Criar e editar nome, descrição, categoria, tópicos, preço, variantes, sabores e imagem. Controlar publicação e retirada do catálogo. | Gabriela consegue criar um rascunho com foto, publicar, alterar o preço e retirar o produto pelo celular. Alterações concorrentes são detectadas. |
+| Painel móvel | Acesso em `/admin` com a conta Supabase da confeitaria. Criar e editar nome, descrição, categoria, tópicos, preço, variantes, sabores e imagem. Controlar publicação e retirada do catálogo. | Gabriela entra pelo domínio oficial com a conta do painel e consegue editar o catálogo pelo celular. Alterações concorrentes são detectadas. |
 | Backend | Supabase Auth, Postgres e Storage. Catálogo público em leitura e autorização de escrita pelo banco. Preservar os identificadores e a configuração dos produtos na migração. | Usuários anônimos leem apenas produtos publicados. Contas sem autorização de catálogo não gravam. A migração pode ser aplicada e os dados iniciais conferidos em uma base isolada. |
 | Entrega técnica | Limpar módulos e dependências órfãos, documentar configuração, rodar lint, testes de regressão e build, e validar a jornada em preview. | A branch de trabalho tem evidência dos checks e instruções para configurar o ambiente. A publicação ocorre depois da validação do checkout e do painel conectado. |
 
@@ -39,4 +39,4 @@ O app coleta dados de contacto para compor a mensagem. Carrinho e dados pessoais
 
 ## Referências
 
-[Pesquisa de produto e segurança](pesquisa.md) · [Configuração e operação](../README.md)
+[Pesquisa de produto e segurança](pesquisa.md) · [Configuração e operação](../README.md) · [Deploy e reversão](DEPLOY.md)

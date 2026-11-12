@@ -4,7 +4,6 @@ import { Heart, ShoppingCart, Search } from 'lucide-react';
 import { CATEGORIES } from '../config/constants';
 import { Product, CartItem, View } from '../config/types';
 import { Header } from '../components/Header';
-import { BusinessOrdersLink } from '../components/BusinessOrdersLink';
 
 interface HomeScreenProps {
   products: Product[];
@@ -122,9 +121,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         {/* ── Conteúdo principal ── */}
         <div className="-mt-8 bg-stone-50 rounded-t-[32px] md:rounded-t-[48px] relative z-20 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] pt-8 min-h-screen">
           <div className="max-w-[1200px] mx-auto space-y-6">
-            <div className="flex justify-center px-4">
-              <BusinessOrdersLink />
-            </div>
 
             {/* Renderização condicional baseada na busca */}
             {filteredProducts ? (

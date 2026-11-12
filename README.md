@@ -2,7 +2,19 @@
 
 Loja online de encomendas de confeitaria artesanal, com catálogo, carrinho, confirmação pelo WhatsApp e gestão móvel do catálogo.
 
-[App público](https://presente-doce.vercel.app/) · [PRD](docs/PRD.md) · [Pesquisa](docs/pesquisa.md)
+[Loja](https://presente-doce.vercel.app/) · [Painel da confeitaria](https://presente-doce.vercel.app/admin) · [PRD](docs/PRD.md) · [Deploy e reversão](docs/DEPLOY.md) · [Pesquisa](docs/pesquisa.md)
+
+## Arquitetura
+
+O app web usa React, TypeScript e Vite. A Vercel publica o frontend. O Supabase guarda produtos e imagens e autentica a conta administrativa. O painel e a loja consultam o mesmo catálogo em produção. O checkout encaminha os dados da encomenda para o WhatsApp.
+
+| Rota | Uso |
+| --- | --- |
+| `/` | Catálogo e encomendas por WhatsApp |
+| `/admin` | Entrada com a conta da confeitaria, edição de produtos e publicação |
+| `/precificacao` | Simulador de custo e margem com rascunho local |
+
+A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. A conta da confeitaria entra no painel de produção pelo Supabase Auth.
 
 ## Desenvolvimento
 
@@ -13,6 +25,7 @@ npm ci
 npm run dev
 npm run lint
 npm test
+npm run check:catalog
 npm run build
 ~~~
 
@@ -30,9 +43,9 @@ A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, re
    values ('UUID_DA_CONTA_AUTORIZADA'::uuid)
    on conflict do nothing;
    ~~~
-3. Configure VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY conforme .env.example. A URL é a do projeto em supabase.co e a chave começa com sb_publishable_. O navegador recebe somente essa chave pública. Chaves secretas, service-role e dados de clientes ficam fora do frontend e do repositório. Depois de aplicar as migrações e conferir os dados, defina VITE_CATALOG_SOURCE=supabase no ambiente correspondente.
-4. Configure o ambiente Preview da Vercel com o projeto de teste e faça uma nova build. Confira leitura anônima de produtos publicados, escrita com a conta administrativa e ausência de acesso administrativo para uma conta comum. Teste criar, editar, fotografar, publicar e despublicar um produto fictício pelo celular. Confira o catálogo em outra sessão.
-5. Depois da validação, configure o ambiente Production com o projeto de produção, aplique as migrações nele e confira o catálogo antes de publicar. A Vercel roda TypeScript, testes de checkout e build no deploy. Registre a versão e a cópia de recuperação da base antes da migração.
+3. Configure `VITE_CATALOG_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` conforme `.env.example`. A URL é a do projeto em `supabase.co` e a chave começa com `sb_publishable_`. O navegador recebe somente essa chave pública. Chaves secretas, service-role e dados de clientes ficam fora do frontend e do repositório. Depois de aplicar as migrações e conferir os dados, defina `VITE_CATALOG_SOURCE=supabase` no ambiente correspondente.
+4. Valide leitura de produtos publicados, escrita com a conta administrativa e recusa de escrita para uma conta comum. Use fixtures em ambiente de teste para criar, editar, fotografar, publicar e despublicar pelo celular.
+5. Siga [Deploy e reversão](docs/DEPLOY.md) para promover a versão do frontend. As migrações e a recuperação de dados têm procedimento próprio.
 
 ## Operação
 

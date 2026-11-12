@@ -1,6 +1,6 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "npm run lint && npm test && npm run build",
+  "buildCommand": "npm run lint && npm test && npm run check:catalog && npm run build",
   "headers": [
     {
       "source": "/(.*)",
