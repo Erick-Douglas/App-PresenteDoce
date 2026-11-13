@@ -10,9 +10,10 @@ interface SidebarProps {
   onLogin: () => void;
   onLogout: () => void;
   onInstall?: () => void;
+  canInstallDirectly: boolean;
 }
 
-export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onInstall }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onInstall, canInstallDirectly }: SidebarProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -36,7 +37,7 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
     { icon: Heart, label: 'Favoritos', action: () => onNavigate('saved') },
     { icon: Info, label: 'Sobre nós', action: () => onNavigate('settings') },
     { icon: Phone, label: 'Contactos', action: () => onNavigate('contact') },
-    ...(onInstall ? [{ icon: Download, label: 'Instalar app', action: onInstall }] : []),
+    ...(!isAdmin && onInstall ? [{ icon: Download, label: canInstallDirectly ? 'Instalar app' : 'Como instalar', action: onInstall }] : []),
     ...(isAdmin ? [
       { icon: Package, label: 'Gerir catálogo', action: () => onNavigate('catalog-admin') },
       { icon: Plus, label: 'Novo produto', action: () => onNavigate('product-editor') },

@@ -44,5 +44,5 @@ export function useAppInstall() {
     }
   }
 
-  return { installed, appleMobile, showInstructions, closeInstructions: () => setShowInstructions(false), install };
+  return { installed, canPrompt: prompt !== null, appleMobile, showInstructions, closeInstructions: () => setShowInstructions(false), install };
 }

@@ -11,6 +11,10 @@
 - **Menu → Instalar app** abre o pedido nativo quando disponível e mostra os passos do navegador nos demais casos. A instalação usa o nome **Presente Doce** e abre em modo independente. A área de status começa em bordô na home e passa a translúcida durante a rolagem no modo instalado compatível.
 - Botões de edição, quantidade, carrinho, precificação, navegação e formulários usam o tema compartilhado. Os cálculos e a confirmação da encomenda pelo WhatsApp continuam a usar o fluxo existente.
 
+### Ajuste final de instalação
+
+- O menu público mostra **Instalar app** quando o navegador pode abrir a confirmação nativa e **Como instalar** quando o processo depende do menu do navegador. A opção fica oculta na sessão administrativa e no app instalado.
+
 ### Pendências para a próxima sessão
 
 - Conferir a instalação e a aparência da área de status num iPhone e num Android físicos. Confirmar também a prévia ao partilhar no WhatsApp e a operação com a conta real de Gabriela.

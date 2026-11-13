@@ -73,7 +73,7 @@ export default function App() {
   const [presentation, setPresentation] = useState(defaultStorePresentation);
   const [presentationError, setPresentationError] = useState(false);
   const [presentationAttempt, setPresentationAttempt] = useState(0);
-  const { installed, appleMobile, showInstructions, closeInstructions, install } = useAppInstall();
+  const { installed, canPrompt, appleMobile, showInstructions, closeInstructions, install } = useAppInstall();
 
   useEffect(() => {
     if (!catalogEnabled) return;
@@ -341,6 +341,7 @@ export default function App() {
           onLogin={openLogin}
           onLogout={handleLogout}
           onInstall={installed ? undefined : install}
+          canInstallDirectly={canPrompt}
         />
 
         {currentView !== 'home' && !adminView && catalogNotice}
@@ -501,11 +502,11 @@ export default function App() {
           </StoreDialog>
         )}
         {showInstructions && (
-          <StoreDialog title="Instalar Presente Doce" onClose={closeInstructions}>
+          <StoreDialog title="Como instalar a Presente Doce" onClose={closeInstructions}>
             <div className="flex items-start gap-3">
               <img src="/apple-touch-icon.png" alt="" width={44} height={44} className="rounded-xl" />
               <div className="space-y-2 text-sm text-muted">
-                {appleMobile ? <p>No Safari, abra <strong>Partilhar</strong> e escolha <strong>Adicionar ao ecrã principal</strong>. Se aparecer <strong>Abrir como app</strong>, deixe essa opção ativa.</p> :
+                {appleMobile ? <p>No Safari, toque em <strong>Partilhar → Adicionar ao ecrã principal</strong>. Ative <strong>Abrir como app</strong> se aparecer e toque em <strong>Adicionar</strong>.</p> :
                   <p>No menu do navegador, escolha <strong>Instalar app</strong> ou <strong>Adicionar ao ecrã principal</strong>, quando disponível.</p>}
                 <p>O ícone Presente Doce fica no ecrã principal.</p>
               </div>
