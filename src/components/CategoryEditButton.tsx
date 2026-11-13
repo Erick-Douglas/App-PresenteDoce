@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react';
+import { SquarePen } from 'lucide-react';
 import type { CatalogCategory } from '../config/types';
 
 export function CategoryEditButton({ category, onEdit, compact = false }: {
@@ -13,7 +13,7 @@ export function CategoryEditButton({ category, onEdit, compact = false }: {
       className={compact
         ? 'ui-icon-action absolute top-0 right-0'
         : 'ui-icon-action'}>
-      <Pencil size={15} strokeWidth={1.65} aria-hidden="true" />
+      <SquarePen size={15} strokeWidth={1.65} aria-hidden="true" />
     </button>
   );
 }

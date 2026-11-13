@@ -28,11 +28,11 @@ export function StoreDialog({ title, onClose, children }: {
     >
       <div className="sticky top-0 z-10 flex items-center justify-between gap-4 bg-primary px-5 py-2 text-on-primary sm:px-7">
         <h2 id={titleId} className="type-module">{title}</h2>
-        <button type="button" onClick={onClose} aria-label="Fechar" className="rounded-full p-3 hover:bg-surface/10">
+        <button type="button" onClick={onClose} aria-label="Fechar" className="store-icon-action">
           <X size={20} aria-hidden="true" />
         </button>
       </div>
-      <div className="px-5 pb-6 pt-4 sm:px-7">{children}</div>
+      <div className="px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-4 sm:px-7">{children}</div>
     </dialog>
   );
 }

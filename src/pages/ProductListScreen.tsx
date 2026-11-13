@@ -39,11 +39,11 @@ export function ProductListScreen({
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
-      <header className="sticky top-0 z-50 border-b border-outline bg-porcelain/95 backdrop-blur-md">
+      <header className="sticky top-[env(safe-area-inset-top)] z-50 border-b border-outline bg-porcelain/95 backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-4 pt-3 pb-2 sm:px-6">
           <div className="flex min-h-12 items-center gap-2.5">
             <button type="button" onClick={onOpenMenu} aria-label="Abrir menu"
-              className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
+              className="ui-icon-action">
               <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
             </button>
             <h1 className="type-module min-w-0 flex-1 break-words text-primary">{title}</h1>

@@ -50,6 +50,13 @@ A home usa o logotipo principal, com assinatura em creme claro e presente dourad
 - **Contactos.** O item fica após **Sobre nós** e abre a página com WhatsApp, telefone, e-mail, Instagram e Facebook. Acrescente TikTok quando o endereço oficial for confirmado. O assistente é exclusivo da vitrine pública. **Precisa de ajuda?** aparece uma vez por sessão da aba e recolhe para o retrato após toque, clique, teclado ou rolagem. O retrato abre o compositor sem bloquear a página. O link preenche a conversa no WhatsApp e o cliente confirma o envio por lá. [Clique para conversa do WhatsApp](https://faq.whatsapp.com/5913398998672934)
 - **Atendimento dentro da loja.** Para envio sem sair da vitrine, o próximo passo é um chat web com backend, caixa de atendimento e notificação à equipe. A integração com a plataforma da Meta usa um número empresarial remetente e credenciais do servidor. Antes de ativar o canal, valide destinatário, consentimento, retenção e limites antispam. [WhatsApp Business Platform](https://developers.facebook.com/documentation/business-messaging/whatsapp/overview)
 
+## Ícones, compartilhamento e instalação
+
+- Use o presente dourado da marca sobre bordô opaco no favicon, nos ícones quadrados do manifesto e na imagem de compartilhamento. A área de segurança do ícone de 512 px permite os recortes de Android. O cabeçalho usa a assinatura completa. [Ativos públicos](../public)
+- Publique título, descrição e imagem no HTML inicial. O botão **Partilhar** entrega título, descrição e URL ao sistema. A prévia é renderizada pelo aplicativo que recebe o link. [Open Graph](https://ogp.me/) · [Web Share API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share)
+- **Instalar app** fica no menu enquanto a loja é usada no navegador. Use o pedido nativo quando houver e mostre os passos do Safari no iPhone. No modo independente, preserve as áreas de segurança de topo e base. A home em repouso usa topo bordô. Ao rolar, a faixa do app sobre a área de status fica translúcida. A interface externa do navegador segue o sistema. [Instalação no iPhone](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios) · [Instalação na web](https://web.dev/learn/pwa/installation-prompt)
+- A ação **Editar** usa ícone de traço e texto curto, com nome acessível por produto. Na precificação, **Calcular receita** é o botão preenchido. Guardar e limpar o rascunho são ações de apoio. Mantenha os alvos de toque em 44 px.
+
 ## Validar uma alteração
 
 1. Abra a home, uma categoria, os detalhes de um produto, o carrinho, o menu e a gestão no preview.

@@ -41,7 +41,7 @@ export function CategoriesScreen({ categories, products, overview, onNavigate, o
       <header className="store-masthead">
         <div className="page-width flex min-h-16 items-center gap-3 text-on-primary">
           <button type="button" onClick={() => onNavigate('home')} aria-label="Voltar à vitrine"
-            className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/10">
+            className="store-icon-action">
             <ArrowLeft size={21} aria-hidden="true" />
           </button>
           <h1 className="type-module">Todas as categorias</h1>

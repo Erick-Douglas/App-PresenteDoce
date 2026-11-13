@@ -8,7 +8,37 @@
 
   .store-masthead {
     background: var(--pd-color-brand);
-    padding-block-start: env(safe-area-inset-top, 0px);
+  }
+
+  .store-icon-action {
+    display: grid;
+    width: var(--pd-control-height);
+    height: var(--pd-control-height);
+    flex: none;
+    place-items: center;
+    border-radius: 50%;
+  }
+
+  .store-icon-action:hover { background: color-mix(in srgb, var(--pd-color-surface) 10%, transparent); }
+  .store-icon-action:focus-visible { outline: 2px solid var(--pd-color-cream); }
+
+  .app-theme { padding-block-start: env(safe-area-inset-top, 0px); }
+
+  .app-theme::before {
+    position: fixed;
+    z-index: 110;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    background: color-mix(in srgb, var(--pd-color-brand) 60%, transparent);
+    backdrop-filter: blur(14px);
+    pointer-events: none;
+    content: '';
+  }
+
+  :root[data-brand-status="true"] .app-theme::before { background: var(--pd-color-brand); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .app-theme::before { transition: background-color 180ms ease; }
   }
 
   .admin-page { min-height: 100dvh; }
@@ -98,6 +128,19 @@
     background: var(--pd-color-brand);
     border-color: var(--pd-color-brand);
   }
+
+  .ui-choice {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: var(--pd-control-height);
+    gap: 0.625rem;
+    padding-block: 0.5rem;
+    border-bottom: 1px solid var(--pd-color-border);
+    text-align: left;
+  }
+
+  .ui-choice:last-child { border-bottom: 0; }
 
   .catalog-grid {
     display: grid;
@@ -189,6 +232,27 @@
     font-size: var(--pd-size-small);
   }
 
+  .ui-edit-action {
+    display: inline-flex;
+    min-height: var(--pd-control-height);
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--pd-color-brand);
+    font-size: var(--pd-size-caption);
+    white-space: nowrap;
+  }
+
+  .ui-edit-action > svg {
+    box-sizing: content-box;
+    padding: 0.3125rem;
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--pd-color-brand) 5%, transparent);
+  }
+
+  .ui-edit-action:hover > svg {
+    background: color-mix(in srgb, var(--pd-color-brand) 10%, transparent);
+  }
+
   .ui-quiet-action:hover { text-decoration: underline; text-underline-offset: 0.2em; }
 
   .ui-icon-action {
@@ -242,7 +306,7 @@
     font-size: var(--pd-size-small);
   }
 
-  :is(.category-pill, .ui-field, .ui-primary, .ui-secondary, .ui-icon-action, .ui-quiet-action, .contact-launcher):focus-visible {
+  :is(.category-pill, .ui-field, .ui-primary, .ui-secondary, .ui-icon-action, .ui-quiet-action, .ui-edit-action, .ui-choice, .contact-launcher):focus-visible {
     outline: 2px solid var(--pd-color-brand);
     outline-offset: 2px;
   }

@@ -21,10 +21,10 @@ export function SavedScreen({
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
-      <header className="sticky top-0 z-50 border-b border-outline bg-porcelain/95 backdrop-blur-md">
+      <header className="sticky top-[env(safe-area-inset-top)] z-50 border-b border-outline bg-porcelain/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center gap-2.5 px-4 py-3 sm:px-6">
           <button type="button" aria-label="Abrir menu" onClick={onOpenMenu}
-            className="grid size-11 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
+            className="ui-icon-action">
             <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
           </button>
           <h1 className="type-module text-primary">Favoritos</h1>
@@ -38,7 +38,7 @@ export function SavedScreen({
         ) : (
           <div className="space-y-2 py-12 text-center text-sm text-muted">
             <p>Você ainda não guardou produtos.</p>
-            <button type="button" onClick={() => onNavigate('home')} className="min-h-11 font-bold text-primary underline">Explorar produtos</button>
+            <button type="button" onClick={() => onNavigate('home')} className="ui-quiet-action">Explorar produtos</button>
           </div>
         )}
       </div>
