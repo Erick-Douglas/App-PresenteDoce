@@ -20,7 +20,8 @@ export interface Product {
   flavors?: string[];     // Sabores disponíveis
 }
 
-export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact' | 'catalog-admin';
+export type View = 'welcome' | 'home' | 'product-list' | 'product-details' | 'cart' | 'saved' | 'categories-list' | 'settings' | 'contact' |
+  'catalog-admin' | 'product-editor' | 'category-editor' | 'pricing' | 'store-texts';
 
 export interface CartItem extends Product {
   cartId: string;

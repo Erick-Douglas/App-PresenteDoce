@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { Calculator, FileText, Heart, Home, Info, LayoutGrid, LogIn, LogOut, MessageCircle, Package, Plus, X } from 'lucide-react';
+import { Calculator, FileText, Heart, Home, Info, LayoutGrid, LogIn, LogOut, Package, Phone, Plus, X } from 'lucide-react';
 import type { View } from '../config/types';
 
 interface SidebarProps {
@@ -9,13 +9,9 @@ interface SidebarProps {
   isAdmin: boolean;
   onLogin: () => void;
   onLogout: () => void;
-  onManage: () => void;
-  onNewProduct: () => void;
-  onPricing: () => void;
-  onPresentation: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onManage, onNewProduct, onPricing, onPresentation }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout }: SidebarProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -38,11 +34,12 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
     { icon: LayoutGrid, label: 'Todas as categorias', action: () => onNavigate('categories-list') },
     { icon: Heart, label: 'Favoritos', action: () => onNavigate('saved') },
     { icon: Info, label: 'Sobre nós', action: () => onNavigate('settings') },
+    { icon: Phone, label: 'Contactos', action: () => onNavigate('contact') },
     ...(isAdmin ? [
-      { icon: Package, label: 'Gerir catálogo', action: onManage },
-      { icon: Plus, label: 'Novo produto', action: onNewProduct },
-      { icon: Calculator, label: 'Precificação', action: onPricing },
-      { icon: FileText, label: 'Textos da loja', action: onPresentation },
+      { icon: Package, label: 'Gerir catálogo', action: () => onNavigate('catalog-admin') },
+      { icon: Plus, label: 'Novo produto', action: () => onNavigate('product-editor') },
+      { icon: Calculator, label: 'Precificação', action: () => onNavigate('pricing') },
+      { icon: FileText, label: 'Textos da loja', action: () => onNavigate('store-texts') },
       { icon: LogOut, label: 'Sair da conta', action: onLogout },
     ] : [{ icon: LogIn, label: 'Entrar', action: onLogin }]),
   ];
@@ -61,29 +58,15 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
         </div>
 
         <div className="overflow-y-auto overscroll-y-contain px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <nav aria-label="Menu principal" className="space-y-1">
-          {menuItems.map(({ icon: Icon, label, action }) => (
-            <button key={label} type="button" onClick={() => { dismiss(); action(); }}
-              className="group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-on-surface transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary">
-              <Icon size={18} strokeWidth={1.65} aria-hidden="true" className="text-muted group-hover:text-primary" />
-              <span>{label}</span>
-            </button>
-          ))}
-        </nav>
-
-          <button type="button" onClick={() => { dismiss(); onNavigate('contact'); }}
-            className="ui-glass-panel mt-3 flex w-full items-center gap-3 text-left text-on-surface hover:border-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-            <span className="relative shrink-0">
-              <img src="/atendimento.jpg" alt="" width={44} height={44} loading="lazy" className="size-11 rounded-full object-cover ring-1 ring-emerald-900/15" />
-              <span className="absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full bg-primary text-on-strong ring-2 ring-surface">
-                <MessageCircle size={12} strokeWidth={1.8} aria-hidden="true" />
-              </span>
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-bold leading-snug">Falar com a confeitaria</span>
-              <span className="mt-0.5 block text-xs text-muted">Contactos</span>
-            </span>
-          </button>
+          <nav aria-label="Menu principal" className="space-y-1">
+            {menuItems.map(({ icon: Icon, label, action }) => (
+              <button key={label} type="button" onClick={() => { dismiss(); action(); }}
+                className="group flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-on-surface transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary">
+                <Icon size={17} strokeWidth={1.65} aria-hidden="true" className="text-muted group-hover:text-primary" />
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
         </div>
       </div>
     </dialog>

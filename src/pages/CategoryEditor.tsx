@@ -150,7 +150,7 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
 
   return (
     <form onSubmit={save} className="space-y-4">
-      <fieldset disabled={busy} className="min-w-0 space-y-4">
+      <fieldset disabled={busy} className="admin-form">
         <div role="group" aria-label="Opções da categoria" className="flex flex-wrap gap-2">
           {tabs.map(([id, title]) => (
             <button key={id} type="button" aria-pressed={section === id}
@@ -168,7 +168,7 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
             </div>
             <section aria-label="Tópicos da categoria" className={panel}>
               <div className="flex flex-wrap items-center justify-between gap-x-3">
-                <h3 className="type-item text-primary">Tópicos da categoria</h3>
+                <h2 className="type-item text-primary">Tópicos da categoria</h2>
                 <button type="button" disabled={!!topicEditor || topics.length >= 100}
                   onClick={() => { setError(''); setTopicEditor({ id: '', name: '' }); }}
                   className="ui-quiet-action">
@@ -235,9 +235,9 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
           </section>
         )}
         {error && <p role="alert" className="text-sm text-primary">{error}</p>}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-outline pt-3">
+        <div className="admin-actions">
           <button type="submit" className={catalogPrimary}>{busy ? 'A guardar…' : 'Guardar alterações'}</button>
-          <button type="button" className={catalogSecondary} onClick={onBack}>Voltar</button>
+          <button type="button" className="ui-quiet-action" onClick={onBack}>Cancelar edição</button>
           {!deleting && <button type="button" className="ui-quiet-action sm:ml-auto"
             onClick={() => setDeleting(true)}>Excluir categoria</button>}
         </div>
