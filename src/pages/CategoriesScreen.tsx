@@ -3,15 +3,39 @@ import { ArrowLeft } from 'lucide-react';
 import { CategoryEditButton } from '../components/CategoryEditButton';
 import { CatalogGrid, type CatalogActions } from '../components/CatalogGrid';
 import type { CatalogCategory, Product, View } from '../config/types';
+import type { AdminCategoryRow, CatalogRow } from '../features/products/catalogApi';
 
 interface CategoriesScreenProps extends CatalogActions {
   categories: CatalogCategory[];
   products: Product[];
+  overview?: { categories: AdminCategoryRow[]; rows: CatalogRow[] };
   onEditCategory?: (id: string) => void;
   onNavigate: (view: View) => void;
 }
 
-export function CategoriesScreen({ categories, products, onNavigate, onEditCategory, ...actions }: CategoriesScreenProps) {
+function CategoryOverview({ categories, rows }: NonNullable<CategoriesScreenProps['overview']>) {
+  const occupied = new Set(rows.map(row => row.details.category));
+  const published = new Set(rows.filter(row => row.published).map(row => row.details.category));
+  const totals = [
+    ['Categorias', categories.length],
+    ['Com publicados', categories.filter(category => published.has(category.name)).length],
+    ['Só rascunhos', categories.filter(category => occupied.has(category.name) && !published.has(category.name)).length],
+    ['Sem produtos', categories.filter(category => !occupied.has(category.name)).length],
+  ] as const;
+  return (
+    <section className="ui-glass-panel" aria-labelledby="category-overview">
+      <h2 id="category-overview" className="type-item text-primary">Mapa do catálogo</h2>
+      <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        {totals.map(([label, total]) => <div key={label} className="rounded-lg border border-outline bg-surface/60 px-3 py-2">
+          <dt className="text-xs text-muted">{label}</dt>
+          <dd className="type-section tabular-nums text-primary">{total}</dd>
+        </div>)}
+      </dl>
+    </section>
+  );
+}
+
+export function CategoriesScreen({ categories, products, overview, onNavigate, onEditCategory, ...actions }: CategoriesScreenProps) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
       <header className="store-masthead">
@@ -20,10 +44,11 @@ export function CategoriesScreen({ categories, products, onNavigate, onEditCateg
             className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/10">
             <ArrowLeft size={21} aria-hidden="true" />
           </button>
-          <h1 className="type-page">Todas as categorias</h1>
+          <h1 className="type-module">Todas as categorias</h1>
         </div>
       </header>
-      <div className="page-width space-y-7 py-5 sm:py-7">
+      <div className="page-width space-y-6 py-5 sm:py-7">
+        {overview && <CategoryOverview {...overview} />}
         {categories.map((category, index) => {
           const items = products.filter(product => product.category === category.name);
           return (

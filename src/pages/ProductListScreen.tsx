@@ -9,20 +9,18 @@ interface ProductListScreenProps {
   products: Product[];
   categories: CatalogCategory[];
   cart: CartItem[];
-  favorites: string[];
   activeRecCategory: string;
   onSetCategory: (cat: string) => void;
   onProductClick: (product: Product) => void;
   onEditProduct?: (id: string) => void;
   onEditCategory?: (id: string) => void;
-  onToggleFavorite: (id: string) => void;
   onToggleCartItem: (product: Product) => void;
   onOpenMenu: () => void;
 }
 
 export function ProductListScreen({
-  products: catalogProducts, categories, cart, favorites, activeRecCategory,
-  onSetCategory, onProductClick, onEditProduct, onEditCategory, onToggleFavorite, onToggleCartItem, onOpenMenu,
+  products: catalogProducts, categories, cart, activeRecCategory,
+  onSetCategory, onProductClick, onEditProduct, onEditCategory, onToggleCartItem, onOpenMenu,
 }: ProductListScreenProps) {
   const products = activeRecCategory === 'all' ? catalogProducts : catalogProducts.filter(product => product.category === activeRecCategory);
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -48,7 +46,7 @@ export function ProductListScreen({
               className="grid size-11 shrink-0 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
               <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
             </button>
-            <h1 className="type-page min-w-0 flex-1 break-words text-primary">{title}</h1>
+            <h1 className="type-module min-w-0 flex-1 break-words text-primary">{title}</h1>
             {currentCategory && <CategoryEditButton category={currentCategory} onEdit={onEditCategory} />}
           </div>
           <div ref={tabsRef} role="group" aria-label="Filtrar por categoria" className="category-rail mt-2">
@@ -74,8 +72,8 @@ export function ProductListScreen({
         {products.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted">Ainda não há produtos nesta categoria.</p>
         ) : (
-          <CatalogGrid products={products} cart={cart} favorites={favorites} onProductClick={onProductClick}
-            onToggleFavorite={onToggleFavorite} onToggleCartItem={onToggleCartItem} onEditProduct={onEditProduct} />
+          <CatalogGrid products={products} cart={cart} onProductClick={onProductClick}
+            onToggleCartItem={onToggleCartItem} onEditProduct={onEditProduct} />
         )}
       </div>
     </motion.div>

@@ -76,17 +76,20 @@ export default function PricingScreen() {
     <div className="space-y-5">
       <p className="text-sm text-muted">Calcule os custos e simule o preço de venda. Os valores ficam neste dispositivo e não alteram o catálogo.</p>
       <form onSubmit={calculate} className="space-y-5">
-        <label className="block space-y-1"><span>Nome da receita (opcional)</span><input className={input} maxLength={100} value={recipe.title} onChange={event => update({ title: event.target.value })} /></label>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="block space-y-1"><span>Rendimento da receita</span><input className={input} inputMode="decimal" maxLength={16} required value={recipe.yieldCount} onChange={event => update({ yieldCount: event.target.value })} /></label>
-          <label className="block space-y-1"><span>Preço de venda por unidade (€)</span><input className={input} inputMode="decimal" maxLength={16} required value={recipe.salePrice} onChange={event => update({ salePrice: event.target.value })} /></label>
-        </div>
-        <section className="space-y-3">
-          <h2 className="type-section">Ingredientes e custos</h2>
+        <section className="ui-glass-panel space-y-3">
+          <h2 className="type-item text-primary">Dados da receita</h2>
+          <label className="block space-y-1"><span>Nome da receita (opcional)</span><input className={input} maxLength={100} value={recipe.title} onChange={event => update({ title: event.target.value })} /></label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block space-y-1"><span>Rendimento da receita</span><input className={input} inputMode="decimal" maxLength={16} required value={recipe.yieldCount} onChange={event => update({ yieldCount: event.target.value })} /></label>
+            <label className="block space-y-1"><span>Preço de venda por unidade (€)</span><input className={input} inputMode="decimal" maxLength={16} required value={recipe.salePrice} onChange={event => update({ salePrice: event.target.value })} /></label>
+          </div>
+        </section>
+        <section className="ui-glass-panel space-y-3">
+          <h2 className="type-item text-primary">Ingredientes e custos</h2>
           <p className="text-sm text-muted">Use a mesma unidade para a quantidade comprada e a utilizada. Por exemplo, indique 1.000 g para uma embalagem de 1 kg, escrevendo 1000 sem o separador de milhares.</p>
           {recipe.ingredients.map((row, index) => (
-            <fieldset key={index} className="space-y-3 rounded-xl border border-outline px-3 pb-3">
-              <legend className="px-1 font-bold">Custo {index + 1}</legend>
+            <fieldset key={index} className="space-y-3 rounded-lg border border-outline bg-surface/65 px-3 pb-3">
+              <legend className="px-1 text-sm font-bold">Custo {index + 1}</legend>
               <div className="grid grid-cols-2 gap-3">
                 <label className="col-span-2 block space-y-1 sm:col-span-1"><span>Ingrediente ou despesa</span><input className={input} maxLength={100} value={row.name} onChange={event => updateIngredient(index, { name: event.target.value })} /></label>
                 <label className="block space-y-1"><span>Unidade</span><select className={input} value={row.unit} onChange={event => updateIngredient(index, { unit: event.target.value })}><option value="g">g</option><option value="ml">ml</option><option value="un">unidade</option></select></label>
@@ -95,7 +98,7 @@ export default function PricingScreen() {
                 <label className="block space-y-1"><span>Quantidade utilizada</span><input className={input} inputMode="decimal" maxLength={16} required value={row.usedQuantity} onChange={event => updateIngredient(index, { usedQuantity: event.target.value })} /></label>
               </div>
               {result && <p className="text-sm">Custo na receita {formatEuros(result.lineCosts[index])}</p>}
-              {recipe.ingredients.length > 1 && <button type="button" className={secondary} onClick={() => update({ ingredients: recipe.ingredients.filter((_, i) => i !== index) })}>Remover custo {index + 1}</button>}
+              {recipe.ingredients.length > 1 && <button type="button" className="ui-quiet-action" onClick={() => update({ ingredients: recipe.ingredients.filter((_, i) => i !== index) })}>Remover custo {index + 1}</button>}
             </fieldset>
           ))}
           <button type="button" className={secondary} disabled={recipe.ingredients.length >= 70} onClick={() => update({ ingredients: [...recipe.ingredients, emptyIngredient()] })}>Adicionar custo</button>
@@ -103,14 +106,14 @@ export default function PricingScreen() {
         <div className="flex flex-wrap gap-2">
           <button type="submit" className="ui-primary">Calcular receita</button>
           <button type="button" className={secondary} onClick={saveDraft}>Guardar rascunho</button>
-          <button type="button" className={secondary} onClick={clearDraft}>Limpar rascunho</button>
+          <button type="button" className="ui-quiet-action" onClick={clearDraft}>Limpar rascunho</button>
         </div>
         {error && <p role="alert" className="text-primary">{error}</p>}
         {notice && <p role="status">{notice}</p>}
       </form>
       {result && (
-        <section className="rounded-xl bg-subtle p-4" aria-live="polite">
-          <h2 className="type-section text-primary">Resultado da simulação</h2>
+        <section className="ui-glass-panel" aria-live="polite">
+          <h2 className="type-item text-primary">Resultado da simulação</h2>
           <dl className="mt-3 grid grid-cols-2 gap-3">
             {[
               ['Custo total', formatEuros(result.totalCost)],

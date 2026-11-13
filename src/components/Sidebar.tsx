@@ -1,7 +1,6 @@
 import { useEffect, useId, useRef } from 'react';
 import { Calculator, FileText, Heart, Home, Info, LayoutGrid, LogIn, LogOut, MessageCircle, Package, Plus, X } from 'lucide-react';
 import type { View } from '../config/types';
-import { BUSINESS_INFO } from '../config/constants';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -55,7 +54,7 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
       className="fixed inset-y-0 right-auto left-0 m-0 h-dvh max-h-none w-[300px] max-w-[90vw] bg-porcelain text-on-surface shadow-xl backdrop:bg-overlay/50">
       <div className="flex h-full flex-col">
         <div className="mx-5 flex items-center justify-between border-b border-outline py-4">
-          <h2 id={titleId} className="type-page text-primary">Menu</h2>
+          <h2 id={titleId} className="type-module text-primary">Menu</h2>
           <button type="button" aria-label="Fechar menu" onClick={dismiss} className="-mr-1 grid size-11 place-items-center rounded-full text-muted hover:bg-primary/5 hover:text-primary">
             <X size={19} strokeWidth={1.5} />
           </button>
@@ -72,19 +71,19 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
           ))}
         </nav>
 
-          <a href={'https://wa.me/' + BUSINESS_INFO.whatsapp.replace(/\D/g, '')} target="_blank" rel="noopener noreferrer"
-            className="group mx-1 mt-4 flex items-center gap-3 rounded-2xl border border-emerald-900/15 bg-linear-to-br from-white to-emerald-50 px-3 py-3 text-on-surface shadow-sm transition hover:border-emerald-700/35 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-800">
+          <button type="button" onClick={() => { dismiss(); onNavigate('contact'); }}
+            className="ui-glass-panel mt-3 flex w-full items-center gap-3 text-left text-on-surface hover:border-primary/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
             <span className="relative shrink-0">
               <img src="/atendimento.jpg" alt="" width={44} height={44} loading="lazy" className="size-11 rounded-full object-cover ring-1 ring-emerald-900/15" />
-              <span className="absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full bg-emerald-700 text-on-strong ring-2 ring-surface">
+              <span className="absolute -right-1 -bottom-1 grid size-5 place-items-center rounded-full bg-primary text-on-strong ring-2 ring-surface">
                 <MessageCircle size={12} strokeWidth={1.8} aria-hidden="true" />
               </span>
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-bold leading-snug">Falar com a confeitaria</span>
-              <span className="mt-0.5 block text-xs font-bold text-emerald-800">WhatsApp</span>
+              <span className="mt-0.5 block text-xs text-muted">Contactos</span>
             </span>
-          </a>
+          </button>
         </div>
       </div>
     </dialog>

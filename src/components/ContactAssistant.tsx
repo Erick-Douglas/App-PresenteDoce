@@ -1,0 +1,52 @@
+import { useId, useRef, useState } from 'react';
+import { ArrowUpRight, MessageCircle, X } from 'lucide-react';
+import { BUSINESS_INFO } from '../config/constants';
+
+export function ContactAssistant({ visible, aboveOrder }: { visible: boolean; aboveOrder: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState('');
+  const launcher = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+  const titleId = useId();
+  const phone = BUSINESS_INFO.whatsapp.replace(/\D/g, '');
+  const whatsapp = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message.trim());
+  if (!visible) return null;
+
+  function close() {
+    setOpen(false);
+    requestAnimationFrame(() => launcher.current?.focus());
+  }
+
+  return (
+    <aside aria-label="Atendimento da confeitaria" className={'contact-assistant ' + (aboveOrder ? 'contact-assistant-above-order' : '')}
+      onKeyDown={event => { if (event.key === 'Escape' && open) close(); }}>
+      {open && (
+        <section id={panelId} aria-labelledby={titleId} className="ui-glass-panel mb-2 space-y-2 shadow-lg">
+          <div className="flex items-center gap-2">
+            <img src="/atendimento.jpg" alt="" width={38} height={38} className="size-9 rounded-full object-cover" />
+            <h2 id={titleId} className="type-label flex-1 text-primary">Fale com a confeitaria</h2>
+            <button type="button" aria-label="Fechar atendimento" onClick={close} className="ui-icon-action">
+              <X size={14} aria-hidden="true" />
+            </button>
+          </div>
+          <p className="text-sm text-muted">Olá! Tem alguma dúvida sobre os nossos produtos ou encomendas?</p>
+          <label className="block space-y-1 text-xs text-muted">
+            <span>A sua mensagem</span>
+            <textarea className="ui-field resize-y" rows={2} maxLength={500} value={message}
+              onChange={event => setMessage(event.target.value)} />
+          </label>
+          <a className="ui-quiet-action font-bold" href={whatsapp} target="_blank" rel="noopener noreferrer">
+            Abrir no WhatsApp <ArrowUpRight size={15} aria-hidden="true" />
+          </a>
+          <p className="text-xs text-muted">Confirme o envio no WhatsApp.</p>
+        </section>
+      )}
+      <button ref={launcher} type="button" aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={() => setOpen(value => !value)}
+        className="contact-launcher">
+        <img src="/atendimento.jpg" alt="" width={34} height={34} className="size-8 rounded-full object-cover" />
+        <span>{open ? 'Atendimento' : 'Precisa de ajuda?'}</span>
+        <MessageCircle size={15} strokeWidth={1.65} aria-hidden="true" />
+      </button>
+    </aside>
+  );
+}
