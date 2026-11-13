@@ -6,7 +6,8 @@ import { useCart } from './features/cart/useCart';
 import { useCatalog } from './features/products/useCatalog';
 import { useAdminCatalog } from './features/products/useAdminCatalog';
 import { useFavorites } from './features/products/useFavorites';
-import { signOut, toProduct, type AdminCategoryRow, type CatalogRow, type CatalogSession } from './features/products/catalogApi';
+import { catalogEnabled, getStorePresentation, signOut, toProduct, type AdminCategoryRow, type CatalogRow, type CatalogSession } from './features/products/catalogApi';
+import { defaultStorePresentation, type StorePresentation } from './features/products/storePresentation';
 import type { CategoryChange } from './pages/CategoryEditor';
 import { readRecoveryCallback } from './features/products/adminLink';
 
@@ -30,11 +31,12 @@ const CatalogManagement = lazy(() => import('./pages/CatalogManagement'));
 const CatalogEditor = lazy(() => import('./pages/AdminScreen').then(module => ({ default: module.CatalogEditor })));
 const CategoryEditor = lazy(() => import('./pages/CategoryEditor').then(module => ({ default: module.CategoryEditor })));
 const PricingScreen = lazy(() => import('./pages/PricingScreen'));
+const StorePresentationEditor = lazy(() => import('./pages/StorePresentationEditor'));
 
 type EditorPanel = { type: 'editor'; id?: string } | { type: 'category'; id: string };
-type StorePanel = { type: 'login' } | { type: 'pricing' } | EditorPanel;
+type StorePanel = { type: 'login' } | { type: 'pricing' } | { type: 'presentation' } | EditorPanel;
 
-const panelTitles = { login: 'Entrar na Presente Doce', pricing: 'Precificação de receitas' };
+const panelTitles = { login: 'Entrar na Presente Doce', pricing: 'Precificação de receitas', presentation: 'Textos da loja' };
 
 function entryPanel() {
   const path = window.location.pathname.replace(/\/$/, '');
@@ -61,6 +63,23 @@ export default function App() {
   const [recoveryCallback, setRecoveryCallback] = useState(() => readRecoveryCallback(new URL(window.location.href)));
   const [panel, setPanel] = useState<StorePanel | null>(() => entryPanel() || recoveryCallback ? { type: 'login' } : null);
   const [notice, setNotice] = useState('');
+  const [presentation, setPresentation] = useState(defaultStorePresentation);
+  const [presentationError, setPresentationError] = useState(false);
+  const [presentationAttempt, setPresentationAttempt] = useState(0);
+
+  useEffect(() => {
+    if (!catalogEnabled) return;
+    const controller = new AbortController();
+    getStorePresentation(controller.signal).then(value => {
+      if (!controller.signal.aborted) {
+        setPresentation(current => value.revision >= current.revision ? value : current);
+        setPresentationError(false);
+      }
+    }).catch(() => {
+      if (!controller.signal.aborted) setPresentationError(true);
+    });
+    return () => controller.abort();
+  }, [presentationAttempt]);
 
   const { cart, cartTotal, showSuccessToast, addToCart, updateQuantity, toggleCartItem, updateCartItem } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
@@ -69,7 +88,7 @@ export default function App() {
   const lockedScroll = useRef<number | null>(null);
   const adminScroll = useRef(0);
   const editor = panel?.type === 'editor' || panel?.type === 'category' ? panel : null;
-  const pageEditor = currentView === 'catalog-admin' && editor;
+  const pageEditor = currentView === 'catalog-admin' && !!panel && panel.type !== 'login';
   const overlayOpen = isMenuOpen || (!!panel && !pageEditor);
 
   useLayoutEffect(() => {
@@ -158,7 +177,7 @@ export default function App() {
   const openProductEditor = session ? (id: string) => openEditor({ type: 'editor', id }) : undefined;
   const openCategoryEditor = session ? (id: string) => openEditor({ type: 'category', id }) : undefined;
 
-  function openEditor(next: EditorPanel) {
+  function openEditor(next: Exclude<StorePanel, { type: 'login' }>) {
     setNotice('');
     if (currentView === 'catalog-admin') {
       adminScroll.current = lockedScroll.current ?? window.scrollY;
@@ -234,6 +253,7 @@ export default function App() {
     </div>
   );
   const editorTitle = editor?.type === 'category' ? 'Editar categoria' : editor?.id ? 'Editar produto' : 'Novo produto';
+  const adminTitle = panel?.type === 'pricing' || panel?.type === 'presentation' ? panelTitles[panel.type] : editorTitle;
   const adminStatus = adminCatalog.error ? (
     <div role="alert" className="space-y-2 text-sm text-primary">
       <p>{adminCatalog.error}</p>
@@ -260,9 +280,26 @@ export default function App() {
       }} />;
   }
 
+  function presentationEditor() {
+    if (!session) return null;
+    if (!presentation.revision) return presentationError ? (
+      <div role="alert" className="space-y-2">
+        <p>Não foi possível carregar os textos da loja.</p>
+        <button type="button" className="ui-secondary" onClick={() => {
+          setPresentationError(false);
+          setPresentationAttempt(value => value + 1);
+        }}>Tentar novamente</button>
+      </div>
+    ) : <p role="status">A carregar os textos…</p>;
+    return <StorePresentationEditor current={presentation} token={session.token} onSave={(value: StorePresentation) => {
+      setPresentation(value);
+      setNotice('Textos da loja guardados.');
+      leaveEditor();
+    }} />;
+  }
+
   return (
-    <div className={'app-theme relative min-h-screen overflow-x-hidden font-sans text-base font-normal text-on-surface ' +
-      (currentView === 'home' ? 'bg-cream' : 'bg-porcelain')}>
+    <div className="app-theme relative min-h-screen overflow-x-hidden bg-porcelain font-sans text-base font-normal text-on-surface">
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
@@ -273,7 +310,8 @@ export default function App() {
           onLogout={handleLogout}
           onManage={() => { setNotice(''); setPanel(null); handleNavigate('catalog-admin'); }}
           onNewProduct={() => openEditor({ type: 'editor' })}
-          onPricing={() => setPanel({ type: 'pricing' })}
+          onPricing={() => openEditor({ type: 'pricing' })}
+          onPresentation={() => openEditor({ type: 'presentation' })}
         />
 
         {currentView !== 'home' && currentView !== 'catalog-admin' && catalogNotice}
@@ -290,8 +328,8 @@ export default function App() {
                 favorites={favorites}
                 isAdmin={!!session}
                 catalogNotice={catalogNotice}
+                presentation={presentation}
                 {...commonProps}
-                onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
                 onEditProduct={openProductEditor}
                 onEditCategory={openCategoryEditor}
@@ -351,6 +389,7 @@ export default function App() {
               <SettingsScreen
                 key="settings"
                 mode="about"
+                aboutText={presentation.about_text}
                 {...commonProps}
               />
             )}
@@ -359,6 +398,7 @@ export default function App() {
               <SettingsScreen
                 key="contact"
                 mode="contact"
+                aboutText={presentation.about_text}
                 {...commonProps}
               />
             )}
@@ -367,10 +407,15 @@ export default function App() {
               <CategoriesScreen
                 key="categories"
                 categories={categories}
-                activeCategory={activeRecCategory}
-                onSetCategory={setActiveRecCategory}
+                products={products}
+                cart={cart}
+                favorites={favorites}
+                onProductClick={handleProductClick}
+                onEditProduct={openProductEditor}
                 onEditCategory={openCategoryEditor}
-                {...commonProps}
+                onToggleFavorite={toggleFavorite}
+                onToggleCartItem={selectOrConfigure}
+                onNavigate={handleNavigate}
               />
             )}
 
@@ -390,22 +435,26 @@ export default function App() {
             {currentView === 'catalog-admin' && (
               <motion.div key="catalog-admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="min-h-screen bg-porcelain text-on-surface">
-                <header className="border-b border-primary/10 bg-cream">
-                  <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6">
-                    <span role="img" aria-label="Presente Doce" className="brand-wordmark h-10 w-28 text-primary" />
+                <header className="store-masthead">
+                  <div className="page-width flex flex-wrap items-center justify-between gap-2 py-2 text-on-primary">
+                    <span role="img" aria-label="Presente Doce" className="brand-wordmark h-10 w-28" />
                     <div className="flex flex-wrap items-center gap-2">
-                      <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold text-primary hover:bg-primary/5"
+                      <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold hover:bg-surface/10"
                         onClick={() => handleNavigate('home')}>Vitrine</button>
-                      <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold text-primary hover:bg-primary/5"
+                      <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold hover:bg-surface/10"
                         onClick={() => setIsMenuOpen(true)}>Menu</button>
                     </div>
                   </div>
                 </header>
-                <div className="mx-auto max-w-6xl space-y-4 px-4 pt-5 pb-28 sm:px-6 sm:pt-7">
+                <div className="page-width space-y-4 pt-5 pb-28 sm:pt-7">
                   {session ? adminCatalog.data ? (
                     <Suspense fallback={<p role="status">A carregar catálogo…</p>}>
                       {adminCatalog.error && adminStatus}
                       <div hidden={!!pageEditor}>
+                        <nav aria-label="Gestão da loja" className="mb-4 flex flex-wrap gap-2">
+                          <button type="button" className="category-pill" onClick={() => openEditor({ type: 'presentation' })}>Textos da loja</button>
+                          <button type="button" className="category-pill" onClick={() => openEditor({ type: 'pricing' })}>Precificação</button>
+                        </nav>
                         <CatalogManagement categories={adminCatalog.data.categories} rows={adminCatalog.data.rows} token={session.token}
                           onNew={() => openEditor({ type: 'editor' })}
                           onEdit={id => openEditor({ type: 'editor', id })}
@@ -415,9 +464,9 @@ export default function App() {
                         <section className="max-w-3xl space-y-4">
                           <div>
                             <button type="button" className="min-h-11 text-sm font-bold text-primary underline" onClick={leaveEditor}>Voltar ao catálogo</button>
-                            <h1 className="type-page text-primary">{editorTitle}</h1>
+                            <h1 className="type-page text-primary">{adminTitle}</h1>
                           </div>
-                          {editorContent()}
+                          {panel?.type === 'pricing' ? <PricingScreen /> : panel?.type === 'presentation' ? presentationEditor() : editorContent()}
                         </section>
                       )}
                     </Suspense>
@@ -435,7 +484,7 @@ export default function App() {
         </main>
 
         {panel && !pageEditor && (panel.type === 'login' || session) && (
-          <StoreDialog title={panel.type === 'login' || panel.type === 'pricing' ? panelTitles[panel.type] : editorTitle} onClose={closePanel}>
+          <StoreDialog title={panel.type === 'login' ? panelTitles.login : adminTitle} onClose={closePanel}>
             <Suspense fallback={<p role="status">A carregar…</p>}>
               {panel.type === 'login' && <AccountForm
                 initialRecovery={entryPanel() === 'login' && new URLSearchParams(window.location.search).get('recuperar') === '1'}
@@ -445,6 +494,7 @@ export default function App() {
               />}
               {editor && editorContent()}
               {panel.type === 'pricing' && session && <PricingScreen />}
+              {panel.type === 'presentation' && presentationEditor()}
             </Suspense>
           </StoreDialog>
         )}

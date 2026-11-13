@@ -6,11 +6,12 @@ import { motion } from 'framer-motion';
 
 interface SettingsScreenProps {
   mode: 'about' | 'contact';
+  aboutText: string;
   onOpenMenu: () => void;
   onNavigate: (view: View) => void;
 }
 
-export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu }) => {
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu, aboutText }) => {
   const contactItems = [
     { icon: MessageCircle, label: 'WhatsApp', sub: BUSINESS_INFO.whatsapp, onClick: () => window.open(`https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank', 'noopener,noreferrer') },
     { icon: Phone, label: 'Ligar para a loja', sub: 'Atendimento prioritário', onClick: () => window.open(`tel:${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank', 'noopener,noreferrer') },
@@ -18,7 +19,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
   ];
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-screen pb-32 bg-surface">
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-screen pb-32 bg-porcelain">
       <header className="px-6 py-4 flex items-center sticky top-0 bg-surface/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
         <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary"><Menu size={20} /></button>
         <h1 className="type-page flex-1 pr-8 text-center text-primary">
@@ -26,7 +27,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
         </h1>
       </header>
 
-      <main className="p-4 space-y-6">
+      <div className="page-width space-y-6 py-5">
         {mode === 'about' && (
           <section className="space-y-6">
             <div className="flex flex-col items-center mb-6 mt-2">
@@ -38,16 +39,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
 
             <div className="space-y-4">
               <h2 className="type-section pl-2 text-primary">Nossa filosofia</h2>
-              <div className="bg-surface rounded-2xl p-4 shadow-xl shadow-black/5 border border-primary/10 flex flex-col gap-3">
-                <p className="text-sm text-on-surface/70 leading-relaxed">
-                  Somos uma confeitaria artesanal por encomenda. Preparamos bolos, doces e salgados para celebrar.
+              <div className="ui-card p-4">
+                <p className="whitespace-pre-line text-sm text-on-surface/70 leading-relaxed">
+                  {aboutText}
                 </p>
               </div>
             </div>
 
             <div className="space-y-4">
               <h2 className="type-section pl-2 text-primary">Como funciona</h2>
-              <div className="bg-surface rounded-2xl shadow-xl shadow-black/5 border border-primary/10 divide-y divide-primary/5">
+              <div className="ui-card divide-y divide-primary/5">
                 <div className="flex flex-col gap-1 py-4 px-5">
                   <span className="font-bold text-sm text-primary">1. Escolha com liberdade</span>
                   <span className="text-xs text-muted">Navegue pelas nossas categorias e personalize os seus pedidos.</span>
@@ -83,7 +84,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
             </div>
           </section>
         )}
-      </main>
+      </div>
     </motion.div>
   );
 };

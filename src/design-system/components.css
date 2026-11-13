@@ -1,0 +1,102 @@
+@layer components {
+  .page-width {
+    width: 100%;
+    max-width: var(--pd-page-width);
+    margin-inline: auto;
+    padding-inline: var(--pd-page-gutter);
+  }
+
+  .store-masthead {
+    background: var(--pd-color-brand);
+    padding-block-start: env(safe-area-inset-top, 0px);
+  }
+
+  .home-search {
+    border: 1px solid color-mix(in srgb, var(--pd-color-surface) 78%, transparent);
+    border-radius: var(--pd-field-radius);
+    color: var(--pd-color-on-strong);
+    background: color-mix(in srgb, var(--pd-color-surface) var(--pd-search-glass), transparent);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px color-mix(in srgb, var(--pd-color-surface) 23%, transparent);
+  }
+
+  .home-search:focus-within {
+    outline: 2px solid var(--pd-color-on-brand);
+    outline-offset: 3px;
+  }
+
+  .category-rail {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    margin-inline: calc(-1 * var(--pd-page-gutter));
+    padding: 0.25rem var(--pd-page-gutter) 0.5rem;
+    scrollbar-width: thin;
+  }
+
+  .category-pill, .ui-primary, .ui-secondary {
+    min-height: var(--pd-control-height);
+    padding-inline: 0.875rem;
+    padding-block: 0.5rem;
+    font-size: var(--pd-size-small);
+    font-weight: var(--pd-weight-emphasis);
+  }
+
+  .category-pill {
+    flex: none;
+    white-space: nowrap;
+    border: 1px solid var(--pd-color-border);
+    border-radius: 999px;
+    background: var(--pd-color-surface);
+  }
+
+  .category-pill[aria-pressed="true"], .ui-primary {
+    color: var(--pd-color-on-strong);
+    background: var(--pd-color-brand);
+    border-color: var(--pd-color-brand);
+  }
+
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--pd-catalog-gap);
+  }
+
+  @media (min-width: 42rem) {
+    .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (min-width: 62rem) {
+    .catalog-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .ui-card {
+    border: 1px solid var(--pd-color-border);
+    border-radius: var(--pd-card-radius);
+    background: var(--pd-color-surface);
+  }
+
+  .ui-field, .ui-primary, .ui-secondary {
+    border-radius: var(--pd-field-radius);
+  }
+
+  .ui-field, .ui-secondary {
+    border: 1px solid var(--pd-color-border-strong);
+    background: var(--pd-color-surface);
+  }
+
+  .ui-field {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--pd-control-height);
+    padding: 0.5rem 0.75rem;
+    font-size: var(--pd-size-body);
+  }
+
+  :is(.category-pill, .ui-field, .ui-primary, .ui-secondary):focus-visible {
+    outline: 2px solid var(--pd-color-brand);
+    outline-offset: 2px;
+  }
+
+  :is(.ui-primary, .ui-secondary):disabled { opacity: 0.5; }
+}

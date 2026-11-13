@@ -72,7 +72,7 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
         <button type="button" className={catalogPrimary + ' inline-flex items-center gap-2'} onClick={onNew}><Plus size={17} aria-hidden="true" /> Novo produto</button>
       </div>
       {newName !== null && (
-        <form onSubmit={create} className="space-y-2 rounded-2xl border border-outline bg-surface p-4">
+        <form onSubmit={create} className="ui-card space-y-2 p-4">
           <div className="flex flex-wrap items-end gap-2">
             <label className="min-w-44 flex-1 space-y-1 text-sm">
               <span>Nome da categoria</span>
@@ -112,7 +112,7 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
             const open = current === category.id || !!term || filter !== 'all' || expanded.has(category.id);
             const forced = current === category.id || !!term || filter !== 'all';
             return (
-              <section key={category.id} aria-label={category.name} className="rounded-2xl border border-outline bg-surface">
+              <section key={category.id} aria-label={category.name} className="ui-card">
                 <div className="flex flex-wrap items-center justify-between gap-x-2 px-3 py-2 sm:px-4">
                   <h2 className="type-section break-words text-primary">{category.name}</h2>
                   <div className="flex flex-wrap items-center gap-1">

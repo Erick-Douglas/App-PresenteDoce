@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./design-system/tokens.css";
 @import "./design-system/typography.css";
+@import "./design-system/components.css";
 
 @layer components {
   .brand-wordmark {
@@ -9,83 +10,6 @@
     mask: url('/logo.png') center / contain no-repeat;
   }
 
-  .home-surface {
-    background: var(--pd-color-cream);
-  }
-
-  .home-hero {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    padding-block-start: env(safe-area-inset-top, 0px);
-    padding-block-end: calc(var(--pd-hero-after-search) + var(--pd-hero-transition));
-    background: linear-gradient(
-      to bottom,
-      var(--pd-hero-top),
-      var(--pd-hero-mid) 40%,
-      var(--pd-hero-edge) calc(100% - var(--pd-hero-transition) - 0.375rem)
-    );
-  }
-
-  .home-hero::before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    inset: 0 0 var(--pd-hero-transition);
-    background:
-      radial-gradient(ellipse clamp(12rem, 35vw, 34rem) 15rem at 104% 29%, transparent 97.8%, color-mix(in srgb, var(--pd-color-accent) 17%, transparent) 98.1%, transparent 98.55%),
-      radial-gradient(ellipse 65% 78% at 98% 50%, color-mix(in srgb, var(--pd-hero-glow) 29%, transparent), transparent 77%);
-    mask-image: linear-gradient(#000 32%, transparent);
-    pointer-events: none;
-  }
-
-  .home-hero::after {
-    --transition-direction: 180deg;
-    content: '';
-    position: absolute;
-    z-index: -1;
-    inset: auto 0 0;
-    height: var(--pd-hero-transition);
-    background: linear-gradient(
-      var(--transition-direction),
-      var(--pd-hero-edge) 5%,
-      var(--pd-hero-warm) 42%,
-      var(--pd-hero-honey) 75%,
-      var(--pd-color-cream) 97%
-    );
-    pointer-events: none;
-  }
-
-  @supports (background: linear-gradient(180deg in oklab, red, blue)) {
-    .home-hero::after {
-      --transition-direction: 180deg in oklab;
-    }
-  }
-
-  .home-search {
-    border: 1px solid color-mix(in srgb, var(--pd-color-surface) 78%, transparent);
-    background:
-      linear-gradient(175deg, color-mix(in srgb, var(--pd-color-surface) 53%, transparent), transparent 48%),
-      linear-gradient(110deg, color-mix(in srgb, var(--pd-color-canvas) 89%, transparent), color-mix(in srgb, var(--pd-glass-tint) 79%, transparent));
-    -webkit-backdrop-filter: blur(18px) saturate(1.2);
-    backdrop-filter: blur(18px) saturate(1.2);
-    color: var(--pd-color-ink);
-    box-shadow:
-      inset 0 1px 2px color-mix(in srgb, var(--pd-color-surface) 95%, transparent),
-      inset 0 -2px 4px color-mix(in srgb, var(--pd-glass-shadow) 16%, transparent),
-      0 2px 2px color-mix(in srgb, var(--pd-glass-shadow) 25%, transparent),
-      0 8px 20px color-mix(in srgb, var(--pd-glass-shadow) 22%, transparent);
-  }
-
-  .home-search:focus-within {
-    outline: 2px solid var(--pd-color-cream);
-    outline-offset: 3px;
-  }
-
-  .home-rail {
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in srgb, var(--pd-color-brand) 26%, var(--pd-color-cream)) transparent;
-  }
 }
 
 @layer base {
