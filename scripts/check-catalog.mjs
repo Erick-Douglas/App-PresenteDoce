@@ -15,9 +15,16 @@ if (env.VITE_CATALOG_SOURCE !== 'supabase') {
   const categories = new URL('/rest/v1/catalog_categories', host);
   categories.search = 'select=id,name,cover,order_mode&order=display_order.asc.nullslast,position.asc';
   const options = { headers: { apikey: key }, signal: AbortSignal.timeout(10000) };
-  const [productsResponse, categoriesResponse] = await Promise.all([fetch(catalog, options), fetch(categories, options)]);
+  const presentation = new URL('/rest/v1/store_presentation?id=is.true&select=home_title,revision', host);
+  const [productsResponse, categoriesResponse, presentationResponse] = await Promise.all([
+    fetch(catalog, options), fetch(categories, options), fetch(presentation, options),
+  ]);
   if (!productsResponse.ok) throw new Error('The public catalog API returned HTTP ' + productsResponse.status + '.');
   if (!categoriesResponse.ok) throw new Error('The public categories API returned HTTP ' + categoriesResponse.status + '.');
+  if (!presentationResponse.ok) throw new Error('The public presentation API returned HTTP ' + presentationResponse.status + '.');
+  const settings = await presentationResponse.json();
+  if (!Array.isArray(settings) || settings.length !== 1 || typeof settings[0].home_title !== 'string' ||
+      !Number.isInteger(settings[0].revision)) throw new Error('The public presentation API returned an unexpected response.');
   const [rows, categoryRows] = await Promise.all([productsResponse.json(), categoriesResponse.json()]);
   if (!Array.isArray(rows) || !rows.every(row => row.published === true && typeof row.details?.name === 'string' && Number.isInteger(row.version))) {
     throw new Error('The public catalog API returned an unexpected response.');
@@ -27,5 +34,5 @@ if (env.VITE_CATALOG_SOURCE !== 'supabase') {
       !rows.every(row => categoryRows.some(category => category.name === row.details.category))) {
     throw new Error('The public categories API returned an unexpected response.');
   }
-  console.log('Managed products and categories verified with the publishable key.');
+  console.log('Managed products, categories and presentation verified with the publishable key.');
 }

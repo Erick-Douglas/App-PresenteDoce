@@ -9,9 +9,9 @@ import { formatCatalogPrice, parseCatalogPrice, productOrderMode } from '../feat
 import { currencySymbol, formatEuros } from '../features/checkout/order';
 import { CategoryEditor, categoryNameFrom, type CategoryChange } from './CategoryEditor';
 
-const primary = 'rounded-xl bg-primary px-4 py-3 text-center font-bold text-on-strong disabled:opacity-50';
-const secondary = 'rounded-xl border border-outline-strong px-4 py-3 font-bold disabled:opacity-50';
-const field = 'w-full rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base';
+const primary = 'ui-primary';
+const secondary = 'ui-secondary';
+const field = 'ui-field';
 const chip = 'rounded-full border border-primary/15 px-3 py-1.5 text-sm text-primary';
 type Variant = { label: string; price: string; maxFlavors: string };
 const optionFields = new Map<ProductOrderMode, { title: string; label: string; example: string; add: string }>([

@@ -1,6 +1,7 @@
 import type { Product, ProductOrderMode } from '../../config/types';
 import { readManualRecoveryToken } from './adminLink';
 import { AuthRateLimitError, authRetryAfter } from './authRateLimit';
+import type { StorePresentation } from './storePresentation';
 
 const configuredUrl = String(import.meta.env.VITE_CATALOG_SUPABASE_URL ?? import.meta.env.VITE_SUPABASE_URL ?? '').trim();
 const publicKey = String(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? '').trim();
@@ -115,6 +116,23 @@ export function listCatalog(token?: string, signal?: AbortSignal) {
   const query = '?select=id,details,published,version&order=display_order.asc.nullslast,created_at.asc,id.asc' +
     (token ? '' : '&published=eq.true');
   return request<CatalogRow[]>(productsPath + query, { signal }, token);
+}
+
+const presentationPath = '/rest/v1/store_presentation';
+const presentationFields = 'home_title,home_description,admin_name,about_text,revision';
+
+export async function getStorePresentation(signal?: AbortSignal) {
+  const [row] = await request<StorePresentation[]>(presentationPath + '?id=is.true&select=' + presentationFields, { signal });
+  if (!row) throw new Error('A apresentação da loja está indisponível.');
+  return row;
+}
+
+export async function saveStorePresentation({ revision, ...fields }: StorePresentation, token: string) {
+  const [row] = await request<StorePresentation[]>(presentationPath + '?id=is.true&revision=eq.' + revision + '&select=' + presentationFields, {
+    method: 'PATCH', headers: { Prefer: 'return=representation' }, body: JSON.stringify(fields),
+  }, token);
+  if (!row) throw new Error('O conteúdo mudou entretanto. Reabra o painel para carregar a versão atual.');
+  return row;
 }
 
 export function listCatalogCategories(signal?: AbortSignal) {

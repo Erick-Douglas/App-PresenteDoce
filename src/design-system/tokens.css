@@ -43,7 +43,7 @@
     --pd-color-cream: #fff6db;
     --pd-color-accent: #fbce00;
     --pd-color-on-strong: #ffffff;
-    --pd-color-canvas: #fffcf7;
+    --pd-color-canvas: #f7f5f3;
     --pd-color-surface: #ffffff;
     --pd-color-subtle: #fafaf9;
     --pd-color-muted-fill: #f5f5f4;
@@ -53,21 +53,18 @@
     --pd-color-border-strong: #d6d3d1;
     --pd-color-overlay: #0c0a09;
 
-    --pd-hero-warm: #b7653d;
-    --pd-hero-honey: #ecc28a;
-    --pd-hero-glow: #d5671a;
-    --pd-hero-transition: clamp(2rem, 7.5vw, 2.5rem);
-    --pd-hero-after-search: clamp(0.875rem, 3.3vw, 1.25rem);
-    --pd-glass-tint: #ffe5d1;
-    --pd-glass-shadow: #2b090d;
+    --pd-page-width: 72rem;
+    --pd-page-gutter: clamp(1rem, 3vw, 1.5rem);
+    --pd-card-radius: 0.875rem;
+    --pd-field-radius: 0.625rem;
+    --pd-control-height: 2.75rem;
+    --pd-catalog-gap: clamp(0.625rem, 2vw, 1.125rem);
+    --pd-search-glass: 14%;
   }
 
   :root, .app-theme {
     --pd-color-on-brand: var(--pd-color-cream);
     --pd-color-on-accent: var(--pd-color-brand);
-    --pd-hero-top: color-mix(in srgb, var(--pd-color-brand) 20%, #1b0b10);
-    --pd-hero-mid: color-mix(in srgb, var(--pd-color-brand) 70%, #270a12);
-    --pd-hero-edge: color-mix(in srgb, var(--pd-color-brand) 91%, #bc572f);
   }
 }
 

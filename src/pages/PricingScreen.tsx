@@ -6,8 +6,8 @@ type Ingredient = { name: string; unit: string; packQuantity: string; packPrice:
 type Recipe = { title: string; yieldCount: string; salePrice: string; ingredients: Ingredient[] };
 type Pricing = ReturnType<typeof calculatePricing>;
 const storageKey = 'presente-doce-pricing-draft-v1';
-const input = 'w-full rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base';
-const secondary = 'rounded-xl border border-outline-strong px-4 py-2 font-bold';
+const input = 'ui-field';
+const secondary = 'ui-secondary';
 const emptyIngredient = (): Ingredient => ({ name: '', unit: 'g', packQuantity: '', packPrice: '', usedQuantity: '' });
 const emptyRecipe = (): Recipe => ({ title: '', yieldCount: '', salePrice: '', ingredients: [emptyIngredient()] });
 const percent = new Intl.NumberFormat('pt-PT', { style: 'percent', maximumFractionDigits: 2 });
@@ -101,7 +101,7 @@ export default function PricingScreen() {
           <button type="button" className={secondary} disabled={recipe.ingredients.length >= 70} onClick={() => update({ ingredients: [...recipe.ingredients, emptyIngredient()] })}>Adicionar custo</button>
         </section>
         <div className="flex flex-wrap gap-2">
-          <button type="submit" className="rounded-xl bg-primary px-4 py-3 font-bold text-on-strong">Calcular receita</button>
+          <button type="submit" className="ui-primary">Calcular receita</button>
           <button type="button" className={secondary} onClick={saveDraft}>Guardar rascunho</button>
           <button type="button" className={secondary} onClick={clearDraft}>Limpar rascunho</button>
         </div>

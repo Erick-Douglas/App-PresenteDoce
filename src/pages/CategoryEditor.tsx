@@ -5,11 +5,11 @@ import {
 } from '../features/products/catalogApi';
 import { moveCatalogItem } from '../features/products/catalogFields';
 
-export const catalogPrimary = 'min-h-11 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-on-strong hover:bg-primary/90 disabled:opacity-50';
-export const catalogSecondary = 'min-h-11 rounded-xl border border-outline bg-surface px-3 py-2.5 text-sm font-bold text-primary hover:border-primary/30 disabled:opacity-50';
-export const catalogField = 'w-full min-w-0 rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base';
+export const catalogPrimary = 'ui-primary';
+export const catalogSecondary = 'ui-secondary text-primary';
+export const catalogField = 'ui-field';
 const actionIcon = 'grid size-11 shrink-0 place-items-center rounded-xl text-primary hover:bg-primary/5 disabled:opacity-35';
-const panel = 'space-y-4 rounded-2xl border border-outline bg-surface p-4 sm:p-5';
+const panel = 'ui-card space-y-4 p-4 sm:p-5';
 const normalize = (text: string) => text.normalize('NFC').trim().replace(/\s+/g, ' ');
 
 export function categoryNameFrom(value: string) {

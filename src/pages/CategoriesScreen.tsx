@@ -1,47 +1,43 @@
-import React from 'react';
-import { Menu, ChevronRight } from 'lucide-react';
-import { CategoryCover } from '../components/CategoryCover';
-import { CategoryEditButton } from '../components/CategoryEditButton';
-import type { CatalogCategory, View } from '../config/types';
 import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
+import { CategoryEditButton } from '../components/CategoryEditButton';
+import { CatalogGrid, type CatalogActions } from '../components/CatalogGrid';
+import type { CatalogCategory, Product, View } from '../config/types';
 
-interface CategoriesScreenProps {
+interface CategoriesScreenProps extends CatalogActions {
   categories: CatalogCategory[];
-  activeCategory: string;
-  onSetCategory: (category: string) => void;
+  products: Product[];
   onEditCategory?: (id: string) => void;
-  onOpenMenu: () => void;
   onNavigate: (view: View) => void;
 }
 
-export const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ categories, onOpenMenu, onNavigate, activeCategory, onSetCategory, onEditCategory }) => {
+export function CategoriesScreen({ categories, products, onNavigate, onEditCategory, ...actions }: CategoriesScreenProps) {
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="min-h-screen pb-24 bg-surface">
-      <header className="px-6 py-4 flex items-center sticky top-0 bg-surface/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
-        <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary">
-          <Menu size={20} />
-        </button>
-        <h1 className="type-page flex-1 pr-8 text-center text-primary">Categorias</h1>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
+      <header className="store-masthead">
+        <div className="page-width flex min-h-16 items-center gap-3 text-on-primary">
+          <button type="button" onClick={() => onNavigate('home')} aria-label="Voltar à vitrine"
+            className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface/10">
+            <ArrowLeft size={21} aria-hidden="true" />
+          </button>
+          <h1 className="type-page">Todas as categorias</h1>
+        </div>
       </header>
-
-      <main className="px-6 py-8 space-y-4">
-        {categories.map((cat) => (
-          <div className="flex items-center gap-2" key={cat.id ?? cat.name}>
-            <button
-              type="button"
-              className={`flex w-full min-w-0 items-center gap-4 p-4 text-left bg-surface rounded-xl shadow-sm active:scale-95 transition-transform border ${activeCategory === cat.name ? 'border-primary shadow-md' : 'border-primary/5'}`}
-              onClick={() => { onSetCategory(cat.name); onNavigate('product-list'); }}
-            >
-              <span className="size-16 shrink-0 overflow-hidden rounded-full border-2 border-gold/20 shadow-md">
-                <CategoryCover category={cat} />
-              </span>
-              <span className="type-section min-w-0 flex-1 break-words text-primary">{cat.name}</span>
-              <ChevronRight size={20} className="shrink-0 text-primary" aria-hidden="true" />
-            </button>
-            <CategoryEditButton category={cat} onEdit={onEditCategory} />
-          </div>
-        ))}
-      </main>
+      <div className="page-width space-y-7 py-5 sm:py-7">
+        {categories.map((category, index) => {
+          const items = products.filter(product => product.category === category.name);
+          return (
+            <section key={category.id ?? category.name} className="space-y-2.5" aria-labelledby={'all-category-' + index}>
+              <div className="flex min-h-11 items-center justify-between gap-2">
+                <h2 className="type-section break-words" id={'all-category-' + index}>{category.name}</h2>
+                <CategoryEditButton category={category} onEdit={onEditCategory} />
+              </div>
+              {items.length ? <CatalogGrid products={items} {...actions} /> : <p className="text-sm text-muted">Sem produtos publicados.</p>}
+            </section>
+          );
+        })}
+        {!categories.length && <p className="text-sm text-muted">Ainda não há categorias.</p>}
+      </div>
     </motion.div>
   );
-};
+}

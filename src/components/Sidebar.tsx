@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { Calculator, Home, Info, LogIn, LogOut, MessageCircle, Package, Plus, X } from 'lucide-react';
+import { Calculator, FileText, Heart, Home, Info, LayoutGrid, LogIn, LogOut, MessageCircle, Package, Plus, X } from 'lucide-react';
 import type { View } from '../config/types';
 import { BUSINESS_INFO } from '../config/constants';
 
@@ -13,9 +13,10 @@ interface SidebarProps {
   onManage: () => void;
   onNewProduct: () => void;
   onPricing: () => void;
+  onPresentation: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onManage, onNewProduct, onPricing }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onManage, onNewProduct, onPricing, onPresentation }: SidebarProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -35,11 +36,14 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
 
   const menuItems = [
     { icon: Home, label: 'Início', action: () => onNavigate('home') },
+    { icon: LayoutGrid, label: 'Todas as categorias', action: () => onNavigate('categories-list') },
+    { icon: Heart, label: 'Favoritos', action: () => onNavigate('saved') },
     { icon: Info, label: 'Sobre nós', action: () => onNavigate('settings') },
     ...(isAdmin ? [
       { icon: Package, label: 'Gerir catálogo', action: onManage },
       { icon: Plus, label: 'Novo produto', action: onNewProduct },
       { icon: Calculator, label: 'Precificação', action: onPricing },
+      { icon: FileText, label: 'Textos da loja', action: onPresentation },
       { icon: LogOut, label: 'Sair da conta', action: onLogout },
     ] : [{ icon: LogIn, label: 'Entrar', action: onLogin }]),
   ];

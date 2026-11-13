@@ -19,7 +19,7 @@ export function CatalogCard({ product, inCart, favorite, onOpen, onFavorite, onC
   const cartAction = needsOptions ? 'Personalizar ' : inCart ? 'Retirar do carrinho ' : 'Adicionar ao carrinho ';
 
   return (
-    <article className="group relative flex min-w-0 flex-col overflow-hidden rounded-2xl border border-outline bg-surface transition-shadow hover:shadow-md">
+    <article className="ui-card group relative flex min-w-0 flex-col overflow-hidden transition-shadow hover:shadow-md">
       <h3 className="flex-1">
         <button type="button" onClick={() => onOpen(product)}
           className="type-label flex h-full w-full flex-col gap-3 text-left text-on-surface focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary">

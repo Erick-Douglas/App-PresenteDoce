@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
-import { CatalogCard } from '../components/CatalogCard';
+import { CatalogGrid } from '../components/CatalogGrid';
 import { CategoryEditButton } from '../components/CategoryEditButton';
 import type { CartItem, CatalogCategory, Product } from '../config/types';
 
@@ -51,13 +51,12 @@ export function ProductListScreen({
             <h1 className="type-page min-w-0 flex-1 break-words text-primary">{title}</h1>
             {currentCategory && <CategoryEditButton category={currentCategory} onEdit={onEditCategory} />}
           </div>
-          <div ref={tabsRef} role="group" aria-label="Filtrar por categoria" className="scrollbar-hide mt-2 flex gap-2 overflow-x-auto py-1">
+          <div ref={tabsRef} role="group" aria-label="Filtrar por categoria" className="category-rail mt-2">
             {filters.map(({ id, label }) => {
               const selected = activeRecCategory === id;
               return (
                 <button key={id} type="button" aria-pressed={selected} onClick={() => onSetCategory(id)}
-                  className={'min-h-11 shrink-0 rounded-full border px-3 text-sm font-bold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ' +
-                    (selected ? 'border-primary bg-primary text-on-strong focus-visible:outline-white' : 'border-outline bg-surface text-on-surface hover:border-primary/35')}>
+                  className="category-pill">
                   {label}
                 </button>
               );
@@ -75,13 +74,8 @@ export function ProductListScreen({
         {products.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted">Ainda não há produtos nesta categoria.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-            {products.map(product => (
-              <CatalogCard key={product.id} product={product} inCart={!product.configuravel && cart.some(item => item.id === product.id)}
-                favorite={favorites.includes(product.id)} onOpen={onProductClick} onFavorite={onToggleFavorite}
-                onCart={product.configuravel ? onProductClick : onToggleCartItem} onEdit={onEditProduct} />
-            ))}
-          </div>
+          <CatalogGrid products={products} cart={cart} favorites={favorites} onProductClick={onProductClick}
+            onToggleFavorite={onToggleFavorite} onToggleCartItem={onToggleCartItem} onEditProduct={onEditProduct} />
         )}
       </div>
     </motion.div>
