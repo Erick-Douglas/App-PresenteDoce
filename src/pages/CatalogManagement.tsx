@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
-import { ChevronDown, ChevronUp, Pencil, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Search } from 'lucide-react';
 import { CategoryEditButton } from '../components/CategoryEditButton';
+import { ProductEditButton } from '../components/ProductEditButton';
 import { formatEuros } from '../features/checkout/order';
 import { createCatalogCategory, imageUrl, type AdminCategoryRow, type CatalogRow } from '../features/products/catalogApi';
 import { catalogField, catalogPrimary, catalogSecondary, categoryNameFrom } from './CategoryEditor';
@@ -139,9 +140,7 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
                             </span>
                           </div>
                         </div>
-                        <button type="button" className="ui-quiet-action" aria-label={'Editar ' + row.details.name} onClick={() => onEdit(row.id)}>
-                          <Pencil size={14} strokeWidth={1.65} aria-hidden="true" /> Editar
-                        </button>
+                        <ProductEditButton product={{ id: row.id, name: row.details.name }} onEdit={onEdit} />
                       </li>
                     ))}
                   </ul>

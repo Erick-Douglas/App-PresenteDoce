@@ -47,7 +47,7 @@ export const THEMED_CAKE_SIZES = [
 
 export const BUSINESS_INFO = {
   name: 'Presente Doce',
-  description: 'Confeitaria artesanal por encomenda',
+  description: 'Confeitaria artesanal por encomenda. Bolos, doces e salgados feitos à mão para tornar a sua celebração ainda mais especial.',
   adminDisplayName: 'Gabriela',
   website: 'https://presente-doce.vercel.app/',
   whatsapp: '+351932732319',

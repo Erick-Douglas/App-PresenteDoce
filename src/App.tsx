@@ -27,6 +27,7 @@ import { FloatingCart } from './components/FloatingCart';
 import { AdminPage } from './components/AdminPage';
 import { ContactAssistant } from './components/ContactAssistant';
 import { StoreDialog } from './components/StoreDialog';
+import { useAppInstall } from './features/install/useAppInstall';
 
 const AccountForm = lazy(() => import('./pages/AccountForm'));
 const CatalogManagement = lazy(() => import('./pages/CatalogManagement'));
@@ -72,6 +73,7 @@ export default function App() {
   const [presentation, setPresentation] = useState(defaultStorePresentation);
   const [presentationError, setPresentationError] = useState(false);
   const [presentationAttempt, setPresentationAttempt] = useState(0);
+  const { installed, appleMobile, showInstructions, closeInstructions, install } = useAppInstall();
 
   useEffect(() => {
     if (!catalogEnabled) return;
@@ -94,7 +96,26 @@ export default function App() {
   const lockedScroll = useRef<number | null>(null);
   const returnScroll = useRef<number | null>(null);
   const adminView = adminViews.some(view => view === currentView);
-  const overlayOpen = isMenuOpen || loginOpen;
+  const overlayOpen = isMenuOpen || loginOpen || showInstructions;
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const colors = getComputedStyle(root);
+    const brand = colors.getPropertyValue('--pd-color-brand').trim();
+    const canvas = colors.getPropertyValue('--pd-color-canvas').trim();
+    const masthead = currentView === 'home' || currentView === 'welcome' || currentView === 'categories-list' || adminView;
+    function updateStatusArea() {
+      const showBrand = masthead && (lockedScroll.current ?? window.scrollY) < 8;
+      const state = String(showBrand);
+      if (root.dataset.brandStatus === state) return;
+      root.dataset.brandStatus = state;
+      meta?.setAttribute('content', showBrand ? brand : canvas);
+    }
+    updateStatusArea();
+    window.addEventListener('scroll', updateStatusArea, { passive: true });
+    return () => window.removeEventListener('scroll', updateStatusArea);
+  }, [currentView, adminView]);
 
   useLayoutEffect(() => {
     if (!overlayOpen) return;
@@ -310,7 +331,7 @@ export default function App() {
   }
 
   return (
-    <div className="app-theme relative min-h-screen overflow-x-hidden bg-porcelain font-sans text-base font-normal text-on-surface">
+    <div className="app-theme relative min-h-screen overflow-x-clip bg-porcelain font-sans text-base font-normal text-on-surface">
       <div className="w-full min-h-screen relative">
         <Sidebar
           isOpen={isMenuOpen}
@@ -319,6 +340,7 @@ export default function App() {
           isAdmin={!!session}
           onLogin={openLogin}
           onLogout={handleLogout}
+          onInstall={installed ? undefined : install}
         />
 
         {currentView !== 'home' && !adminView && catalogNotice}
@@ -476,6 +498,18 @@ export default function App() {
                 onRecoveryComplete={() => setRecoveryCallback(null)}
               />
             </Suspense>
+          </StoreDialog>
+        )}
+        {showInstructions && (
+          <StoreDialog title="Instalar Presente Doce" onClose={closeInstructions}>
+            <div className="flex items-start gap-3">
+              <img src="/apple-touch-icon.png" alt="" width={44} height={44} className="rounded-xl" />
+              <div className="space-y-2 text-sm text-muted">
+                {appleMobile ? <p>No Safari, abra <strong>Partilhar</strong> e escolha <strong>Adicionar ao ecrã principal</strong>. Se aparecer <strong>Abrir como app</strong>, deixe essa opção ativa.</p> :
+                  <p>No menu do navegador, escolha <strong>Instalar app</strong> ou <strong>Adicionar ao ecrã principal</strong>, quando disponível.</p>}
+                <p>O ícone Presente Doce fica no ecrã principal.</p>
+              </div>
+            </div>
           </StoreDialog>
         )}
 

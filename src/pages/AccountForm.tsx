@@ -10,9 +10,9 @@ import {
 
 const recoveryUrl = new URL('/admin?recuperar=1', BUSINESS_INFO.website).href;
 const directRecovery = import.meta.env.VITE_DIRECT_RECOVERY === 'true';
-const primary = 'min-h-11 rounded-xl bg-primary px-4 py-2.5 text-center text-sm font-bold text-on-strong hover:bg-primary/90 disabled:opacity-50';
-const secondary = 'min-h-11 w-fit rounded-lg px-1 text-sm font-bold text-primary underline decoration-primary/35 underline-offset-4 hover:decoration-primary disabled:opacity-50';
-const field = 'mt-1 block w-full rounded-xl border border-outline-strong bg-surface px-3 py-2.5 text-base focus:border-primary focus:outline-2 focus:outline-primary/40';
+const primary = 'ui-primary';
+const secondary = 'ui-quiet-action';
+const field = 'ui-field mt-1 block';
 const label = 'block text-sm font-bold text-on-surface';
 
 type Step = 'login' | 'request' | 'sent' | 'manual' | 'reset';

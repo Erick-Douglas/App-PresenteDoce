@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Calculator, Plus, Save, Trash2 } from 'lucide-react';
 import { calculatePricing, parseDecimal } from '../features/pricing/calculation';
 import { formatEuros } from '../features/checkout/order';
 
@@ -7,7 +8,6 @@ type Recipe = { title: string; yieldCount: string; salePrice: string; ingredient
 type Pricing = ReturnType<typeof calculatePricing>;
 const storageKey = 'presente-doce-pricing-draft-v1';
 const input = 'ui-field';
-const secondary = 'ui-secondary';
 const emptyIngredient = (): Ingredient => ({ name: '', unit: 'g', packQuantity: '', packPrice: '', usedQuantity: '' });
 const emptyRecipe = (): Recipe => ({ title: '', yieldCount: '', salePrice: '', ingredients: [emptyIngredient()] });
 const percent = new Intl.NumberFormat('pt-PT', { style: 'percent', maximumFractionDigits: 2 });
@@ -88,7 +88,9 @@ export default function PricingScreen() {
           <div className="flex flex-wrap items-center justify-between gap-x-3">
             <h2 className="type-item text-primary">Ingredientes e custos</h2>
             <button type="button" className="ui-quiet-action" disabled={recipe.ingredients.length >= 70}
-              onClick={() => update({ ingredients: [...recipe.ingredients, emptyIngredient()] })}>+ Adicionar custo</button>
+              onClick={() => update({ ingredients: [...recipe.ingredients, emptyIngredient()] })}>
+              <Plus size={15} strokeWidth={1.65} aria-hidden="true" /> Adicionar custo
+            </button>
           </div>
           <p className="text-muted">Use a mesma unidade na compra e na receita. Para 1 kg, introduza 1000 g.</p>
           {recipe.ingredients.map((row, index) => (
@@ -102,14 +104,20 @@ export default function PricingScreen() {
                 <label className="block space-y-1"><span>Quantidade utilizada</span><input className={input} inputMode="decimal" maxLength={16} required value={row.usedQuantity} onChange={event => updateIngredient(index, { usedQuantity: event.target.value })} /></label>
               </div>
               {result && <p className="text-sm">Custo na receita {formatEuros(result.lineCosts[index])}</p>}
-              {recipe.ingredients.length > 1 && <button type="button" className="ui-quiet-action" onClick={() => update({ ingredients: recipe.ingredients.filter((_, i) => i !== index) })}>Remover custo {index + 1}</button>}
+              {recipe.ingredients.length > 1 && <button type="button" className="ui-quiet-action" onClick={() => update({ ingredients: recipe.ingredients.filter((_, i) => i !== index) })}>
+                <Trash2 size={14} strokeWidth={1.65} aria-hidden="true" /> Remover custo {index + 1}
+              </button>}
             </fieldset>
           ))}
         </section>
         <div className="admin-actions">
-          <button type="submit" className="ui-primary">Calcular receita</button>
-          <button type="button" className={secondary} onClick={saveDraft}>Guardar rascunho</button>
-          <button type="button" className="ui-quiet-action" onClick={clearDraft}>Limpar rascunho</button>
+          <button type="submit" className="ui-primary inline-flex items-center gap-2">
+            <Calculator size={15} strokeWidth={1.65} aria-hidden="true" /> Calcular receita
+          </button>
+          <button type="button" className="ui-quiet-action" onClick={saveDraft}>
+            <Save size={15} strokeWidth={1.65} aria-hidden="true" /> Guardar rascunho
+          </button>
+          <button type="button" className="ui-quiet-action sm:ml-auto" onClick={clearDraft}>Limpar rascunho</button>
         </div>
         {error && <p role="alert" className="text-primary">{error}</p>}
         {notice && <p role="status">{notice}</p>}

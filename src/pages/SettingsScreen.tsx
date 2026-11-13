@@ -24,8 +24,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
 
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-screen pb-32 bg-porcelain">
-      <header className="px-6 py-4 flex items-center sticky top-0 bg-surface/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
-        <button type="button" aria-label="Abrir menu" onClick={onOpenMenu} className="grid size-11 -ml-2 place-items-center rounded-full text-primary hover:bg-primary/5"><Menu size={20} aria-hidden="true" /></button>
+      <header className="sticky top-[env(safe-area-inset-top)] z-50 flex items-center border-b border-outline bg-surface/95 px-5 py-2 backdrop-blur-sm">
+        <button type="button" aria-label="Abrir menu" onClick={onOpenMenu} className="ui-icon-action"><Menu size={16} aria-hidden="true" /></button>
         <h1 className="type-module flex-1 pr-9 text-center text-primary">
           {mode === 'about' ? 'Sobre nós' : 'Contactos'}
         </h1>

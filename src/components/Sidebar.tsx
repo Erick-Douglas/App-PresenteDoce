@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react';
-import { Calculator, FileText, Heart, Home, Info, LayoutGrid, LogIn, LogOut, Package, Phone, Plus, X } from 'lucide-react';
+import { Calculator, Download, FileText, Heart, Home, Info, LayoutGrid, LogIn, LogOut, Package, Phone, Plus, X } from 'lucide-react';
 import type { View } from '../config/types';
 
 interface SidebarProps {
@@ -9,9 +9,10 @@ interface SidebarProps {
   isAdmin: boolean;
   onLogin: () => void;
   onLogout: () => void;
+  onInstall?: () => void;
 }
 
-export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogout, onInstall }: SidebarProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -35,6 +36,7 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
     { icon: Heart, label: 'Favoritos', action: () => onNavigate('saved') },
     { icon: Info, label: 'Sobre nós', action: () => onNavigate('settings') },
     { icon: Phone, label: 'Contactos', action: () => onNavigate('contact') },
+    ...(onInstall ? [{ icon: Download, label: 'Instalar app', action: onInstall }] : []),
     ...(isAdmin ? [
       { icon: Package, label: 'Gerir catálogo', action: () => onNavigate('catalog-admin') },
       { icon: Plus, label: 'Novo produto', action: () => onNavigate('product-editor') },
@@ -50,7 +52,7 @@ export function Sidebar({ isOpen, onClose, onNavigate, isAdmin, onLogin, onLogou
       onClick={event => { if (event.target === event.currentTarget) dismiss(); }}
       className="fixed inset-y-0 right-auto left-0 m-0 h-dvh max-h-none w-[300px] max-w-[90vw] bg-porcelain text-on-surface shadow-xl backdrop:bg-overlay/50">
       <div className="flex h-full flex-col">
-        <div className="mx-5 flex items-center justify-between border-b border-outline py-4">
+        <div className="mx-5 flex items-center justify-between border-b border-outline pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
           <h2 id={titleId} className="type-module text-primary">Menu</h2>
           <button type="button" aria-label="Fechar menu" onClick={dismiss} className="-mr-1 grid size-11 place-items-center rounded-full text-muted hover:bg-primary/5 hover:text-primary">
             <X size={19} strokeWidth={1.5} />

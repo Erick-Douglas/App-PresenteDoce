@@ -65,9 +65,9 @@ function RadioRow({ label, priceLabel, selected, onClick }: {
   label: string; priceLabel?: string; selected: boolean; onClick: () => void;
 }) {
   return (
-    <button
+    <button type="button" aria-pressed={selected}
       onClick={onClick}
-      className="w-full flex items-center gap-3 py-3.5 border-b border-black/[0.05] last:border-0 active:bg-black/[0.02] transition-colors text-left"
+      className="ui-choice"
     >
       <div className={`w-[22px] h-[22px] rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? 'border-primary shadow-[0_0_0_4px_rgba(128,0,0,0.1)]' : 'border-black/20'}`}>
         {selected && <div className="w-[12px] h-[12px] rounded-full bg-primary" />}
@@ -83,9 +83,9 @@ function CheckRow({ label, priceLabel, selected, onClick }: {
   label: string; priceLabel?: string; selected: boolean; onClick: () => void;
 }) {
   return (
-    <button
+    <button type="button" aria-pressed={selected}
       onClick={onClick}
-      className="w-full flex items-center gap-3 py-3.5 border-b border-black/[0.05] last:border-0 active:bg-black/[0.02] transition-colors text-left"
+      className="ui-choice"
     >
       <div className={`w-[22px] h-[22px] rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${selected ? 'border-primary bg-primary shadow-[0_0_0_4px_rgba(128,0,0,0.1)]' : 'border-black/20'}`}>
         {selected && <Check size={12} strokeWidth={3} className="text-on-strong" />}
@@ -224,18 +224,20 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-subtle">
 
       {/* Botões flutuantes */}
-      <div className="fixed top-0 inset-x-0 z-50 flex justify-between items-center p-4 pointer-events-none">
+      <div className="fixed top-[env(safe-area-inset-top)] inset-x-0 z-50 flex justify-between items-center p-3 pointer-events-none">
         <button
+          type="button" aria-label="Voltar"
           onClick={onBack}
-          className="w-10 h-10 bg-surface/95 backdrop-blur-md rounded-full flex items-center justify-center text-primary shadow-md active:scale-90 transition-transform pointer-events-auto border border-black/5"
+          className="ui-icon-action rounded-full bg-surface/95 shadow-sm pointer-events-auto"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={16} aria-hidden="true" />
         </button>
         <button
+          type="button" aria-label="Favorito" aria-pressed={isFav} data-active={isFav}
           onClick={(e) => onToggleFavorite(product.id, e)}
-          className={`w-10 h-10 rounded-full shadow-md backdrop-blur-md transition-all active:scale-125 flex items-center justify-center pointer-events-auto border ${isFav ? 'bg-primary text-on-primary border-primary' : 'bg-surface/95 text-primary border-black/5'}`}
+          className="ui-icon-action rounded-full bg-surface/95 shadow-sm pointer-events-auto"
         >
-          <Heart size={18} className={isFav ? 'fill-cream' : ''} />
+          <Heart size={16} className={isFav ? 'fill-cream' : ''} aria-hidden="true" />
         </button>
       </div>
 
@@ -263,8 +265,10 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                   <span className="bg-primary/10 text-primary font-bold text-xs px-2 py-0.5 rounded-full uppercase tracking-widest">Personalizável 🎨</span>
                 )}
               </div>
-              <h1 className="type-page mb-1 text-on-surface">{product.name}</h1>
-              <ProductEditButton product={product} onEdit={onEditProduct} />
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3">
+                <h1 className="type-page text-on-surface">{product.name}</h1>
+                <ProductEditButton product={product} onEdit={onEditProduct} />
+              </div>
               <p className="text-sm text-muted leading-relaxed mb-3">{product.description}</p>
 
               {/* Preço total — bem visível */}
@@ -454,35 +458,32 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       </div>
 
       {/* ── Barra de ação fixa ── */}
-      <div className="fixed bottom-0 inset-x-0 bg-surface/95 backdrop-blur-lg border-t border-black/[0.04] shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
-        <div className="max-w-[1100px] mx-auto px-6 py-4 flex items-center gap-4">
+      <div className="fixed bottom-0 inset-x-0 z-50 border-t border-outline bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-lg">
+        <div className="page-width flex flex-wrap items-center gap-2 py-2 sm:gap-4">
           {/* Quantidade */}
-          <div className="flex items-center bg-muted-fill rounded-full h-12 px-2 shrink-0 gap-1">
-            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary transition-colors rounded-full">
-              <Minus size={16} />
+          <div className="flex shrink-0 items-center rounded-xl bg-muted-fill">
+            <button type="button" aria-label="Diminuir quantidade" onClick={() => setQuantity(Math.max(1, quantity - 1))} className="ui-icon-action">
+              <Minus size={14} aria-hidden="true" />
             </button>
-            <span className="w-7 text-center font-bold text-base text-on-surface">{quantity}</span>
-            <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary transition-colors rounded-full">
-              <Plus size={16} />
+            <span className="w-6 text-center text-sm tabular-nums">{quantity}</span>
+            <button type="button" aria-label="Aumentar quantidade" onClick={() => setQuantity(quantity + 1)} className="ui-icon-action">
+              <Plus size={14} aria-hidden="true" />
             </button>
           </div>
 
           {/* Botão */}
           <button
+            type="button"
             onClick={handleAdd}
             disabled={!canAdd}
-            className={`flex-1 h-12 rounded-full flex items-center justify-between px-5 font-bold text-sm tracking-wide transition-all ${
-              canAdd
-                ? 'bg-primary text-on-primary shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98]'
-                : 'bg-black/10 text-muted cursor-not-allowed'
-            }`}
+            className="ui-primary flex min-w-40 flex-1 items-center justify-between gap-2 text-left"
           >
             <div className="flex items-center gap-2">
-              <ShoppingCart size={16} />
-              <span>{editingItem ? 'Atualizar Produto' : (isConfiguravel ? 'Adicionar encomenda' : 'Adicionar')}</span>
+              <ShoppingCart size={15} className="hidden shrink-0 sm:block" aria-hidden="true" />
+              <span>{editingItem ? 'Atualizar' : 'Adicionar'}</span>
             </div>
             {calculatedPrice > 0 && (
-              <span className={`font-bold text-base ${canAdd ? 'text-gold' : 'text-muted'}`}>
+              <span className="whitespace-nowrap tabular-nums">
                 {formatEuros(calculatedPrice)}
               </span>
             )}

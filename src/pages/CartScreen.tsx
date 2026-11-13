@@ -11,8 +11,8 @@ interface CartScreenProps {
   onNavigate: (view: View) => void;
 }
 
-const field = 'w-full rounded-xl border border-outline-strong bg-surface px-3 py-2 text-base text-on-surface';
-const iconButton = 'flex size-10 items-center justify-center rounded-lg border border-outline text-primary';
+const field = 'ui-field';
+const iconButton = 'ui-icon-action';
 
 export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: CartScreenProps) {
   const [fulfillment, setFulfillment] = useState<'pickup' | 'delivery'>('pickup');
@@ -58,7 +58,7 @@ export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: C
       {cart.length === 0 ? (
         <div className="space-y-4 py-10">
           <p>O carrinho está vazio.</p>
-          <button type="button" onClick={() => onNavigate('home')} className="rounded-xl bg-primary px-4 py-3 font-bold text-on-strong">Ver catálogo</button>
+          <button type="button" onClick={() => onNavigate('home')} className="ui-primary">Ver catálogo</button>
         </div>
       ) : (
         <>
@@ -114,8 +114,8 @@ export function CartScreen({ cart, onUpdateQuantity, onEditItem, onNavigate }: C
               {fulfillment === 'delivery' && <p className="mt-2 text-sm text-muted">Taxa de entrega e total final a confirmar no WhatsApp.</p>}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button type="submit" value="open" className="rounded-xl bg-primary px-4 py-3 font-bold text-on-strong">Continuar no WhatsApp</button>
-              <button type="submit" value="copy" className="rounded-xl border border-outline-strong px-4 py-3 font-bold">Copiar mensagem</button>
+              <button type="submit" value="open" className="ui-primary">Continuar no WhatsApp</button>
+              <button type="submit" value="copy" className="ui-secondary text-primary">Copiar mensagem</button>
             </div>
             <p className="text-sm text-muted">A encomenda é confirmada no atendimento. Os dados preenchidos são usados na mensagem de pedido.</p>
             {error && <p role="alert" className="text-sm text-primary">{error}</p>}

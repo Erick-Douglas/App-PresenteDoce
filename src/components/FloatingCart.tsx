@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ChevronRight } from 'lucide-react';
 import { View, CartItem } from '../config/types';
@@ -21,33 +20,23 @@ export function FloatingCart({ cart, cartTotal, onNavigate, isVisible }: Floatin
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
-          className="fixed bottom-6 left-0 right-0 z-[90] flex justify-center px-6"
+          className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-0 right-0 z-[90] flex justify-center px-4"
         >
-          <button
+          <button type="button"
             onClick={() => onNavigate('cart')}
-            className="w-full max-w-lg bg-primary text-on-strong p-4 rounded-2xl shadow-2xl shadow-primary/30 flex items-center justify-between group active:scale-[0.98] transition-all border border-surface/10 backdrop-blur-md"
+            className="ui-primary flex w-full max-w-lg items-center justify-between gap-3 shadow-md"
           >
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-12 h-12 bg-surface/20 rounded-xl flex items-center justify-center shadow-inner">
-                  <ShoppingBag size={22} className="text-on-strong" />
-                </div>
-                <span className="absolute -top-2 -right-2 w-6 h-6 bg-gold text-on-accent font-bold text-xs rounded-full flex items-center justify-center border-2 border-primary shadow-lg">
+            <span className="flex items-center gap-2">
+                <ShoppingBag size={17} strokeWidth={1.65} aria-hidden="true" />
+                <span>Ver carrinho</span>
+                <span className="rounded-full bg-surface/15 px-1.5 text-xs tabular-nums">
                   {cart.reduce((s, i) => s + i.quantity, 0)}
                 </span>
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-bold uppercase tracking-widest text-on-primary/60">Ver Carrinho</p>
-                <p className="type-price">{formatEuros(cartTotal)}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Finalizar</span>
-              <div className="w-8 h-8 bg-surface/10 rounded-lg flex items-center justify-center">
-                <ChevronRight size={16} />
-              </div>
-            </div>
+            </span>
+            <span className="flex items-center gap-2 whitespace-nowrap">
+              <span className="type-price">{formatEuros(cartTotal)}</span>
+              <ChevronRight size={15} aria-hidden="true" />
+            </span>
           </button>
         </motion.div>
       )}
