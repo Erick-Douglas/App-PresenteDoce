@@ -1,15 +1,37 @@
-import { useId, useRef, useState } from 'react';
-import { ArrowUpRight, MessageCircle, X } from 'lucide-react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { ArrowUpRight, X } from 'lucide-react';
 import { BUSINESS_INFO } from '../config/constants';
+
+const introKey = 'presente-doce:contact-intro';
+const interactionEvents = ['pointerdown', 'wheel', 'scroll', 'keydown', 'click'];
 
 export function ContactAssistant({ visible, aboveOrder }: { visible: boolean; aboveOrder: boolean }) {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [showIntro, setShowIntro] = useState(() => {
+    try { return sessionStorage.getItem(introKey) === null; }
+    catch { return true; }
+  });
   const launcher = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const titleId = useId();
   const phone = BUSINESS_INFO.whatsapp.replace(/\D/g, '');
   const whatsapp = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message.trim());
+
+  useEffect(() => {
+    if (!visible || !showIntro) return;
+    try { sessionStorage.setItem(introKey, '1'); } catch { /* Keep the flag in memory when storage is unavailable. */ }
+    const collapse = (event: Event) => {
+      if ((event.type === 'pointerdown' || event.type === 'keydown' || event.type === 'click') &&
+        event.target instanceof Node && launcher.current?.contains(event.target)) return;
+      setShowIntro(false);
+    };
+    for (const event of interactionEvents) window.addEventListener(event, collapse, { capture: true, passive: true });
+    return () => {
+      for (const event of interactionEvents) window.removeEventListener(event, collapse, true);
+    };
+  }, [visible, showIntro]);
+
   if (!visible) return null;
 
   function close() {
@@ -41,11 +63,11 @@ export function ContactAssistant({ visible, aboveOrder }: { visible: boolean; ab
           <p className="text-xs text-muted">Confirme o envio no WhatsApp.</p>
         </section>
       )}
-      <button ref={launcher} type="button" aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={() => setOpen(value => !value)}
-        className="contact-launcher">
+      <button ref={launcher} type="button" aria-label="Falar com a confeitaria" aria-expanded={open} aria-controls={open ? panelId : undefined}
+        onClick={() => { setShowIntro(false); setOpen(value => !value); }}
+        className="contact-launcher" data-intro={showIntro}>
         <img src="/atendimento.jpg" alt="" width={34} height={34} className="size-8 rounded-full object-cover" />
-        <span>{open ? 'Atendimento' : 'Precisa de ajuda?'}</span>
-        <MessageCircle size={15} strokeWidth={1.65} aria-hidden="true" />
+        {showIntro && <span>Precisa de ajuda?</span>}
       </button>
     </aside>
   );

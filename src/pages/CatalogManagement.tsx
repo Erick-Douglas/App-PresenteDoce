@@ -63,12 +63,9 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
   }
 
   return (
-    <div className="space-y-5">
+    <div className="admin-form">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="type-module text-primary">Gerir catálogo</h1>
-          <p className="mt-1 text-sm text-muted">{categories.length} {categories.length === 1 ? 'categoria' : 'categorias'} · {rows.length} {rows.length === 1 ? 'produto' : 'produtos'}</p>
-        </div>
+        <p className="text-sm text-muted">{categories.length} {categories.length === 1 ? 'categoria' : 'categorias'} · {rows.length} {rows.length === 1 ? 'produto' : 'produtos'}</p>
         <button type="button" className={catalogPrimary + ' inline-flex items-center gap-2'} onClick={onNew}><Plus size={17} aria-hidden="true" /> Novo produto</button>
       </div>
       <div className="grid items-start gap-4 md:grid-cols-[14rem_minmax(0,1fr)]">

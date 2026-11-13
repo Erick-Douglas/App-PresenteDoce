@@ -73,9 +73,9 @@ export default function PricingScreen() {
   }
 
   return (
-    <div className="space-y-5">
-      <p className="text-sm text-muted">Calcule os custos e simule o preço de venda. Os valores ficam neste dispositivo e não alteram o catálogo.</p>
-      <form onSubmit={calculate} className="space-y-5">
+    <div className="admin-form">
+      <p className="text-muted">Calcule os custos e simule o preço de venda. O rascunho é guardado neste dispositivo.</p>
+      <form onSubmit={calculate} className="admin-form">
         <section className="ui-glass-panel space-y-3">
           <h2 className="type-item text-primary">Dados da receita</h2>
           <label className="block space-y-1"><span>Nome da receita (opcional)</span><input className={input} maxLength={100} value={recipe.title} onChange={event => update({ title: event.target.value })} /></label>
@@ -85,10 +85,14 @@ export default function PricingScreen() {
           </div>
         </section>
         <section className="ui-glass-panel space-y-3">
-          <h2 className="type-item text-primary">Ingredientes e custos</h2>
-          <p className="text-sm text-muted">Use a mesma unidade para a quantidade comprada e a utilizada. Por exemplo, indique 1.000 g para uma embalagem de 1 kg, escrevendo 1000 sem o separador de milhares.</p>
+          <div className="flex flex-wrap items-center justify-between gap-x-3">
+            <h2 className="type-item text-primary">Ingredientes e custos</h2>
+            <button type="button" className="ui-quiet-action" disabled={recipe.ingredients.length >= 70}
+              onClick={() => update({ ingredients: [...recipe.ingredients, emptyIngredient()] })}>+ Adicionar custo</button>
+          </div>
+          <p className="text-muted">Use a mesma unidade na compra e na receita. Para 1 kg, introduza 1000 g.</p>
           {recipe.ingredients.map((row, index) => (
-            <fieldset key={index} className="space-y-3 rounded-lg border border-outline bg-surface/65 px-3 pb-3">
+            <fieldset key={index} className="min-w-0 space-y-3 rounded-lg border border-outline bg-surface/65 px-3 pb-3">
               <legend className="px-1 text-sm font-bold">Custo {index + 1}</legend>
               <div className="grid grid-cols-2 gap-3">
                 <label className="col-span-2 block space-y-1 sm:col-span-1"><span>Ingrediente ou despesa</span><input className={input} maxLength={100} value={row.name} onChange={event => updateIngredient(index, { name: event.target.value })} /></label>
@@ -101,9 +105,8 @@ export default function PricingScreen() {
               {recipe.ingredients.length > 1 && <button type="button" className="ui-quiet-action" onClick={() => update({ ingredients: recipe.ingredients.filter((_, i) => i !== index) })}>Remover custo {index + 1}</button>}
             </fieldset>
           ))}
-          <button type="button" className={secondary} disabled={recipe.ingredients.length >= 70} onClick={() => update({ ingredients: [...recipe.ingredients, emptyIngredient()] })}>Adicionar custo</button>
         </section>
-        <div className="flex flex-wrap gap-2">
+        <div className="admin-actions">
           <button type="submit" className="ui-primary">Calcular receita</button>
           <button type="button" className={secondary} onClick={saveDraft}>Guardar rascunho</button>
           <button type="button" className="ui-quiet-action" onClick={clearDraft}>Limpar rascunho</button>
@@ -114,7 +117,7 @@ export default function PricingScreen() {
       {result && (
         <section className="ui-glass-panel" aria-live="polite">
           <h2 className="type-item text-primary">Resultado da simulação</h2>
-          <dl className="mt-3 grid grid-cols-2 gap-3">
+          <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {[
               ['Custo total', formatEuros(result.totalCost)],
               ['Custo por unidade', formatEuros(result.unitCost)],
@@ -123,7 +126,9 @@ export default function PricingScreen() {
               ['Lucro por unidade', formatEuros(result.unitProfit)],
               ['Markup', result.markup === null ? '—' : percent.format(result.markup)],
               ['Margem', result.margin === null ? '—' : percent.format(result.margin)],
-            ].map(([label, value]) => <div key={label}><dt className="text-sm text-muted">{label}</dt><dd className="font-bold">{value}</dd></div>)}
+            ].map(([label, value]) => <div key={label} className="rounded-lg border border-outline bg-surface/60 px-3 py-2">
+              <dt className="text-xs text-muted">{label}</dt><dd className="type-price mt-1 text-primary">{value}</dd>
+            </div>)}
           </dl>
           <p className="mt-3 text-sm text-muted">O lucro considera os custos que você adicionou à receita.</p>
         </section>

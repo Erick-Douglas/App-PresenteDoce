@@ -250,9 +250,9 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
 
   return (<>
     <form onSubmit={submit} hidden={managingCategory}>
-      <fieldset disabled={busy || creatingCategory} className="space-y-4">
+      <fieldset disabled={busy || creatingCategory} className="admin-form">
         <section aria-label="Dados do produto" className="ui-glass-panel space-y-3">
-          <h3 className="type-item text-primary">Dados do produto</h3>
+          <h2 className="type-item text-primary">Dados do produto</h2>
           <label className="block space-y-1"><span>Nome</span><input name="name" required maxLength={100} defaultValue={data?.name} className={field} /></label>
           <label className="block space-y-1"><span>Descrição</span><textarea name="description" rows={2} required maxLength={3000} defaultValue={data?.description} className={field + ' resize-y'} /></label>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -269,7 +269,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
                 </select>
               </label>
               <button type="button" aria-label="Criar categoria" aria-expanded={categoryDraft !== null} className="ui-icon-action"
-                onClick={() => { setCategoryDraft(''); setCategoryError(''); }}><Plus size={19} aria-hidden="true" /></button>
+                onClick={() => { setCategoryDraft(categoryDraft === null ? '' : null); setCategoryError(''); }}><Plus size={16} strokeWidth={1.65} aria-hidden="true" /></button>
             </div>
             {!optionFieldsForCategory && <PriceInput label="Preço" value={price} onChange={setPrice} required />}
           </div>
@@ -292,7 +292,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
         </section>
         {selectedCategory && <section aria-label="Tópicos do produto" className="ui-glass-panel space-y-2">
           <div className="flex flex-wrap items-center gap-x-3">
-            <h3 className="type-item text-primary">Tópicos de {selectedCategory.name}</h3>
+            <h2 className="type-item text-primary">Tópicos de {selectedCategory.name}</h2>
             <button type="button" className="ui-quiet-action"
               onClick={() => setManagingCategory(true)}>Gerir tópicos</button>
           </div>
@@ -316,7 +316,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
         </section>}
         {optionFieldsForCategory && (
           <section className="ui-glass-panel space-y-3">
-            <h3 className="type-item text-primary">{optionFieldsForCategory.title}</h3>
+            <h2 className="type-item text-primary">{optionFieldsForCategory.title}</h2>
             <p className="text-sm text-muted">O cliente escolhe uma opção ao encomendar. Indique o preço total de cada opção.</p>
             <p className="text-sm text-muted">{lowestPrice === null ? 'O card mostra o preço da opção mais barata.' : <>No card <strong>A partir de {formatEuros(lowestPrice)}</strong></>}</p>
             {variants.map((option, index) => (
@@ -343,15 +343,15 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
           </section>
         )}
         <section aria-label="Imagem e publicação" className="ui-glass-panel space-y-3">
-          <h3 className="type-item text-primary">Imagem e publicação</h3>
+          <h2 className="type-item text-primary">Imagem e publicação</h2>
           {image && <img src={imageUrl(image)} alt="Imagem atual do produto" className="h-28 w-36 rounded-xl object-cover" />}
           <label className="block space-y-1"><span>Imagem (JPG, PNG ou WebP até 5 MB)</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" className={field} /></label>
           <label className="flex min-h-11 items-center gap-3"><input name="published" type="checkbox" defaultChecked={row?.published} className="size-4 accent-primary" /> Mostrar no catálogo público</label>
         </section>
         {error && <p role="alert" className="text-sm font-bold text-primary">{error}</p>}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-outline pt-3">
+        <div className="admin-actions">
           <button className={primary} type="submit">{busy ? 'A guardar…' : 'Guardar produto'}</button>
-          <button className={secondary} type="button" onClick={onCancel}>Voltar</button>
+          <button className="ui-quiet-action" type="button" onClick={onCancel}>Cancelar edição</button>
           {row && !confirmDelete && <button className="ui-quiet-action sm:ml-auto" type="button" onClick={() => setConfirmDelete(true)}>Excluir produto</button>}
         </div>
         {row && confirmDelete && (
@@ -367,7 +367,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
     </form>
     {managingCategory && selectedCategory && (
       <section className="space-y-4">
-        <h3 className="type-section text-primary">Editar categoria</h3>
+        <h2 className="type-item text-primary">Editar categoria</h2>
         <CategoryEditor category={selectedCategory} categories={categories} rows={rows} token={token}
           onBack={() => setManagingCategory(false)} onChanged={applyManagedCategory} />
       </section>

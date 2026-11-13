@@ -55,6 +55,8 @@
     --pd-color-overlay: #0c0a09;
 
     --pd-page-width: 72rem;
+    --pd-admin-width: 52rem;
+    --pd-admin-gap: clamp(0.875rem, 2.5vw, 1.25rem);
     --pd-page-gutter: clamp(1rem, 3vw, 1.5rem);
     --pd-card-radius: 0.875rem;
     --pd-field-radius: 0.625rem;
