@@ -6,7 +6,7 @@
     line-height: var(--pd-leading-display);
   }
 
-  .type-page, .type-section, .type-item, .type-label {
+  .type-page, .type-module, .type-section, .type-item, .type-label {
     font-weight: var(--pd-weight-emphasis);
     line-height: var(--pd-leading-title);
   }
@@ -14,6 +14,11 @@
   .type-page {
     font-size: var(--pd-size-page);
     letter-spacing: -0.025em;
+  }
+
+  .type-module {
+    font-size: var(--pd-size-module);
+    letter-spacing: -0.015em;
   }
 
   .type-section {

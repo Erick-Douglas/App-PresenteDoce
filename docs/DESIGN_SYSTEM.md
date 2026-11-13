@@ -9,7 +9,7 @@ A loja e o painel usam o mesmo tema. A edição dos valores centrais afeta os co
 | [Tokens e fontes](../src/design-system/tokens.css) | Paleta, fontes, pesos, escala de texto, largura, espaçamento e transparência da busca |
 | [Papéis tipográficos](../src/design-system/typography.css) | Aparência de saudação, título de página, título de seção, nome de item, rótulo e preço |
 | [Componentes compartilhados](../src/design-system/components.css) | Cabeçalho, busca, filtros em pílula, grade, cartões, campos e botões |
-| [Estilos globais](../src/index.css) | Marca e regras básicas do documento |
+| [Estilos globais](../src/index.css) | Regras básicas do documento |
 | [Fontes locais e licenças](../public/fonts) | Lato 400 e 700, Great Vibes 400 e suas licenças |
 
 Edite os valores `--pd-*` em `tokens.css`. As classes Tailwind de cor e peso referenciam esses valores. Use os papéis de tipografia quando criar componentes. Os controles de formulário usam 16 px no tema da Presente Doce.
@@ -29,12 +29,25 @@ Edite os valores `--pd-*` em `tokens.css`. As classes Tailwind de cor e peso ref
 | --- | --- |
 | `type-display` | Saudação em Great Vibes |
 | `type-page` | Título principal de uma tela |
+| `type-module` | Título compacto de módulos da vitrine e da gestão |
 | `type-section` | Títulos de categorias, seções e diálogos |
 | `type-item` | Títulos de itens e subseções de formulário |
 | `type-label` | Nome curto de produto ou ação em destaque |
 | `type-price` | Preços compactos com algarismos tabulares |
 
-Os títulos de categoria usam o mesmo papel na vitrine e na gestão. A home usa topo bordô sólido, busca translúcida com contorno claro, fundo neutro e filtros em pílulas. A home lista os produtos logo abaixo dos filtros. **Ver todas as categorias** leva às seções empilhadas, com grade de duas colunas no celular. O painel usa os mesmos papéis tipográficos e componentes de formulário.
+## Vitrine e merchandising digital
+
+A home usa o logotipo principal, com assinatura em creme claro e presente dourado, e ícones brancos. A marca tem uma linha própria acima da saudação. O fundo bordô termina pouco antes de **Categorias**, com uma margem interna abaixo da busca translúcida.
+
+- **Ordem comercial das categorias.** Merchandising digital é a prática de decidir o que recebe visibilidade na vitrine. Na Presente Doce, Gabriela ordena manualmente os três primeiros lugares em **Editar categoria → Ordem das categorias**. Primeiro as categorias com maior volume de vendas, depois as com maior margem de contribuição, depois as novidades. Use as próximas posições para as demais categorias. A aplicação respeita essa ordem e seleciona a primeira na abertura. A pílula **Todos** fecha a lista. A busca inicial pesquisa o catálogo todo, até que a pessoa escolha uma categoria. [Gestão de categorias da Shopify](https://www.shopify.com/enterprise/blog/category-management)
+- **Cartões de produto.** Foto livre de ícones, nome, início da descrição em até duas linhas e preço em negrito com o euro antes do valor. O preço mínimo de uma opção usa **A partir de**. As ações de adicionar, configurar e editar ficam abaixo da foto. O ícone compacto tem área de toque de 44 px. Os favoritos são geridos nos detalhes. [Pesquisa de listagens da Baymard](https://baymard.com/research-articles/product-listing-information)
+- **Mapa do catálogo.** **Menu → Todas as categorias** mantém a grade pública de duas colunas no celular. A administração vê quatro contagens acima da grade, total de categorias, categorias com publicados, categorias só com rascunhos e categorias sem produtos. Os grupos são calculados pelos produtos associados. O indicador de exclusões e a evolução para gráficos dependem de um histórico de eventos no catálogo. [Painéis no Carbon Design System](https://www.carbondesignsystem.com/building-blocks/data-visualization/dashboards)
+
+## Gestão e atendimento
+
+- **Formulários da gestão.** Separe responsabilidades em painéis translúcidos leves com `ui-glass-panel`. Reserve o botão preenchido para a confirmação principal e use `ui-quiet-action` ou `ui-icon-action` para ações auxiliares. Em categoria, separe nome e tópicos, permita confirmar ou cancelar na própria linha e preserve as abas de ordenação. No catálogo, abra **Nova categoria** junto ao botão e mantenha o cabeçalho com menu hambúrguer. Em produto, separe dados, tópicos, opções e publicação. Em precificação, separe receita, custos e resultado. Em Textos da loja, separe a home de **Sobre nós**.
+- **Contactos.** O menu abre uma página com WhatsApp, telefone, e-mail, Instagram e Facebook. Acrescente TikTok quando o endereço oficial for confirmado. O cartão flutuante da vitrine pública usa o retrato de atendimento, abre sem bloquear a rolagem e conserva o rascunho durante a navegação. O link preenche a conversa no WhatsApp e o cliente confirma o envio por lá. A loja permanece aberta. [Clique para conversa do WhatsApp](https://faq.whatsapp.com/5913398998672934)
+- **Atendimento dentro da loja.** Para envio sem sair da vitrine, o próximo passo é um chat web com backend, caixa de atendimento e notificação à equipe. A integração com a plataforma da Meta usa um número empresarial remetente e credenciais do servidor. Antes de ativar o canal, valide destinatário, consentimento, retenção e limites antispam. [WhatsApp Business Platform](https://developers.facebook.com/documentation/business-messaging/whatsapp/overview)
 
 ## Validar uma alteração
 

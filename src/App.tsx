@@ -24,6 +24,8 @@ import { CategoriesScreen } from './pages/CategoriesScreen';
 
 import { Sidebar } from './components/Sidebar';
 import { FloatingCart } from './components/FloatingCart';
+import { Header } from './components/Header';
+import { ContactAssistant } from './components/ContactAssistant';
 import { StoreDialog } from './components/StoreDialog';
 
 const AccountForm = lazy(() => import('./pages/AccountForm'));
@@ -325,7 +327,6 @@ export default function App() {
                 products={products}
                 categories={categories}
                 cart={cart}
-                favorites={favorites}
                 isAdmin={!!session}
                 catalogNotice={catalogNotice}
                 presentation={presentation}
@@ -333,7 +334,6 @@ export default function App() {
                 onProductClick={handleProductClick}
                 onEditProduct={openProductEditor}
                 onEditCategory={openCategoryEditor}
-                onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
               />
             )}
@@ -344,14 +344,12 @@ export default function App() {
                 products={products}
                 categories={categories}
                 cart={cart}
-                favorites={favorites}
                 activeRecCategory={activeRecCategory}
                 {...commonProps}
                 onSetCategory={setActiveRecCategory}
                 onProductClick={handleProductClick}
                 onEditProduct={openProductEditor}
                 onEditCategory={openCategoryEditor}
-                onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
               />
             )}
@@ -407,13 +405,12 @@ export default function App() {
               <CategoriesScreen
                 key="categories"
                 categories={categories}
+                overview={session && !adminCatalog.error ? adminCatalog.data : undefined}
                 products={products}
                 cart={cart}
-                favorites={favorites}
                 onProductClick={handleProductClick}
                 onEditProduct={openProductEditor}
                 onEditCategory={openCategoryEditor}
-                onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
                 onNavigate={handleNavigate}
               />
@@ -427,7 +424,6 @@ export default function App() {
                 favorites={favorites}
                 onProductClick={handleProductClick}
                 onEditProduct={openProductEditor}
-                onToggleFavorite={toggleFavorite}
                 onToggleCartItem={selectOrConfigure}
                 {...commonProps}
               />
@@ -435,25 +431,15 @@ export default function App() {
             {currentView === 'catalog-admin' && (
               <motion.div key="catalog-admin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="min-h-screen bg-porcelain text-on-surface">
-                <header className="store-masthead">
-                  <div className="page-width flex flex-wrap items-center justify-between gap-2 py-2 text-on-primary">
-                    <span role="img" aria-label="Presente Doce" className="brand-wordmark h-10 w-28" />
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold hover:bg-surface/10"
-                        onClick={() => handleNavigate('home')}>Vitrine</button>
-                      <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold hover:bg-surface/10"
-                        onClick={() => setIsMenuOpen(true)}>Menu</button>
-                    </div>
-                  </div>
-                </header>
+                <div className="store-masthead"><Header onOpenMenu={commonProps.onOpenMenu} showShare={false} /></div>
                 <div className="page-width space-y-4 pt-5 pb-28 sm:pt-7">
                   {session ? adminCatalog.data ? (
                     <Suspense fallback={<p role="status">A carregar catálogo…</p>}>
                       {adminCatalog.error && adminStatus}
                       <div hidden={!!pageEditor}>
                         <nav aria-label="Gestão da loja" className="mb-4 flex flex-wrap gap-2">
-                          <button type="button" className="category-pill" onClick={() => openEditor({ type: 'presentation' })}>Textos da loja</button>
-                          <button type="button" className="category-pill" onClick={() => openEditor({ type: 'pricing' })}>Precificação</button>
+                          <button type="button" className="ui-secondary text-primary" onClick={() => openEditor({ type: 'presentation' })}>Textos da loja</button>
+                          <button type="button" className="ui-secondary text-primary" onClick={() => openEditor({ type: 'pricing' })}>Precificação</button>
                         </nav>
                         <CatalogManagement categories={adminCatalog.data.categories} rows={adminCatalog.data.rows} token={session.token}
                           onNew={() => openEditor({ type: 'editor' })}
@@ -463,8 +449,8 @@ export default function App() {
                       {pageEditor && (
                         <section className="max-w-3xl space-y-4">
                           <div>
-                            <button type="button" className="min-h-11 text-sm font-bold text-primary underline" onClick={leaveEditor}>Voltar ao catálogo</button>
-                            <h1 className="type-page text-primary">{adminTitle}</h1>
+                            <button type="button" className="ui-quiet-action" onClick={leaveEditor}>Voltar ao catálogo</button>
+                            <h1 className="type-module text-primary">{adminTitle}</h1>
                           </div>
                           {panel?.type === 'pricing' ? <PricingScreen /> : panel?.type === 'presentation' ? presentationEditor() : editorContent()}
                         </section>
@@ -472,7 +458,7 @@ export default function App() {
                     </Suspense>
                   ) : adminStatus : (
                     <section className="space-y-3">
-                      <h1 className="type-page text-primary">Gerir catálogo</h1>
+                      <h1 className="type-module text-primary">Gerir catálogo</h1>
                       <button type="button" className="min-h-11 rounded-xl bg-primary px-4 text-sm font-bold text-on-strong"
                         onClick={openLogin}>Entrar para gerir o catálogo</button>
                     </section>
@@ -512,6 +498,8 @@ export default function App() {
           onNavigate={handleNavigate}
           isVisible={currentView !== 'cart' && currentView !== 'welcome' && currentView !== 'product-details' && currentView !== 'catalog-admin'}
         />
+        {!session && <ContactAssistant visible={!overlayOpen && ['home', 'categories-list', 'product-list', 'product-details', 'saved'].includes(currentView)}
+          aboveOrder={cart.length > 0 || currentView === 'product-details'} />}
 
         <AnimatePresence>
           {showSuccessToast && (

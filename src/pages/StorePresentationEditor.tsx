@@ -36,12 +36,21 @@ export default function StorePresentationEditor({ current, token, onSave }: {
 
   return (
     <form onSubmit={save}>
-      <fieldset disabled={busy} className="space-y-4">
-        {fields.map(([key, label, limit]) => <label key={key} className="block space-y-1 text-sm">
-          <span>{label}</span>
-          {key === 'about_text' ? <textarea name={key} className="ui-field resize-y" defaultValue={current[key]} rows={4} maxLength={limit} required /> :
-            <input name={key} className="ui-field" defaultValue={current[key]} maxLength={limit} required />}
-        </label>)}
+      <fieldset disabled={busy} className="min-w-0 space-y-4">
+        <section className="ui-glass-panel space-y-3">
+          <h3 className="type-item text-primary">Página inicial</h3>
+          {fields.slice(0, 3).map(([key, label, limit]) => <label key={key} className="block space-y-1 text-sm">
+            <span>{label}</span>
+            <input name={key} className="ui-field" defaultValue={current[key]} maxLength={limit} required />
+          </label>)}
+        </section>
+        <section className="ui-glass-panel space-y-3">
+          <h3 className="type-item text-primary">Sobre nós</h3>
+          <label className="block space-y-1 text-sm">
+            <span>{fields[3][1]}</span>
+            <textarea name="about_text" className="ui-field resize-y" defaultValue={current.about_text} rows={4} maxLength={fields[3][2]} required />
+          </label>
+        </section>
         {error && <p role="alert" className="text-sm text-primary">{error}</p>}
         <button className="ui-primary" type="submit">{busy ? 'A guardar…' : 'Guardar textos'}</button>
       </fieldset>

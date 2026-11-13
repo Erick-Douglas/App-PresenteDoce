@@ -24,10 +24,10 @@ export function StoreDialog({ title, onClose, children }: {
         event.preventDefault();
         onClose();
       }}
-      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto overscroll-y-contain rounded-t-3xl bg-surface text-on-surface shadow-2xl backdrop:bg-black/55 sm:inset-0 sm:m-auto sm:max-w-2xl sm:rounded-3xl"
+      className="fixed inset-x-0 bottom-0 top-auto m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto overscroll-y-contain rounded-t-3xl bg-porcelain text-on-surface shadow-2xl backdrop:bg-black/55 sm:inset-0 sm:m-auto sm:max-w-2xl sm:rounded-3xl"
     >
       <div className="sticky top-0 z-10 flex items-center justify-between gap-4 bg-primary px-5 py-2 text-on-primary sm:px-7">
-        <h2 id={titleId} className="type-section">{title}</h2>
+        <h2 id={titleId} className="type-module">{title}</h2>
         <button type="button" onClick={onClose} aria-label="Fechar" className="rounded-full p-3 hover:bg-surface/10">
           <X size={20} aria-hidden="true" />
         </button>

@@ -51,6 +51,7 @@ export const BUSINESS_INFO = {
   adminDisplayName: 'Gabriela',
   website: 'https://presente-doce.vercel.app/',
   whatsapp: '+351932732319',
+  email: 'presentedoce.artesanal@gmail.com',
   instagram: 'https://www.instagram.com/presentedoce.s2/',
   facebook: 'https://www.facebook.com/share/1BK8xUmdcZ/',
   address: 'Rua Miguel Ângelo, 21, 1 A, 2840-136, Casal do Marco',

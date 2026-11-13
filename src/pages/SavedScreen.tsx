@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
-import { CatalogCard } from '../components/CatalogCard';
+import { CatalogGrid } from '../components/CatalogGrid';
 import type { CartItem, Product, View } from '../config/types';
 
 interface SavedScreenProps {
@@ -8,7 +8,6 @@ interface SavedScreenProps {
   cart: CartItem[];
   favorites: string[];
   onProductClick: (product: Product) => void;
-  onToggleFavorite: (id: string) => void;
   onToggleCartItem: (product: Product) => void;
   onEditProduct?: (id: string) => void;
   onOpenMenu: () => void;
@@ -16,7 +15,7 @@ interface SavedScreenProps {
 }
 
 export function SavedScreen({
-  products, cart, favorites, onProductClick, onToggleFavorite, onToggleCartItem, onEditProduct, onOpenMenu, onNavigate,
+  products, cart, favorites, onProductClick, onToggleCartItem, onEditProduct, onOpenMenu, onNavigate,
 }: SavedScreenProps) {
   const saved = products.filter(product => favorites.includes(product.id));
 
@@ -28,18 +27,14 @@ export function SavedScreen({
             className="grid size-11 place-items-center rounded-full text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
             <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
           </button>
-          <h1 className="type-page text-primary">Favoritos</h1>
+          <h1 className="type-module text-primary">Favoritos</h1>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-4 pt-5 sm:px-6">
         {saved.length ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-            {saved.map(product => (
-              <CatalogCard key={product.id} product={product} inCart={cart.some(item => item.id === product.id)} favorite
-                onOpen={onProductClick} onFavorite={onToggleFavorite} onCart={onToggleCartItem} onEdit={onEditProduct} />
-            ))}
-          </div>
+          <CatalogGrid products={saved} cart={cart} onProductClick={onProductClick}
+            onToggleCartItem={onToggleCartItem} onEditProduct={onEditProduct} />
         ) : (
           <div className="space-y-2 py-12 text-center text-sm text-muted">
             <p>Você ainda não guardou produtos.</p>

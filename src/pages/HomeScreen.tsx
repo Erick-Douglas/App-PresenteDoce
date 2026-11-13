@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, Search } from 'lucide-react';
-import type { CatalogCategory, Product, View } from '../config/types';
+import { Search } from 'lucide-react';
+import type { CatalogCategory, Product } from '../config/types';
 import type { StorePresentation } from '../features/products/storePresentation';
 import { CatalogGrid, type CatalogActions } from '../components/CatalogGrid';
 import { CategoryEditButton } from '../components/CategoryEditButton';
@@ -15,18 +15,18 @@ interface HomeScreenProps extends CatalogActions {
   catalogNotice: ReactNode;
   presentation: StorePresentation;
   onEditCategory?: (id: string) => void;
-  onNavigate: (view: View) => void;
 }
 
 function searchText(value: string) {
   return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-PT');
 }
 
-export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogNotice, presentation, onNavigate, onEditCategory, ...actions }: HomeScreenProps) {
+export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogNotice, presentation, onEditCategory, ...actions }: HomeScreenProps) {
   const [search, setSearch] = useState('');
-  const [selection, setSelection] = useState('');
-  const current = categories.find(category => (category.id ?? category.name) === selection);
+  const [selection, setSelection] = useState<string | null>(null);
   const query = searchText(search.trim());
+  const current = selection === '' || (selection === null && query) ? undefined :
+    categories.find(category => (category.id ?? category.name) === selection) ?? categories[0];
   const results = products.filter(product => (!current || product.category === current.name) &&
     (!query || [product.name, product.category, product.description, ...(product.tags ?? [])].some(value => searchText(value).includes(query))));
 
@@ -34,7 +34,7 @@ export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogN
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="min-h-screen bg-porcelain pb-32">
       <section aria-labelledby="home-greeting" className="store-masthead">
         <Header onOpenMenu={onOpenMenu} />
-        <div className="page-width pb-5 pt-2 sm:pb-7 sm:pt-4">
+        <div className="page-width pb-7 pt-5 sm:pb-8 sm:pt-7">
           <h1 id="home-greeting" className="type-display text-on-strong">
             {isAdmin ? 'Olá, ' + presentation.admin_name + '!' : presentation.home_title}
           </h1>
@@ -47,23 +47,17 @@ export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogN
           </label>
         </div>
       </section>
-      <div className="page-width space-y-3 pt-4 sm:pt-6">
+      <div className="page-width space-y-3 pt-2.5 sm:pt-3">
         {catalogNotice}
         <nav aria-labelledby="category-title">
-          <div className="flex flex-wrap items-center justify-between gap-x-2">
-            <h2 id="category-title" className="type-section text-on-surface">Categorias</h2>
-            <button type="button" onClick={() => onNavigate('categories-list')}
-              className="inline-flex min-h-11 items-center gap-1 rounded-lg text-sm text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary">
-              Ver todas as categorias <ChevronRight size={15} aria-hidden="true" />
-            </button>
-          </div>
+          <h2 id="category-title" className="type-section mb-1.5 text-on-surface">Categorias</h2>
           <div className="category-rail" role="group" aria-label="Filtrar por categoria">
-            <button type="button" className="category-pill" aria-pressed={!current} onClick={() => setSelection('')}>Todos</button>
             {categories.map(category => {
               const id = category.id ?? category.name;
               return <button type="button" key={id} className="category-pill" aria-pressed={current === category}
                 onClick={() => setSelection(id)}>{category.name}</button>;
             })}
+            <button type="button" className="category-pill" aria-pressed={!current} onClick={() => setSelection('')}>Todos</button>
           </div>
         </nav>
         <section aria-label="Produtos" className="space-y-2">

@@ -3,15 +3,6 @@
 @import "./design-system/typography.css";
 @import "./design-system/components.css";
 
-@layer components {
-  .brand-wordmark {
-    background-color: currentColor;
-    -webkit-mask: url('/logo.png') center / contain no-repeat;
-    mask: url('/logo.png') center / contain no-repeat;
-  }
-
-}
-
 @layer base {
   html, body, #root {
     height: 100%;

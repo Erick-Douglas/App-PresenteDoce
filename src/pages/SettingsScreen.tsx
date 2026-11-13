@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, MessageCircle, Phone, Instagram, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Mail, Menu, MessageCircle, Phone } from 'lucide-react';
 import { View } from '../config/types';
 import { BUSINESS_INFO } from '../config/constants';
 import { motion } from 'framer-motion';
@@ -13,16 +13,20 @@ interface SettingsScreenProps {
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu, aboutText }) => {
   const contactItems = [
-    { icon: MessageCircle, label: 'WhatsApp', sub: BUSINESS_INFO.whatsapp, onClick: () => window.open(`https://wa.me/${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank', 'noopener,noreferrer') },
-    { icon: Phone, label: 'Ligar para a loja', sub: 'Atendimento prioritário', onClick: () => window.open(`tel:${BUSINESS_INFO.whatsapp.replace(/\D/g, '')}`, '_blank', 'noopener,noreferrer') },
-    { icon: Instagram, label: 'Instagram', sub: '@presentedoce.s2', onClick: () => window.open(BUSINESS_INFO.instagram, '_blank', 'noopener,noreferrer') },
+    { icon: MessageCircle, label: 'WhatsApp', detail: BUSINESS_INFO.whatsapp, href: 'https://wa.me/' + BUSINESS_INFO.whatsapp.replace(/\D/g, '') },
+    { icon: Phone, label: 'Telefone', detail: BUSINESS_INFO.whatsapp, href: 'tel:' + BUSINESS_INFO.whatsapp },
+    { icon: Mail, label: 'E-mail', detail: BUSINESS_INFO.email, href: 'mailto:' + BUSINESS_INFO.email },
+  ];
+  const socialItems = [
+    { icon: Instagram, label: 'Instagram', href: BUSINESS_INFO.instagram },
+    { icon: Facebook, label: 'Facebook', href: BUSINESS_INFO.facebook },
   ];
 
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="min-h-screen pb-32 bg-porcelain">
       <header className="px-6 py-4 flex items-center sticky top-0 bg-surface/95 backdrop-blur-sm z-50 border-b border-primary/5 shadow-sm">
-        <button onClick={onOpenMenu} className="p-2 -ml-2 text-primary"><Menu size={20} /></button>
-        <h1 className="type-page flex-1 pr-8 text-center text-primary">
+        <button type="button" aria-label="Abrir menu" onClick={onOpenMenu} className="grid size-11 -ml-2 place-items-center rounded-full text-primary hover:bg-primary/5"><Menu size={20} aria-hidden="true" /></button>
+        <h1 className="type-module flex-1 pr-9 text-center text-primary">
           {mode === 'about' ? 'Sobre nós' : 'Contactos'}
         </h1>
       </header>
@@ -67,22 +71,39 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ mode, onOpenMenu
         )}
 
         {mode === 'contact' && (
-          <section className="space-y-3">
-            <h2 className="type-section pl-2 text-primary">Canais de contacto</h2>
-            <div className="bg-surface rounded-2xl p-1 shadow-xl shadow-black/5 border border-primary/5 divide-y divide-primary/5">
-              {contactItems.map((item) => (
-                <button key={item.label} className="w-full flex items-center gap-4 py-4 px-4 active:bg-primary/5 transition-colors text-left group" onClick={item.onClick}>
-                  <div className="bg-primary/5 p-2.5 rounded-xl text-primary transition-transform group-hover:scale-110">
-                    <item.icon size={16} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-xs text-on-surface">{item.label}</p>
-                    <p className="text-xs text-muted">{item.sub}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
+          <div className="mx-auto max-w-lg space-y-4">
+            <section className="ui-glass-panel">
+              <div className="flex items-center gap-3">
+                <img src="/atendimento.jpg" alt="" width={52} height={52} className="size-13 shrink-0 rounded-full object-cover" />
+                <div>
+                  <h2 className="type-item text-primary">Fale com a confeitaria</h2>
+                  <p className="mt-1 text-sm text-muted">Tire dúvidas ou converse connosco sobre a sua encomenda.</p>
+                </div>
+              </div>
+              <ul className="mt-3 divide-y divide-outline">
+                {contactItems.map(({ icon: Icon, label, detail, href }) => <li key={label}>
+                  <a href={href} target={href.startsWith('https:') ? '_blank' : undefined} rel="noopener noreferrer"
+                    className="flex min-h-13 items-center gap-3 rounded-lg px-1 py-2 hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">
+                    <Icon size={17} strokeWidth={1.65} className="shrink-0 text-primary" aria-hidden="true" />
+                    <span className="min-w-0">
+                      <span className="type-label block">{label}</span>
+                      <span className="block break-words text-xs text-muted">{detail}</span>
+                    </span>
+                  </a>
+                </li>)}
+              </ul>
+            </section>
+            <section className="ui-glass-panel">
+              <h2 className="type-item text-primary">Redes sociais</h2>
+              <ul className="mt-1 flex flex-wrap gap-x-5">
+                {socialItems.map(({ icon: Icon, label, href }) => <li key={label}>
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="ui-quiet-action">
+                    <Icon size={16} strokeWidth={1.65} aria-hidden="true" /> {label}
+                  </a>
+                </li>)}
+              </ul>
+            </section>
+          </div>
         )}
       </div>
     </motion.div>

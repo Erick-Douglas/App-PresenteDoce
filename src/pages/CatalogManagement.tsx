@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { ChevronDown, ChevronUp, Pencil, Plus, Search } from 'lucide-react';
+import { CategoryEditButton } from '../components/CategoryEditButton';
 import { formatEuros } from '../features/checkout/order';
 import { createCatalogCategory, imageUrl, type AdminCategoryRow, type CatalogRow } from '../features/products/catalogApi';
 import { catalogField, catalogPrimary, catalogSecondary, categoryNameFrom } from './CategoryEditor';
 
 const filters = [['all', 'Todos'], ['published', 'Publicados'], ['draft', 'Rascunhos']] as const;
-const smallAction = 'inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-primary hover:bg-primary/5';
 const searchText = (value: string) => value.trim().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-PT');
 
 export default function CatalogManagement({ categories, rows, token, onNew, onEdit, onEditCategory, onCategoryCreated }: {
@@ -66,35 +66,40 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="type-page text-primary">Gerir catálogo</h1>
+          <h1 className="type-module text-primary">Gerir catálogo</h1>
           <p className="mt-1 text-sm text-muted">{categories.length} {categories.length === 1 ? 'categoria' : 'categorias'} · {rows.length} {rows.length === 1 ? 'produto' : 'produtos'}</p>
         </div>
         <button type="button" className={catalogPrimary + ' inline-flex items-center gap-2'} onClick={onNew}><Plus size={17} aria-hidden="true" /> Novo produto</button>
       </div>
-      {newName !== null && (
-        <form onSubmit={create} className="ui-card space-y-2 p-4">
-          <div className="flex flex-wrap items-end gap-2">
-            <label className="min-w-44 flex-1 space-y-1 text-sm">
-              <span>Nome da categoria</span>
-              <input className={catalogField} maxLength={60} required value={newName} onChange={event => setNewName(event.target.value)} />
-            </label>
-            <button className={catalogPrimary} disabled={creating} type="submit">{creating ? 'A criar…' : 'Confirmar nome'}</button>
-            <button className={catalogSecondary} type="button" disabled={creating} onClick={() => { setNewName(null); setError(''); }}>Cancelar</button>
-          </div>
-          {error && <p role="alert" className="text-sm text-primary">{error}</p>}
-        </form>
-      )}
-      <div className="grid gap-4 md:grid-cols-[12rem_minmax(0,1fr)]">
-        <nav aria-label="Filtrar por categoria" className="flex flex-wrap items-start gap-1 md:flex-col">
+      <div className="grid items-start gap-4 md:grid-cols-[14rem_minmax(0,1fr)]">
+        <nav aria-label="Filtrar por categoria" className="ui-glass-panel flex flex-wrap items-start gap-1 md:flex-col">
           {[{ id: '', name: 'Todas' }, ...categories].map(category => (
             <button key={category.id} type="button" aria-pressed={current === category.id}
               className="min-h-11 rounded-xl px-3 text-left text-sm text-on-surface hover:bg-primary/5 aria-pressed:bg-primary/8 aria-pressed:font-bold aria-pressed:text-primary md:w-full"
               onClick={() => setSelected(category.id)}>{category.name}</button>
           ))}
-          <button type="button" className={smallAction} onClick={() => setNewName('')}><Plus size={16} aria-hidden="true" /> Nova categoria</button>
+          <div className="w-full border-t border-outline pt-1">
+            <button type="button" className="ui-quiet-action" aria-expanded={newName !== null} disabled={creating}
+              onClick={() => { setError(''); setNewName(newName === null ? '' : null); }}>
+              <Plus size={16} strokeWidth={1.65} aria-hidden="true" /> Nova categoria
+            </button>
+            {newName !== null && (
+              <form onSubmit={create} className="space-y-2 rounded-lg bg-surface/75 p-2">
+                <label className="block space-y-1 text-sm">
+                  <span>Nome da categoria</span>
+                  <input className={catalogField} maxLength={60} required value={newName} onChange={event => setNewName(event.target.value)} />
+                </label>
+                <div className="flex flex-wrap gap-x-2">
+                  <button className="ui-quiet-action font-bold" disabled={creating} type="submit">{creating ? 'A criar…' : 'Confirmar nome'}</button>
+                  <button className="ui-quiet-action" type="button" disabled={creating} onClick={() => { setNewName(null); setError(''); }}>Cancelar</button>
+                </div>
+                {error && <p role="alert" className="text-sm text-primary">{error}</p>}
+              </form>
+            )}
+          </div>
         </nav>
         <section aria-label="Produtos por categoria" className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="ui-glass-panel flex flex-wrap items-center gap-2">
             <label className="flex min-w-40 flex-1 items-center gap-2 rounded-xl border border-outline bg-surface px-3">
               <Search size={16} aria-hidden="true" className="text-muted" />
               <span className="sr-only">Procurar produto</span>
@@ -114,14 +119,12 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
             return (
               <section key={category.id} aria-label={category.name} className="ui-card">
                 <div className="flex flex-wrap items-center justify-between gap-x-2 px-3 py-2 sm:px-4">
-                  <h2 className="type-section break-words text-primary">{category.name}</h2>
+                  <h2 className="type-item min-w-0 break-words text-primary">{category.name}</h2>
                   <div className="flex flex-wrap items-center gap-1">
-                    <button type="button" className={smallAction} aria-label={'Editar categoria ' + category.name} onClick={() => onEditCategory(category.id)}>
-                      <Pencil size={16} aria-hidden="true" /> Editar categoria
-                    </button>
-                    {!forced && <button type="button" className="grid size-11 place-items-center rounded-lg text-primary hover:bg-primary/5"
+                    <CategoryEditButton category={category} onEdit={onEditCategory} />
+                    {!forced && <button type="button" className="ui-icon-action"
                       aria-label={(open ? 'Recolher ' : 'Expandir ') + category.name} aria-expanded={open} onClick={() => toggle(category.id)}>
-                      {open ? <ChevronUp size={19} aria-hidden="true" /> : <ChevronDown size={19} aria-hidden="true" />}
+                      {open ? <ChevronUp size={15} aria-hidden="true" /> : <ChevronDown size={15} aria-hidden="true" />}
                     </button>}
                   </div>
                 </div>
@@ -139,8 +142,8 @@ export default function CatalogManagement({ categories, rows, token, onNew, onEd
                             </span>
                           </div>
                         </div>
-                        <button type="button" className={smallAction} aria-label={'Editar ' + row.details.name} onClick={() => onEdit(row.id)}>
-                          <Pencil size={16} aria-hidden="true" /> Editar
+                        <button type="button" className="ui-quiet-action" aria-label={'Editar ' + row.details.name} onClick={() => onEdit(row.id)}>
+                          <Pencil size={14} strokeWidth={1.65} aria-hidden="true" /> Editar
                         </button>
                       </li>
                     ))}

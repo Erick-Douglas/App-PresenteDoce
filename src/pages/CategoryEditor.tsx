@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, ListPlus, Pencil, Plus, Trash2, X } from 'lucide-react';
 import {
   deleteCatalogCategory, saveCatalogCategory, type AdminCategoryRow, type CatalogRow, type CatalogTopic,
 } from '../features/products/catalogApi';
@@ -8,8 +8,8 @@ import { moveCatalogItem } from '../features/products/catalogFields';
 export const catalogPrimary = 'ui-primary';
 export const catalogSecondary = 'ui-secondary text-primary';
 export const catalogField = 'ui-field';
-const actionIcon = 'grid size-11 shrink-0 place-items-center rounded-xl text-primary hover:bg-primary/5 disabled:opacity-35';
-const panel = 'ui-card space-y-4 p-4 sm:p-5';
+const actionIcon = 'ui-icon-action';
+const panel = 'ui-glass-panel space-y-3';
 const normalize = (text: string) => text.normalize('NFC').trim().replace(/\s+/g, ' ');
 
 export function categoryNameFrom(value: string) {
@@ -130,8 +130,8 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
     ['details', 'Dados e tópicos'], ['products', 'Ordem dos produtos'], ['categories', 'Ordem das categorias'],
   ] as const;
   const topicForm = topicEditor && (
-    <div className="flex flex-wrap items-end gap-2 py-2">
-      <label className="min-w-40 flex-1 space-y-1 text-sm">
+    <div className="flex items-end gap-1 rounded-lg bg-surface/70 p-2">
+      <label className="min-w-0 flex-1 space-y-1 text-sm">
         <span>Nome do tópico</span>
         <input className={catalogField} maxLength={80} value={topicEditor.name}
           onChange={event => setTopicEditor({ ...topicEditor, name: event.target.value })}
@@ -139,8 +139,12 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
             if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); confirmTopic(); }
           }} />
       </label>
-      <button type="button" className={catalogPrimary} onClick={confirmTopic}>Confirmar tópico</button>
-      <button type="button" className={catalogSecondary} onClick={() => { setTopicEditor(null); setError(''); }}>Cancelar tópico</button>
+      <button type="button" className={actionIcon} aria-label="Confirmar tópico" title="Confirmar tópico" onClick={confirmTopic}>
+        <Check size={15} aria-hidden="true" />
+      </button>
+      <button type="button" className={actionIcon} aria-label="Cancelar tópico" title="Cancelar tópico" onClick={() => { setTopicEditor(null); setError(''); }}>
+        <X size={15} aria-hidden="true" />
+      </button>
     </div>
   );
 
@@ -155,21 +159,29 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
           ))}
         </div>
         {section === 'details' && (
-          <div className={panel}>
-            <label className="block max-w-xl space-y-1 text-sm">
-              <span>Nome da categoria</span>
-              <input className={catalogField} required maxLength={60} value={name} onChange={event => setName(event.target.value)} />
-            </label>
-            <section aria-label="Tópicos da categoria">
-              <div className="flex flex-wrap items-center gap-x-3">
-                <h3 className="type-section text-primary">Tópicos da categoria</h3>
+          <>
+            <div className={panel}>
+              <label className="block max-w-xl space-y-2 text-sm">
+                <span className="type-item text-primary">Nome da categoria</span>
+                <input className={catalogField} required maxLength={60} value={name} onChange={event => setName(event.target.value)} />
+              </label>
+            </div>
+            <section aria-label="Tópicos da categoria" className={panel}>
+              <div className="flex flex-wrap items-center justify-between gap-x-3">
+                <h3 className="type-item text-primary">Tópicos da categoria</h3>
                 <button type="button" disabled={!!topicEditor || topics.length >= 100}
                   onClick={() => { setError(''); setTopicEditor({ id: '', name: '' }); }}
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-bold text-primary hover:bg-primary/5 disabled:opacity-40">
+                  className="ui-quiet-action">
                   <Plus size={16} aria-hidden="true" /> Adicionar tópico
                 </button>
               </div>
-              {!topics.length && !topicEditor && <p className="text-sm text-muted">Ainda não há tópicos.</p>}
+              {!topics.length && !topicEditor && <div className="flex items-start gap-3 rounded-lg border border-dashed border-outline-strong p-3">
+                <ListPlus size={19} strokeWidth={1.5} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+                <div>
+                  <p className="type-label">Ainda não há tópicos</p>
+                  <p className="mt-1 text-sm text-muted">Crie tópicos para reutilizar nos produtos desta categoria, como sabores ou acabamentos.</p>
+                </div>
+              </div>}
               <ul className="divide-y divide-muted-fill">
                 {topics.map(topic => (
                   <li key={topic.id}>
@@ -187,7 +199,7 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
               </ul>
               {topicEditor?.id === '' && topicForm}
             </section>
-          </div>
+          </>
         )}
         {section === 'products' && (
           <section className={panel} aria-label="Ordem dos produtos">
@@ -223,10 +235,10 @@ export function CategoryEditor({ category, categories, rows, token, onBack, onCh
           </section>
         )}
         {error && <p role="alert" className="text-sm text-primary">{error}</p>}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-outline pt-3">
           <button type="submit" className={catalogPrimary}>{busy ? 'A guardar…' : 'Guardar alterações'}</button>
           <button type="button" className={catalogSecondary} onClick={onBack}>Voltar</button>
-          {!deleting && <button type="button" className="min-h-11 rounded-xl px-3 text-sm font-bold text-primary hover:bg-primary/5"
+          {!deleting && <button type="button" className="ui-quiet-action sm:ml-auto"
             onClick={() => setDeleting(true)}>Excluir categoria</button>}
         </div>
       </fieldset>
