@@ -39,3 +39,11 @@ Configure `VITE_CATALOG_SOURCE=supabase`, `VITE_CATALOG_SUPABASE_URL` e `VITE_SU
 - A versão anterior à aplicação do manual da marca corresponde ao commit `eec937d`. [Deploy anterior](https://vercel.com/erick-douglas-projects-c8717cab/app-presente-doce/AFBMDLrngzJP4itZGvU9qTrF3gGY)
 - Em caso de problema de frontend, faça rollback para a última versão estável no mesmo projeto Vercel. Confirme que o domínio oficial serve o deploy esperado.
 - Preserve as edições do Supabase durante a reversão de frontend. Aplique migrações de dados em uma operação separada, com cópia de recuperação e aceite próprio. As versões aplicadas estão em `supabase/migrations`.
+
+## Entrega operacional de 20/11/2026
+
+Aplique as quatro migrações de 20/11 em ordem antes de publicar esta versão. Elas normalizam caminhos de fotografias para WebP/JPEG, mantêm as permissões administrativas no Storage e criam pricing_recipes com RLS e controle de versão. Os arquivos correspondem às versões aplicadas no projeto. A última migração normaliza a restrição de imagem de forma explícita.
+
+Confira restauração e renovação do login, opção sem persistência, recuperação com sessão guardada e saída. Valide fotografia válida, erro e nova tentativa, gravação da ficha e confirmação do preço com dados fictícios. Os dados da planilha não fazem parte da build.
+
+Para reverter o frontend, use o deploy anterior. Preserve a tabela e as fichas já guardadas; o frontend anterior apenas não mostra o recurso. Não reverta as permissões ou os formatos de imagem sem conferir os caminhos guardados, porque fotografias JPEG passam a ser válidas. [Fichas e migração](PRECIFICACAO.md) · [Builds nativas](NATIVE.md).
