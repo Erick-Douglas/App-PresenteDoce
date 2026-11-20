@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Calculator, Plus, Save, Trash2 } from 'lucide-react';
 import { calculatePricing, parseDecimal } from '../features/pricing/calculation';
+import { listPricingRecipes, savePricingRecipe, applyProductPrice, type PricingRecipe, type PricingRow } from '../features/pricing/pricingApi';
+import type { CatalogRow } from '../features/products/catalogApi';
 import { formatEuros } from '../features/checkout/order';
 
 type Ingredient = { name: string; unit: string; packQuantity: string; packPrice: string; usedQuantity: string };
-type Recipe = { title: string; yieldCount: string; salePrice: string; ingredients: Ingredient[] };
+type Recipe = PricingRecipe;
 type Pricing = ReturnType<typeof calculatePricing>;
 const storageKey = 'presente-doce-pricing-draft-v1';
 const input = 'ui-field';
@@ -24,17 +26,76 @@ function readDraft(): Recipe {
   }
 }
 
-export default function PricingScreen() {
+export default function PricingScreen({ rows, token, onProductChanged }: {
+  rows: CatalogRow[];
+  token: string;
+  onProductChanged: (row: CatalogRow) => void;
+}) {
   const [recipe, setRecipe] = useState(readDraft);
   const [result, setResult] = useState<Pricing | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [savedRecipes, setSavedRecipes] = useState<PricingRow[]>([]);
+  const [saved, setSaved] = useState<PricingRow | null>(null);
+  const [productId, setProductId] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [confirmPrice, setConfirmPrice] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const product = rows.find(row => row.id === productId);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    listPricingRecipes(token, controller.signal).then(setSavedRecipes).catch(cause => {
+      if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Não foi possível carregar as fichas.');
+    }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [token, loadAttempt]);
+
+  function chooseRecipe(id: string) {
+    const row = savedRecipes.find(item => item.id === id) ?? null;
+    setSaved(row);
+    setRecipe(row?.recipe ?? emptyRecipe());
+    setProductId(row?.product_id ?? '');
+    setResult(null);
+    setError('');
+    setNotice('');
+    setConfirmPrice(false);
+  }
+
+  async function saveRecipe() {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const row = await savePricingRecipe({ id: saved?.id ?? crypto.randomUUID(), product_id: productId || null, recipe }, saved?.version ?? null, token);
+      setSaved(row);
+      setSavedRecipes(current => [row, ...current.filter(item => item.id !== row.id)]);
+      setNotice('Ficha guardada na conta da confeitaria.');
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível guardar a ficha.'); }
+    finally { setBusy(false); }
+  }
+
+  async function applyPrice() {
+    if (!product || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const row = await applyProductPrice(product, recipe.salePrice, recipe.variant ?? '', token);
+      onProductChanged(row);
+      setNotice('Preço atualizado no catálogo.');
+      setConfirmPrice(false);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Não foi possível aplicar o preço.'); }
+    finally { setBusy(false); }
+  }
 
   function update(fields: Partial<Recipe>) {
     setRecipe(current => ({ ...current, ...fields }));
     setResult(null);
     setError('');
     setNotice('');
+    setConfirmPrice(false);
   }
 
   function updateIngredient(index: number, fields: Partial<Ingredient>) {
@@ -74,8 +135,41 @@ export default function PricingScreen() {
 
   return (
     <div className="admin-form">
-      <p className="text-muted">Calcule os custos e simule o preço de venda. O rascunho é guardado neste dispositivo.</p>
+      <section className="ui-glass-panel space-y-3">
+        <h2 className="type-item text-primary">Fichas da confeitaria</h2>
+        <label className="block space-y-1">
+          <span>Ficha guardada</span>
+          <select aria-label="Ficha guardada" className="ui-field" disabled={busy || loading} value={saved?.id ?? ''} onChange={event => chooseRecipe(event.target.value)}>
+            <option value="">Nova ficha</option>
+            {savedRecipes.map(row => <option key={row.id} value={row.id}>{row.recipe.title || rows.find(product => product.id === row.product_id)?.details.name || 'Ficha sem título'}</option>)}
+          </select>
+        </label>
+        {loading && <p role="status" className="text-xs text-muted">A carregar fichas…</p>}
+        <label className="block space-y-1">
+          <span>Produto do catálogo</span>
+          <select aria-label="Produto do catálogo" className="ui-field" value={productId} disabled={busy} onChange={event => {
+            const item = rows.find(row => row.id === event.target.value);
+            setProductId(event.target.value);
+            update({ title: recipe.title || item?.details.name || '', salePrice: item ? String(item.details.price) : recipe.salePrice, variant: '' });
+          }}>
+            <option value="">Receita sem produto associado</option>
+            {rows.map(row => <option key={row.id} value={row.id}>{row.details.name}{row.published ? '' : ' · Rascunho'}</option>)}
+          </select>
+        </label>
+        {product?.details.variants?.length ? <label className="block space-y-1">
+          <span>Tamanho ou opção</span>
+          <select aria-label="Tamanho ou opção" className="ui-field" disabled={busy} value={recipe.variant ?? ''} onChange={event => {
+            const option = product.details.variants?.find(item => item.label === event.target.value);
+            update({ variant: event.target.value, salePrice: option ? String(option.price) : recipe.salePrice });
+          }}>
+            <option value="">Selecione a opção</option>
+            {product.details.variants.map(option => <option key={option.label} value={option.label}>{option.label}</option>)}
+          </select>
+        </label> : null}
+        <p className="text-xs text-muted">Guarde a ficha na conta para voltar a usá-la noutro dispositivo. Aplicar o preço ao catálogo é uma ação de confirmação própria.</p>
+      </section>
       <form onSubmit={calculate} className="admin-form">
+      <fieldset disabled={busy} className="admin-form">
         <section className="ui-glass-panel space-y-3">
           <h2 className="type-item text-primary">Dados da receita</h2>
           <label className="block space-y-1"><span>Nome da receita (opcional)</span><input className={input} maxLength={100} value={recipe.title} onChange={event => update({ title: event.target.value })} /></label>
@@ -117,10 +211,12 @@ export default function PricingScreen() {
           <button type="button" className="ui-quiet-action" onClick={saveDraft}>
             <Save size={15} strokeWidth={1.65} aria-hidden="true" /> Guardar rascunho
           </button>
-          <button type="button" className="ui-quiet-action sm:ml-auto" onClick={clearDraft}>Limpar rascunho</button>
+          <button type="button" className="ui-secondary" onClick={() => void saveRecipe()}>{busy ? 'A guardar…' : 'Guardar ficha'}</button>
+          <button type="button" className="ui-quiet-action sm:ml-auto" onClick={clearDraft}>Limpar rascunho local</button>
         </div>
-        {error && <p role="alert" className="text-primary">{error}</p>}
+        {error && <div role="alert" className="space-y-1 text-primary"><p>{error}</p><button type="button" className="ui-quiet-action" onClick={() => setLoadAttempt(value => value + 1)}>Recarregar fichas</button></div>}
         {notice && <p role="status">{notice}</p>}
+      </fieldset>
       </form>
       {result && (
         <section className="ui-glass-panel" aria-live="polite">
@@ -139,6 +235,16 @@ export default function PricingScreen() {
             </div>)}
           </dl>
           <p className="mt-3 text-sm text-muted">O lucro considera os custos que você adicionou à receita.</p>
+          {product && <div className="mt-4 space-y-2 border-t border-outline pt-3">
+            <p className="text-sm">Produto associado <strong>{product.details.name}</strong>{recipe.variant ? ' · ' + recipe.variant : ''}</p>
+            {confirmPrice ? <>
+              <p className="text-sm text-primary">Confirmar {formatEuros(parseDecimal(recipe.salePrice))} como preço de venda desta opção no catálogo?</p>
+              <div className="admin-actions">
+                <button type="button" className="ui-primary" disabled={busy} onClick={() => void applyPrice()}>Confirmar preço</button>
+                <button type="button" className="ui-quiet-action" disabled={busy} onClick={() => setConfirmPrice(false)}>Cancelar</button>
+              </div>
+            </> : <button type="button" className="ui-secondary mt-1" disabled={busy} onClick={() => setConfirmPrice(true)}>Aplicar preço ao produto</button>}
+          </div>}
         </section>
       )}
     </div>

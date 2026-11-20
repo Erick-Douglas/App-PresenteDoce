@@ -9,9 +9,15 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
-    "check:catalog": "node scripts/check-catalog.mjs"
+    "check:catalog": "node scripts/check-catalog.mjs",
+    "native:sync": "npm run build && cap sync",
+    "native:android": "cap open android",
+    "native:ios": "cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/core": "8.6.2",
+    "@capacitor/ios": "8.6.2",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "framer-motion": "^12.0.0",
@@ -21,6 +27,7 @@
     "vite": "^6.2.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.6.2",
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

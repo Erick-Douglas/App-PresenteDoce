@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Plus } from 'lucide-react';
 import { THEMED_CAKE_SIZES } from '../config/constants';
 import type { Product, ProductOrderMode } from '../config/types';
@@ -43,7 +43,7 @@ function PriceInput({ label, value, onChange, required }: {
     <label className="block space-y-1">
       <span>{label}</span>
       <span className="relative block">
-        <input className={field + ' pr-9 tabular-nums'} value={value} onChange={event => onChange(event.target.value)}
+        <input aria-label={label} className={field + ' pr-9 tabular-nums'} value={value} onChange={event => onChange(event.target.value)}
           onBlur={() => {
             const price = parseCatalogPrice(value);
             if (price !== null) onChange(formatCatalogPrice(price));
@@ -99,6 +99,10 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
   const [image, setImage] = useState(data?.image ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState('');
+  const [saveStage, setSaveStage] = useState('');
+  const errorRef = useRef<HTMLParagraphElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const selectedCategory = categories.find(item => item.id === categoryId);
   const mode = data ? productOrderMode(data) : selectedCategory?.order_mode ?? 'simple';
@@ -109,6 +113,17 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
   const lowestPrice = optionPrices.length && optionPrices.every(value => value !== null)
     ? Math.min(...optionPrices) : null;
   const chosenTopics = selectedCategory?.topics.filter(topic => topicDrafts[categoryId]?.includes(topic.id)) ?? [];
+
+  useEffect(() => {
+    if (!selectedImage) { setPreview(''); return; }
+    const url = URL.createObjectURL(selectedImage);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [selectedImage]);
+
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [error]);
 
   async function addCategory() {
     if (busy || creatingCategory) return;
@@ -223,7 +238,9 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
       const file = form.get('image');
       let nextImage = image;
       if (file instanceof File && file.size) {
+        setSaveStage('A enviar fotografia…');
         nextImage = await uploadProductImage(file, token);
+        setSelectedImage(null);
         setImage(nextImage);
         const input = formElement.elements.namedItem('image');
         if (input instanceof HTMLInputElement) input.value = '';
@@ -239,6 +256,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
         variants: options.length ? options : undefined,
         flavors: flavors.length ? flavors : undefined,
       };
+      setSaveStage('A guardar produto…');
       const saved = await saveProduct({ id: productId, details, published }, version, token);
       onSaved(saved);
     } catch (cause) {
@@ -251,6 +269,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
   return (<>
     <form onSubmit={submit} hidden={managingCategory}>
       <fieldset disabled={busy || creatingCategory} className="admin-form">
+        {error && <p ref={errorRef} role="alert" tabIndex={-1} className="rounded-lg border border-primary/15 bg-primary/5 p-3 text-sm text-primary">{error}</p>}
         <section aria-label="Dados do produto" className="ui-glass-panel space-y-3">
           <h2 className="type-item text-primary">Dados do produto</h2>
           <label className="block space-y-1"><span>Nome</span><input name="name" required maxLength={100} defaultValue={data?.name} className={field} /></label>
@@ -259,7 +278,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
             <div className="flex items-end gap-2">
               <label className="min-w-0 flex-1 space-y-1">
                 <span>Categoria</span>
-                <select className={field} value={selectedCategory?.id ?? ''} onChange={event => {
+                <select aria-label="Categoria" className={field} value={selectedCategory?.id ?? ''} onChange={event => {
                   if (event.target.value === '@manage') setManagingCategory(true);
                   else setCategoryId(event.target.value);
                 }} required>
@@ -344,13 +363,22 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
         )}
         <section aria-label="Imagem e publicação" className="ui-glass-panel space-y-3">
           <h2 className="type-item text-primary">Imagem e publicação</h2>
-          {image && <img src={imageUrl(image)} alt="Imagem atual do produto" className="h-28 w-36 rounded-xl object-cover" />}
-          <label className="block space-y-1"><span>Imagem (JPG, PNG ou WebP até 5 MB)</span><input name="image" type="file" accept="image/jpeg,image/png,image/webp" className={field} /></label>
+          {(preview || image) && <img src={preview || imageUrl(image)} alt="Fotografia do produto" className="h-32 w-40 rounded-xl object-cover" />}
+          <label className="block space-y-1"><span>Fotografia do produto</span>
+            <input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" className={field}
+              onChange={event => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                setError('');
+                if (file.size > 20 * 1024 * 1024) { setError('A fotografia deve ter até 20 MB.'); event.target.value = ''; return; }
+                setSelectedImage(file);
+              }} />
+          </label>
+          <p className="text-xs text-muted">{selectedImage ? 'Fotografia selecionada. Será enviada ao guardar o produto.' : 'JPG, PNG, WebP ou HEIC até 20 MB. A fotografia é otimizada antes do envio.'}</p>
           <label className="flex min-h-11 items-center gap-3"><input name="published" type="checkbox" defaultChecked={row?.published} className="size-4 accent-primary" /> Mostrar no catálogo público</label>
         </section>
-        {error && <p role="alert" className="text-sm font-bold text-primary">{error}</p>}
         <div className="admin-actions">
-          <button className={primary} type="submit">{busy ? 'A guardar…' : 'Guardar produto'}</button>
+          <button className={primary} type="submit">{busy ? saveStage || 'A guardar…' : 'Guardar produto'}</button>
           <button className="ui-quiet-action" type="button" onClick={onCancel}>Cancelar edição</button>
           {row && !confirmDelete && <button className="ui-quiet-action sm:ml-auto" type="button" onClick={() => setConfirmDelete(true)}>Excluir produto</button>}
         </div>

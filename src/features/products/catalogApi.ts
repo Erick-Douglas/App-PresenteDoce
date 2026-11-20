@@ -40,19 +40,23 @@ export interface AdminCategoryRow extends CategoryRow {
 const categoryColumns = 'id,name,cover,order_mode';
 const categoryConflict = 'O catálogo mudou entretanto. Reabra a categoria para obter a versão atual.';
 
-async function request<T>(path: string, options: RequestInit = {}, token?: string, conflictMessage?: string): Promise<T> {
+export async function request<T>(path: string, options: RequestInit = {}, token?: string, conflictMessage?: string): Promise<T> {
   if (!catalogConfigured) throw new Error('O ambiente do catálogo ainda precisa de configuração.');
   const headers = new Headers(options.headers);
   headers.set('apikey', publicKey);
   if (token) headers.set('Authorization', 'Bearer ' + token);
   if (typeof options.body === 'string') headers.set('Content-Type', 'application/json');
-  const response = await fetch(serviceUrl + path, { ...options, headers, cache: 'no-store' });
+  const response = await fetch(serviceUrl + path, { ...options, headers, signal: options.signal ?? AbortSignal.timeout(30000), cache: 'no-store' }).catch(() => { throw new Error('A ligação demorou demasiado ou foi interrompida. Os dados do formulário foram preservados. Tente novamente.'); });
   if (!response.ok) {
-    if (response.status === 401) throw new Error('Sessão ou credenciais inválidas. Confirme o acesso e volte a entrar.');
+    if (response.status === 401 || (response.status === 400 && path.includes('grant_type=refresh_token'))) throw new Error('Sessão ou credenciais inválidas. Confirme o acesso e volte a entrar.');
     if (response.status === 403) throw new Error('A sua conta não tem permissão para esta ação.');
     if (response.status === 409) throw new Error(conflictMessage ?? 'O produto pode já ter sido guardado. Atualize a lista antes de tentar novamente.');
     if (response.status === 429) throw new AuthRateLimitError(authRetryAfter(response.headers.get('retry-after')));
-    throw new Error('Não foi possível concluir a operação. Verifique os dados e tente novamente.');
+    if (response.status === 413) throw new Error('A fotografia é demasiado grande. Escolha uma imagem menor.');
+    const detail = await response.json().catch(() => ({})) as { code?: string; message?: string };
+    if (detail.code === '23514') throw new Error('O produto não passou na validação. Confira preço, categoria e fotografia e tente novamente.');
+    if (path.startsWith('/storage/')) throw new Error('Não foi possível enviar a fotografia. Verifique a ligação e o acesso da conta e tente novamente.');
+    throw new Error('Não foi possível guardar os dados. O formulário foi preservado. Tente novamente.');
   }
   if (response.status === 204 || response.headers.get('content-length') === '0') return undefined as T;
   return response.json() as Promise<T>;
@@ -61,6 +65,8 @@ async function request<T>(path: string, options: RequestInit = {}, token?: strin
 export interface CatalogSession {
   token: string;
   expiresAt: number;
+  refreshToken?: string;
+  persistent?: boolean;
 }
 
 function captchaProof(token?: string) {
@@ -68,12 +74,25 @@ function captchaProof(token?: string) {
 }
 
 export async function signIn(email: string, password: string, captchaToken?: string): Promise<CatalogSession> {
-  const result = await request<{ access_token: string; expires_in: number }>('/auth/v1/token?grant_type=password', {
+  const result = await request<{ access_token: string; refresh_token: string; expires_in: number }>('/auth/v1/token?grant_type=password', {
     method: 'POST',
     body: JSON.stringify({ email, password, ...captchaProof(captchaToken) }),
   });
   await assertCatalogAdmin(result.access_token);
-  return { token: result.access_token, expiresAt: Date.now() + result.expires_in * 1000 };
+  return { token: result.access_token, refreshToken: result.refresh_token, expiresAt: Date.now() + result.expires_in * 1000 };
+}
+
+export async function refreshCatalogSession(session: CatalogSession): Promise<CatalogSession> {
+  if (!session.refreshToken) throw new Error('Sessão sem renovação disponível.');
+  const result = await request<{ access_token: string; refresh_token: string; expires_in: number }>('/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST', body: JSON.stringify({ refresh_token: session.refreshToken }),
+  });
+  try { await assertCatalogAdmin(result.access_token); }
+  catch {
+    await signOut(result.access_token).catch(() => {});
+    throw new Error('Sessão sem permissão administrativa.');
+  }
+  return { token: result.access_token, refreshToken: result.refresh_token, expiresAt: Date.now() + result.expires_in * 1000 };
 }
 
 async function assertCatalogAdmin(token: string) {
@@ -211,30 +230,43 @@ export async function deleteProduct(row: CatalogRow, token: string) {
 }
 
 export async function uploadProductImage(file: File, token: string) {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-  const maxFileBytes = 5 * 1024 * 1024;
-  if (!allowedTypes.includes(file.type) || file.size > maxFileBytes) {
-    throw new Error('Escolha uma imagem JPG, PNG ou WebP até 5 MB.');
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+  if (!allowedTypes.includes(file.type) && !/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)) {
+    throw new Error('Escolha uma fotografia JPG, PNG, WebP ou HEIC.');
   }
-  const bitmap = await createImageBitmap(file).catch(() => {
-    throw new Error('O ficheiro não contém uma imagem válida.');
-  });
+  if (file.size > 20 * 1024 * 1024) throw new Error('A fotografia deve ter até 20 MB.');
+  let image: ImageBitmap | HTMLImageElement;
+  try {
+    image = await createImageBitmap(file);
+  } catch {
+    const url = URL.createObjectURL(file);
+    try {
+      const element = new Image();
+      element.src = url;
+      await element.decode();
+      image = element;
+    } catch {
+      throw new Error('Não foi possível ler esta fotografia. Exporte-a como JPG ou PNG e tente novamente.');
+    } finally { URL.revokeObjectURL(url); }
+  }
+  const width = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
+  const height = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
+  const scale = Math.min(1, 1600 / Math.max(width, height));
   const canvas = document.createElement('canvas');
-  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
   try {
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Não foi possível preparar a imagem neste dispositivo.');
-    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  } finally {
-    bitmap.close();
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+  } finally { if ('close' in image) image.close(); }
+  const encode = (type: string) => new Promise<Blob | null>(resolve => canvas.toBlob(resolve, type, 0.86));
+  let blob = await encode('image/webp');
+  if (!blob || blob.type !== 'image/webp') blob = await encode('image/jpeg');
+  if (!blob || !['image/webp', 'image/jpeg'].includes(blob.type) || blob.size > 5 * 1024 * 1024) {
+    throw new Error('Não foi possível preparar a fotografia. Escolha outra imagem.');
   }
-  const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/webp', 0.86));
-  if (!blob || blob.type !== 'image/webp' || blob.size > maxFileBytes) {
-    throw new Error('Não foi possível preparar a imagem. Escolha outro ficheiro.');
-  }
-  const path = 'catalog/' + crypto.randomUUID() + '.webp';
+  const path = 'catalog/' + crypto.randomUUID() + (blob.type === 'image/webp' ? '.webp' : '.jpg');
   await request(bucketPath + path, { method: 'POST', headers: { 'Content-Type': blob.type }, body: blob }, token);
   return path;
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { AuthChallenge, challengeSiteKey } from '../components/AuthChallenge';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { BUSINESS_INFO } from '../config/constants';
 import type { RecoveryCallback } from '../features/products/adminLink';
 import { AuthRateLimitError } from '../features/products/authRateLimit';
@@ -13,7 +14,7 @@ const directRecovery = import.meta.env.VITE_DIRECT_RECOVERY === 'true';
 const primary = 'ui-primary';
 const secondary = 'ui-quiet-action';
 const field = 'ui-field mt-1 block';
-const label = 'block text-sm font-bold text-on-surface';
+const label = 'block space-y-1 text-sm text-on-surface';
 
 type Step = 'login' | 'request' | 'sent' | 'manual' | 'reset';
 type AuthStep = 'login' | 'request';
@@ -27,7 +28,9 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
   const callbackToken = callback && 'token' in callback ? callback.token : '';
   const [step, setStep] = useState<Step>(() => callbackToken ? 'reset' : (initialRecovery || callback) ? 'request' : 'login');
   const [recoveryToken, setRecoveryToken] = useState(callbackToken);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => { try { return localStorage.getItem('presente-doce:login-email') ?? ''; } catch { return ''; } });
+  const [remember, setRemember] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(callback && 'invalid' in callback ? 'Este link expirou ou já foi usado. Peça outro e-mail.' : '');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
@@ -83,7 +86,13 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
     const password = new FormData(event.currentTarget).get('password');
     try {
       const session = await signIn(email.trim(), String(password ?? ''), captchaToken);
-      if (active.current) onLogin(session);
+      if (active.current) {
+        try {
+          if (remember) localStorage.setItem('presente-doce:login-email', email.trim());
+          else localStorage.removeItem('presente-doce:login-email');
+        } catch { /* Login also works when local storage is blocked. */ }
+        onLogin({ ...session, persistent: remember });
+      }
       else void signOut(session.token).catch(() => {});
     } catch (cause) {
       if (!applyRateLimit(cause, 'login')) setError(cause instanceof Error ? cause.message : 'Não foi possível entrar.');
@@ -209,14 +218,32 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
   );
 
   return (
-    <form onSubmit={login} className="space-y-4">
-      {emailField}
-      <label className={label}>Senha<input name="password" type="password" required autoComplete="current-password" className={field} /></label>
+    <form onSubmit={login} className="admin-form">
+      <div className="space-y-1">
+        <h3 className="type-item text-primary">Bem-vinda de volta</h3>
+        <p className="text-sm text-muted">Entre com o e-mail da confeitaria para gerir a sua loja.</p>
+      </div>
+      <section className="ui-glass-panel space-y-3">
+        {emailField}
+        <div>
+          <label className={label}>Senha
+            <input name="password" type={showPassword ? 'text' : 'password'} required autoComplete="current-password" className={field} />
+          </label>
+          <button type="button" className="ui-quiet-action text-xs" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>
+            {showPassword ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
+            {showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+          </button>
+        </div>
+        <label className="flex min-h-11 items-center gap-2 text-sm">
+          <input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} className="accent-primary" />
+          Manter sessão iniciada
+        </label>
+      </section>
       {notice && <p role="status" className="text-sm text-on-surface">{notice}</p>}
       {feedback}
       {authCheck}
       <div className="flex flex-wrap items-center gap-x-4">
-        <button type="submit" className={primary} disabled={submitDisabled}>{busy ? 'A entrar…' : 'Entrar'}</button>
+        <button type="submit" className={primary + ' inline-flex items-center gap-2'} disabled={submitDisabled}><LogIn size={15} aria-hidden="true" />{busy ? 'A entrar…' : 'Entrar com e-mail'}</button>
         <button type="button" className={secondary} disabled={busy} onClick={() => show('request')}>Esqueci a senha</button>
       </div>
     </form>
