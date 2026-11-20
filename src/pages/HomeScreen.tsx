@@ -27,7 +27,7 @@ function searchText(value: string) {
 
 export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogNotice, presentation, search, selection, onSearch, onSelect, onEditCategory, ...actions }: HomeScreenProps) {
   const query = searchText(search.trim());
-  const current = selection === '' || (selection === null && query) ? undefined :
+  const current = selection === '' || selection === null ? undefined :
     categories.find(category => (category.id ?? category.name) === selection) ?? categories[0];
   const results = products.filter(product => (!current || product.category === current.name) &&
     (!query || [product.name, product.category, product.description, ...(product.tags ?? [])].some(value => searchText(value).includes(query))));
@@ -66,12 +66,12 @@ export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogN
             {current && <CategoryEditButton category={current} onEdit={onEditCategory} />}
           </div>
           <div className="category-rail" role="group" aria-label="Filtrar por categoria">
+            <button type="button" className="category-pill" aria-pressed={!current} onClick={() => onSelect('')}>Todos</button>
             {categories.map(category => {
               const id = category.id ?? category.name;
               return <button type="button" key={id} className="category-pill" aria-pressed={current === category}
                 onClick={() => onSelect(id)}>{category.name}</button>;
             })}
-            <button type="button" className="category-pill" aria-pressed={!current} onClick={() => onSelect('')}>Todos</button>
           </div>
         </nav>
         <section aria-label="Produtos" className="space-y-5">

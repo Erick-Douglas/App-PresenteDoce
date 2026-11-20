@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Signing credentials stay outside the repository
+*.jks
+*.keystore
+*.p12
+*.mobileprovision

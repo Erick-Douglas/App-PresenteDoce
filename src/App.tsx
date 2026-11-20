@@ -28,6 +28,7 @@ import { AdminPage } from './components/AdminPage';
 import { ContactAssistant } from './components/ContactAssistant';
 import { StoreDialog } from './components/StoreDialog';
 import { useAppInstall } from './features/install/useAppInstall';
+import { useCatalogSession } from './features/products/useCatalogSession';
 
 const AccountForm = lazy(() => import('./pages/AccountForm'));
 const CatalogManagement = lazy(() => import('./pages/CatalogManagement'));
@@ -64,9 +65,9 @@ export default function App() {
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
   const [activeRecCategory, setActiveRecCategory] = useState('all');
   const [homeSearch, setHomeSearch] = useState('');
-  const [homeSelection, setHomeSelection] = useState<string | null>(null);
+  const [homeSelection, setHomeSelection] = useState<string | null>('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [session, setSession] = useState<CatalogSession | null>(null);
+  const { session, restoring: restoringSession, error: sessionError, retry: retrySession, accept: acceptSession, logout: logoutSession } = useCatalogSession();
   const [recoveryCallback, setRecoveryCallback] = useState(() => readRecoveryCallback(new URL(window.location.href)));
   const [loginOpen, setLoginOpen] = useState(() => entryPath() === '/admin' || entryPath() === '/precificacao' || !!recoveryCallback);
   const [notice, setNotice] = useState('');
@@ -96,7 +97,12 @@ export default function App() {
   const lockedScroll = useRef<number | null>(null);
   const returnScroll = useRef<number | null>(null);
   const adminView = adminViews.some(view => view === currentView);
-  const overlayOpen = isMenuOpen || loginOpen || showInstructions;
+  const recoveringAccess = !!recoveryCallback || (entryPath() === '/admin' && new URLSearchParams(window.location.search).get('recuperar') === '1');
+  const overlayOpen = isMenuOpen || (loginOpen && (!session || recoveringAccess) && !restoringSession) || showInstructions;
+
+  useEffect(() => {
+    if (session && !recoveringAccess) setLoginOpen(false);
+  }, [session, recoveringAccess]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -135,16 +141,6 @@ export default function App() {
   useLayoutEffect(() => {
     if (recoveryCallback) window.history.replaceState(window.history.state, '', '/admin?recuperar=1');
   }, [recoveryCallback]);
-
-  useEffect(() => {
-    if (!session) return;
-    const timeout = window.setTimeout(() => {
-      setSession(null);
-      setLoginOpen(false);
-      setNotice('A sessão terminou. Entre novamente pelo menu.');
-    }, Math.max(0, session.expiresAt - Date.now()));
-    return () => window.clearTimeout(timeout);
-  }, [session]);
 
   useEffect(() => {
     if (!notice || loginOpen) return;
@@ -191,14 +187,13 @@ export default function App() {
   }
 
   function handleLogin(next: CatalogSession) {
-    setSession(next);
+    acceptSession(next);
     closePanel();
     setNotice('');
   }
 
   function handleLogout() {
-    if (session) void signOut(session.token).catch(() => {});
-    setSession(null);
+    logoutSession();
     setLoginOpen(false);
     if (adminView) handleNavigate('home');
     setNotice('Sessão encerrada.');
@@ -345,6 +340,9 @@ export default function App() {
         />
 
         {currentView !== 'home' && !adminView && catalogNotice}
+        {sessionError && <div role="status" className="page-width flex flex-wrap items-center gap-2 py-2 text-sm text-primary">
+          <p>{sessionError}</p><button type="button" className="ui-quiet-action" onClick={() => void retrySession()}>Tentar novamente</button>
+        </div>}
         <main className="min-h-screen flex flex-col">
           <AnimatePresence mode="wait">
             {currentView === 'welcome' && <WelcomeScreen key="welcome" {...commonProps} />}
@@ -474,13 +472,13 @@ export default function App() {
                           onEditCategory={id => openEditor('category-editor', id)} onCategoryCreated={onCategoryCreated} />}
                       </>
                     )}
-                    {currentView === 'pricing' && <PricingScreen />}
+                    {currentView === 'pricing' && (adminCatalog.data ? <PricingScreen rows={adminCatalog.data.rows} token={session.token} onProductChanged={row => { applyChange(row.id, row); adminCatalog.reload(); }} /> : adminStatus)}
                     {currentView === 'store-texts' && presentationEditor()}
                     {(currentView === 'product-editor' || currentView === 'category-editor') && editorContent()}
                   </Suspense>
                 ) : (
                   <section className="ui-glass-panel space-y-3">
-                    <p className="text-sm text-muted">Entre com a conta da confeitaria para usar este módulo.</p>
+                    <p className="text-sm text-muted">{restoringSession ? 'A restaurar o acesso…' : 'Entre com a conta da confeitaria para usar este módulo.'}</p>
                     <button type="button" className="ui-primary" onClick={openLogin}>Entrar</button>
                   </section>
                 )}
@@ -489,14 +487,14 @@ export default function App() {
           </AnimatePresence>
         </main>
 
-        {loginOpen && (
+        {loginOpen && !restoringSession && (!session || recoveringAccess) && (
           <StoreDialog title="Entrar na Presente Doce" onClose={closePanel}>
             <Suspense fallback={<p role="status">A carregar…</p>}>
               <AccountForm
                 initialRecovery={entryPath() === '/admin' && new URLSearchParams(window.location.search).get('recuperar') === '1'}
                 callback={recoveryCallback}
                 onLogin={handleLogin}
-                onRecoveryComplete={() => setRecoveryCallback(null)}
+                onRecoveryComplete={() => { logoutSession(); setRecoveryCallback(null); }}
               />
             </Suspense>
           </StoreDialog>

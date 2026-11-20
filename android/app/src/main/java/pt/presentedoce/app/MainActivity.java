@@ -1,0 +1,5 @@
+package pt.presentedoce.app;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
