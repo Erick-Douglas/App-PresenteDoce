@@ -63,3 +63,7 @@ O [Design System](docs/DESIGN_SYSTEM.md) documenta o tema usado pela vitrine e p
 ## Android e iOS
 
 O projeto inclui as plataformas Capacitor e ícones da marca. Use npm run native:sync para compilar a web e sincronizar os projetos. SDKs, builds assinadas, retorno de autenticação e testes físicos são necessários antes da distribuição. [Guia nativo](docs/NATIVE.md).
+
+## Evolução para Micro-SaaS híbrido
+
+O [PRD 1.0](docs/PRD.md) registra a direção enviada por Erick em 20/11/2026, com [arquitetura proposta](docs/ARQUITETURA.md), [referências verificadas](docs/REFERENCIAS-SAAS.md) e [roadmap](docs/ROADMAP.md). A base atual continua React/Vite e Supabase de loja única; Next.js é uma opção de evolução a confirmar. Multi-loja, agenda, financeiro, CRM e assinaturas são recursos planejados, com estado explícito nos documentos.

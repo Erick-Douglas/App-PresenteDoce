@@ -83,3 +83,7 @@ A precificação separa seleção de ficha/produto, ingredientes e resultados em
 Limpar rascunho inicia Nova ficha e remove a associação ao produto no formulário, sem gravar na conta. Guardar ficha exige rendimento positivo, preço válido e custos nomeados e completos. A mesma regra protege a gravação no banco. A fotografia aceita no estado do formulário determina a prévia e o envio; rejeitar substituição mantém a anterior e explica isso.
 
 Abaixo das categorias, mostre os tópicos da categoria selecionada com Todos os tópicos e estados acessíveis. A associação é por ID; o nome acompanha a renomeação. Um tópico criado no editor do produto é selecionado para esse produto. As categorias continuam com rolagem própria. Em telas abaixo de 360 px, use uma coluna nos produtos e resultados; mantenha campos e painéis com largura mínima zero e quebra de texto. [Ensaios](TESTES.md).
+
+## Direção recebida para o Micro-SaaS · 20/11/2026
+
+Clean White & Warm Craft: branco e neutros quentes predominantes, fotografias como foco e identidade bordô/dourado da loja piloto preservada. Live Mode e prévia do cliente usam os mesmos componentes da vitrine; a simulação não altera permissões. Os requisitos estão no [PRD 1.0](PRD.md). O refinamento completo e os novos módulos precisam de protótipo, implementação e aceite; os tokens publicados não foram alterados nesta especificação. [Referências](REFERENCIAS-SAAS.md) · [Sequência](ROADMAP.md).
