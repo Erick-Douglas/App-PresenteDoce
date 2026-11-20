@@ -44,7 +44,7 @@ export function useCatalog() {
       if (product.image && !firstProductImages.has(product.category)) firstProductImages.set(product.category, product.image);
     }
     return categoryRows.map(row => ({
-      id: row.id, name: row.name, image: row.cover ?? firstProductImages.get(row.name), orderMode: row.order_mode,
+      id: row.id, name: row.name, image: row.cover ?? firstProductImages.get(row.name), orderMode: row.order_mode, topics: row.topics,
     }));
   }, [products, categoryRows]);
   const orderedProducts = useMemo(() => {

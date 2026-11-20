@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Plus } from 'lucide-react';
+import { validateProductImage } from '../features/products/productImage';
 import { THEMED_CAKE_SIZES } from '../config/constants';
 import type { Product, ProductOrderMode } from '../config/types';
 import {
@@ -144,6 +145,13 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
 
   function applyManagedCategory(change: CategoryChange) {
     onCategoryChanged(change);
+    if (change.saved && change.previous.id === categoryId) {
+      const added = change.saved.topics.filter(topic => !change.previous.topics.some(old => old.id === topic.id));
+      setTopicDrafts(current => ({ ...current, [categoryId]: [...new Set([
+        ...(current[categoryId] ?? []).filter(id => change.saved!.topics.some(topic => topic.id === id)),
+        ...added.map(topic => topic.id),
+      ])] }));
+    }
     setManagingCategory(false);
     if (!change.saved && change.previous.id === categoryId) {
       const target = change.destination ?? categories.find(item => item.id !== categoryId);
@@ -235,7 +243,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
         throw new Error('Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres por sabor.');
       }
 
-      const file = form.get('image');
+      const file = selectedImage;
       let nextImage = image;
       if (file instanceof File && file.size) {
         setSaveStage('A enviar fotografia…');
@@ -315,6 +323,7 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
             <button type="button" className="ui-quiet-action"
               onClick={() => setManagingCategory(true)}>Gerir tópicos</button>
           </div>
+          <p className="text-xs text-muted">Selecione os tópicos que descrevem este produto. Criar um tópico nesta edição também o associa ao produto ao guardar.</p>
           {selectedCategory.topics.length ? (
             <div className="flex flex-wrap gap-2">
               {selectedCategory.topics.map(topic => (
@@ -370,11 +379,17 @@ function ProductForm({ row, token, onSaved, onDeleted, onCancel, categories, row
                 const file = event.target.files?.[0];
                 if (!file) return;
                 setError('');
-                if (file.size > 20 * 1024 * 1024) { setError('A fotografia deve ter até 20 MB.'); event.target.value = ''; return; }
+                try { validateProductImage(file); }
+                catch (cause) {
+                  setError((cause instanceof Error ? cause.message : 'Fotografia inválida.') +
+                    (selectedImage ? ' A fotografia anterior foi mantida.' : ' Nenhuma nova fotografia foi selecionada.'));
+                  event.target.value = '';
+                  return;
+                }
                 setSelectedImage(file);
               }} />
           </label>
-          <p className="text-xs text-muted">{selectedImage ? 'Fotografia selecionada. Será enviada ao guardar o produto.' : 'JPG, PNG, WebP ou HEIC até 20 MB. A fotografia é otimizada antes do envio.'}</p>
+          <p className="text-xs text-muted">{selectedImage ? 'Selecionada: ' + selectedImage.name + '. Será enviada ao guardar o produto.' : 'JPG, PNG, WebP ou HEIC até 20 MB. A fotografia é otimizada antes do envio.'}</p>
           <label className="flex min-h-11 items-center gap-3"><input name="published" type="checkbox" defaultChecked={row?.published} className="size-4 accent-primary" /> Mostrar no catálogo público</label>
         </section>
         <div className="admin-actions">

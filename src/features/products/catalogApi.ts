@@ -1,3 +1,4 @@
+import { validateProductImage } from './productImage';
 import type { Product, ProductOrderMode } from '../../config/types';
 import { readManualRecoveryToken } from './adminLink';
 import { AuthRateLimitError, authRetryAfter } from './authRateLimit';
@@ -30,6 +31,7 @@ export interface CategoryRow {
   name: string;
   cover: string | null;
   order_mode: ProductOrderMode;
+  topics: CatalogTopic[];
 }
 
 export interface AdminCategoryRow extends CategoryRow {
@@ -37,7 +39,7 @@ export interface AdminCategoryRow extends CategoryRow {
   topics: CatalogTopic[];
 }
 
-const categoryColumns = 'id,name,cover,order_mode';
+const categoryColumns = 'id,name,cover,order_mode,topics';
 const categoryConflict = 'O catálogo mudou entretanto. Reabra a categoria para obter a versão atual.';
 
 export async function request<T>(path: string, options: RequestInit = {}, token?: string, conflictMessage?: string): Promise<T> {
@@ -230,11 +232,7 @@ export async function deleteProduct(row: CatalogRow, token: string) {
 }
 
 export async function uploadProductImage(file: File, token: string) {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-  if (!allowedTypes.includes(file.type) && !/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)) {
-    throw new Error('Escolha uma fotografia JPG, PNG, WebP ou HEIC.');
-  }
-  if (file.size > 20 * 1024 * 1024) throw new Error('A fotografia deve ter até 20 MB.');
+  validateProductImage(file);
   let image: ImageBitmap | HTMLImageElement;
   try {
     image = await createImageBitmap(file);

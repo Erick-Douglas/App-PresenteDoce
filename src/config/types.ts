@@ -38,6 +38,7 @@ export interface CartItem extends Product {
   variant?: string;   // Variante escolhida (Ex: Caixa com 6)
 }
 export interface CatalogCategory {
+  topics?: { id: string; name: string }[];
   id?: string;
   name: string;
   image?: string;

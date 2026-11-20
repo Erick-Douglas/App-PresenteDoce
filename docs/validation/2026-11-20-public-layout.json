@@ -1,0 +1,23 @@
+{
+  "environment": "public catalog read only; no login or checkout submission",
+  "checks": [
+    "320 carrinho",
+    "320 produto",
+    "320 login",
+    "390 carrinho",
+    "390 produto",
+    "390 login",
+    "768 carrinho",
+    "768 produto",
+    "768 login",
+    "1024 carrinho",
+    "1024 produto",
+    "1024 login",
+    "1440 carrinho",
+    "1440 produto",
+    "1440 login",
+    "1920 carrinho",
+    "1920 produto",
+    "1920 login"
+  ]
+}

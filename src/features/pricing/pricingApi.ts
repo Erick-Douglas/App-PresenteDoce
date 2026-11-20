@@ -1,13 +1,8 @@
 import { request, saveProduct, type CatalogRow } from '../products/catalogApi';
+import { validatePricingRecipe, type PricingRecipe } from './recipe';
+export type { PricingRecipe } from './recipe';
 import { parseCatalogPrice } from '../products/catalogFields';
 
-export type PricingRecipe = {
-  title: string;
-  yieldCount: string;
-  salePrice: string;
-  variant?: string;
-  ingredients: { name: string; unit: string; packQuantity: string; packPrice: string; usedQuantity: string }[];
-};
 export type PricingRow = { id: string; product_id: string | null; recipe: PricingRecipe; version: number };
 
 export function listPricingRecipes(token: string, signal?: AbortSignal) {
@@ -15,6 +10,7 @@ export function listPricingRecipes(token: string, signal?: AbortSignal) {
 }
 
 export async function savePricingRecipe(row: Omit<PricingRow, 'version'>, version: number | null, token: string) {
+  validatePricingRecipe(row.recipe);
   const editing = version !== null;
   const path = '/rest/v1/pricing_recipes' + (editing ? '?id=eq.' + row.id + '&version=eq.' + version : '');
   const [saved] = await request<PricingRow[]>(path, {
