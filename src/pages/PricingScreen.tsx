@@ -1,13 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Calculator, Plus, Save, Trash2 } from 'lucide-react';
-import { calculatePricing, parseDecimal } from '../features/pricing/calculation';
+import { parseDecimal } from '../features/pricing/calculation';
+import { validatePricingRecipe } from '../features/pricing/recipe';
 import { listPricingRecipes, savePricingRecipe, applyProductPrice, type PricingRecipe, type PricingRow } from '../features/pricing/pricingApi';
 import type { CatalogRow } from '../features/products/catalogApi';
 import { formatEuros } from '../features/checkout/order';
 
 type Ingredient = { name: string; unit: string; packQuantity: string; packPrice: string; usedQuantity: string };
 type Recipe = PricingRecipe;
-type Pricing = ReturnType<typeof calculatePricing>;
+type Pricing = ReturnType<typeof validatePricingRecipe>;
 const storageKey = 'presente-doce-pricing-draft-v1';
 const input = 'ui-field';
 const emptyIngredient = (): Ingredient => ({ name: '', unit: 'g', packQuantity: '', packPrice: '', usedQuantity: '' });
@@ -69,6 +70,7 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
     setBusy(true);
     setError('');
     try {
+      validatePricingRecipe(recipe);
       const row = await savePricingRecipe({ id: saved?.id ?? crypto.randomUUID(), product_id: productId || null, recipe }, saved?.version ?? null, token);
       setSaved(row);
       setSavedRecipes(current => [row, ...current.filter(item => item.id !== row.id)]);
@@ -82,6 +84,7 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
     setBusy(true);
     setError('');
     try {
+      validatePricingRecipe(recipe);
       const row = await applyProductPrice(product, recipe.salePrice, recipe.variant ?? '', token);
       onProductChanged(row);
       setNotice('Preço atualizado no catálogo.');
@@ -107,12 +110,7 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
     setError('');
     setResult(null);
     try {
-      const costs = recipe.ingredients.map(row => ({
-        packQuantity: parseDecimal(row.packQuantity),
-        packPrice: parseDecimal(row.packPrice),
-        usedQuantity: parseDecimal(row.usedQuantity),
-      }));
-      setResult(calculatePricing(costs, parseDecimal(recipe.yieldCount), parseDecimal(recipe.salePrice)));
+      setResult(validatePricingRecipe(recipe));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível calcular.');
     }
@@ -129,8 +127,8 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
 
   function clearDraft() {
     try { localStorage.removeItem(storageKey); } catch { /* The in-memory form can still be cleared. */ }
-    update(emptyRecipe());
-    setNotice('Formulário limpo.');
+    chooseRecipe('');
+    setNotice('Rascunho local limpo. As fichas guardadas na conta foram preservadas.');
   }
 
   return (
@@ -190,8 +188,8 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
           {recipe.ingredients.map((row, index) => (
             <fieldset key={index} className="min-w-0 space-y-3 rounded-lg border border-outline bg-surface/65 px-3 pb-3">
               <legend className="px-1 text-sm font-bold">Custo {index + 1}</legend>
-              <div className="grid grid-cols-2 gap-3">
-                <label className="col-span-2 block space-y-1 sm:col-span-1"><span>Ingrediente ou despesa</span><input className={input} maxLength={100} value={row.name} onChange={event => updateIngredient(index, { name: event.target.value })} /></label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-1"><span>Ingrediente ou despesa</span><input className={input} maxLength={100} value={row.name} onChange={event => updateIngredient(index, { name: event.target.value })} /></label>
                 <label className="block space-y-1"><span>Unidade</span><select className={input} value={row.unit} onChange={event => updateIngredient(index, { unit: event.target.value })}><option value="g">g</option><option value="ml">ml</option><option value="un">unidade</option></select></label>
                 <label className="block space-y-1"><span>Quantidade comprada</span><input className={input} inputMode="decimal" maxLength={16} required value={row.packQuantity} onChange={event => updateIngredient(index, { packQuantity: event.target.value })} /></label>
                 <label className="block space-y-1"><span>Preço da compra (€)</span><input className={input} inputMode="decimal" maxLength={16} required value={row.packPrice} onChange={event => updateIngredient(index, { packPrice: event.target.value })} /></label>
@@ -221,7 +219,7 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
       {result && (
         <section className="ui-glass-panel" aria-live="polite">
           <h2 className="type-item text-primary">Resultado da simulação</h2>
-          <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <dl className="pricing-results mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {[
               ['Custo total', formatEuros(result.totalCost)],
               ['Custo por unidade', formatEuros(result.unitCost)],
@@ -231,7 +229,7 @@ export default function PricingScreen({ rows, token, onProductChanged }: {
               ['Markup', result.markup === null ? '—' : percent.format(result.markup)],
               ['Margem', result.margin === null ? '—' : percent.format(result.margin)],
             ].map(([label, value]) => <div key={label} className="rounded-lg border border-outline bg-surface/60 px-3 py-2">
-              <dt className="text-xs text-muted">{label}</dt><dd className="type-price mt-1 text-primary">{value}</dd>
+              <dt className="text-xs text-muted">{label}</dt><dd className="type-price mt-1 break-words text-primary">{value}</dd>
             </div>)}
           </dl>
           <p className="mt-3 text-sm text-muted">O lucro considera os custos que você adicionou à receita.</p>

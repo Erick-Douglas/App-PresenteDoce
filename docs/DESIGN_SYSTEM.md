@@ -77,3 +77,9 @@ O login usa o mesmo painel translúcido dos formulários, com rótulos visíveis
 Na fotografia de produto, exiba a prévia, o nome do ficheiro e o progresso. Limite o original a 20 MB e normalize para até 1600 px e 5 MB. Preserve o formulário após falha e ofereça erro visível. A decodificação HEIC depende do suporte do dispositivo; não prometa conversão universal.
 
 A precificação separa seleção de ficha/produto, ingredientes e resultados em painéis compartilhados. **Calcular receita** permanece como ação principal. **Guardar ficha na conta** preserva os dados entre dispositivos. **Aplicar preço ao produto** exige confirmação e confere a versão atual. O rascunho local anterior continua disponível. [Lógica e migração](PRECIFICACAO.md) · [Plataformas nativas](NATIVE.md).
+
+## Correções de fluxo · 20/11/2026
+
+Limpar rascunho inicia Nova ficha e remove a associação ao produto no formulário, sem gravar na conta. Guardar ficha exige rendimento positivo, preço válido e custos nomeados e completos. A mesma regra protege a gravação no banco. A fotografia aceita no estado do formulário determina a prévia e o envio; rejeitar substituição mantém a anterior e explica isso.
+
+Abaixo das categorias, mostre os tópicos da categoria selecionada com Todos os tópicos e estados acessíveis. A associação é por ID; o nome acompanha a renomeação. Um tópico criado no editor do produto é selecionado para esse produto. As categorias continuam com rolagem própria. Em telas abaixo de 360 px, use uma coluna nos produtos e resultados; mantenha campos e painéis com largura mínima zero e quebra de texto. [Ensaios](TESTES.md).

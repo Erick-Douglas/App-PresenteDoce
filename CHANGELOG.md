@@ -1,5 +1,13 @@
 # Changelog da Presente Doce
 
+## 20/11/2026 · Correções após fiscalização
+
+- Limpar o rascunho abre uma nova ficha e preserva a ficha já guardada. Receitas incompletas são recusadas pelo app e pelo banco. A confirmação de preço continua separada.
+- A fotografia selecionada é a mesma fonte da prévia e do upload. Rejeitar uma substituição acima do limite mantém a foto anterior com aviso explícito.
+- Tópicos públicos são carregados e filtram produtos da categoria. Criar um tópico dentro da edição também o associa ao produto ao guardar. IDs estáveis preservam renomeações.
+- Campos e painéis se adaptam às telas estreitas; em 320 px os produtos e resultados usam uma coluna.
+- Ensaios reproduzíveis de navegador e banco com dados fictícios, limites e evidência estão em [Testes](docs/TESTES.md).
+
 ## 20/11/2026
 
 ### Correções operacionais

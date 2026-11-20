@@ -1,6 +1,7 @@
 @layer components {
   .page-width {
     width: 100%;
+    min-width: 0;
     max-width: var(--pd-page-width);
     margin-inline: auto;
     padding-inline: var(--pd-page-gutter);
@@ -42,6 +43,15 @@
   }
 
   .admin-page { min-height: 100dvh; }
+  .admin-form > *, .admin-form label, .ui-glass-panel, .pricing-results > div { min-width: 0; }
+  .ui-glass-panel { overflow-wrap: anywhere; }
+  .admin-form input[type="file"] { max-width: 100%; overflow: hidden; }
+  .admin-actions > button { max-width: 100%; white-space: normal; text-align: left; }
+  .topic-rail .category-pill { min-height: 2.5rem; font-weight: var(--pd-weight-regular); }
+  @media (max-width: 359px) {
+    .catalog-grid { grid-template-columns: minmax(0, 1fr); }
+    .pricing-results { grid-template-columns: minmax(0, 1fr); }
+  }
 
   .admin-content {
     display: grid;

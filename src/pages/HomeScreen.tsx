@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import type { CatalogCategory, Product } from '../config/types';
 import type { StorePresentation } from '../features/products/storePresentation';
+import { filterCatalog } from '../features/products/catalogFilter';
 import { CatalogGrid, type CatalogActions } from '../components/CatalogGrid';
 import { CategoryEditButton } from '../components/CategoryEditButton';
 import { Header } from '../components/Header';
@@ -21,16 +22,14 @@ interface HomeScreenProps extends CatalogActions {
   onEditCategory?: (id: string) => void;
 }
 
-function searchText(value: string) {
-  return value.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('pt-PT');
-}
-
 export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogNotice, presentation, search, selection, onSearch, onSelect, onEditCategory, ...actions }: HomeScreenProps) {
-  const query = searchText(search.trim());
+  const [topicSelection, setTopicSelection] = useState<{ category: string; id: string } | null>(null);
   const current = selection === '' || selection === null ? undefined :
     categories.find(category => (category.id ?? category.name) === selection) ?? categories[0];
-  const results = products.filter(product => (!current || product.category === current.name) &&
-    (!query || [product.name, product.category, product.description, ...(product.tags ?? [])].some(value => searchText(value).includes(query))));
+  const categoryKey = current?.id ?? current?.name ?? '';
+  const topicId = topicSelection?.category === categoryKey ? topicSelection.id : '';
+  const results = filterCatalog(products, current, topicId, search);
+  function chooseCategory(id: string) { setTopicSelection(null); onSelect(id); }
   const groups = new Map<string, Product[]>();
   if (!current) {
     for (const category of categories) groups.set(category.name, []);
@@ -66,13 +65,19 @@ export function HomeScreen({ products, categories, onOpenMenu, isAdmin, catalogN
             {current && <CategoryEditButton category={current} onEdit={onEditCategory} />}
           </div>
           <div className="category-rail" role="group" aria-label="Filtrar por categoria">
-            <button type="button" className="category-pill" aria-pressed={!current} onClick={() => onSelect('')}>Todos</button>
+            <button type="button" className="category-pill" aria-pressed={!current} onClick={() => chooseCategory('')}>Todos</button>
             {categories.map(category => {
               const id = category.id ?? category.name;
               return <button type="button" key={id} className="category-pill" aria-pressed={current === category}
-                onClick={() => onSelect(id)}>{category.name}</button>;
+                onClick={() => chooseCategory(id)}>{category.name}</button>;
             })}
           </div>
+          {!!current?.topics?.length && <div className="category-rail topic-rail" role="group" aria-label="Filtrar por tópico">
+            <button type="button" className="category-pill" aria-pressed={!current.topics.some(topic => topic.id === topicId)}
+              onClick={() => setTopicSelection(null)}>Todos os tópicos</button>
+            {current.topics.map(topic => <button key={topic.id} type="button" className="category-pill" aria-pressed={topic.id === topicId}
+              onClick={() => setTopicSelection({ category: categoryKey, id: topic.id })}>{topic.name}</button>)}
+          </div>}
         </nav>
         <section aria-label="Produtos" className="space-y-5">
           <p role="status" className={results.length ? 'sr-only' : 'py-6 text-sm text-muted'}>
