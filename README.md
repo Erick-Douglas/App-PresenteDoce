@@ -12,7 +12,7 @@ O app web usa React, TypeScript e Vite. A Vercel publica o frontend. O Supabase 
 | --- | --- |
 | `/` | Catálogo, encomendas por WhatsApp e acesso pelo menu **Entrar**. A conta administrativa recebe ferramentas de gestão na loja. |
 | `/admin` | Atalho para abrir o acesso na própria loja, incluindo os links de recuperação já usados. |
-| `/precificacao` | Atalho autenticado para o simulador de custo e margem com rascunho local. |
+| `/precificacao` | Atalho autenticado para precificação, fichas guardadas na conta e aplicação de preço ao catálogo. |
 
 A produção fica em `presente-doce.vercel.app`. A Vercel protege os endereços de preview para revisão. Na loja oficial, use **Menu → Entrar** e a conta da confeitaria. A página inicial saúda Gabriela após a autenticação. **Gerir catálogo** abre uma página com produtos agrupados por categoria e filtros de estado. O editor de categoria gerencia o nome, os tópicos e a ordem da vitrine. A conta administradora também pode editar produtos e categorias diretamente na vitrine.
 
@@ -31,7 +31,7 @@ npm run build
 
 A raiz abre o catálogo. O formulário de entrada informa quando falta configurar o Supabase. O catálogo inicial em código fica ativo até selecionar explicitamente o catálogo do Supabase no ambiente. Com o catálogo Supabase ativo, erros de carregamento aparecem na loja para evitar voltar a apresentar produtos que Gabriela retirou do catálogo.
 
-A rota /precificacao abre o simulador de receitas. O cálculo reproduz custo, rendimento, lucro, markup e margem da planilha. O rascunho é guardado apenas no navegador se a pessoa usar a opção de guardar. O simulador é independente do login e do catálogo.
+A rota /precificacao abre o módulo administrativo de receitas. O cálculo reproduz custo, rendimento, lucro, markup e margem da planilha. A administração pode associar produto e tamanho/opção, guardar várias fichas na conta e confirmar a aplicação do preço ao catálogo. O rascunho local anterior continua disponível. A importação dos ingredientes e receitas existentes é uma etapa posterior à revisão das inconsistências. [Lógica e migração](docs/PRECIFICACAO.md).
 
 ## Design System
 
@@ -55,7 +55,11 @@ O [Design System](docs/DESIGN_SYSTEM.md) documenta o tema usado pela vitrine e p
 
 - Use **Menu → Entrar → Esqueci a senha** e solicite o e-mail de recuperação. Com o redirecionamento confirmado no Supabase, o botão do e-mail abre a nova senha. Durante a configuração do redirecionamento, **Usar link manualmente** aparece depois do pedido e aceita o endereço do botão do e-mail antes de o abrir. [Configuração](docs/DEPLOY.md#recuperação-de-senha)
 - A lista privada de administradores controla gravação no Postgres e upload no Storage por RLS. Para remover o acesso de uma conta, retire seu UUID da lista e encerre suas sessões no Supabase Auth.
-- A sessão fica em memória enquanto a pessoa navega pela loja. Recarregar a página exige entrar novamente. Use **Sair da conta** ao terminar. Edição e exclusão conferem a versão do registro antes de gravar. **Excluir produto** exige confirmação. Para ocultar temporariamente, desmarque **Mostrar no catálogo público** e guarde.
+- A opção **Manter sessão iniciada** guarda o acesso no navegador; sem ela, a sessão fica limitada à aba. O Supabase renova e valida o acesso na reabertura. A senha não é guardada pelo formulário. Use **Sair da conta** para remover o acesso deste navegador. Edição e exclusão conferem a versão do registro antes de gravar. **Excluir produto** exige confirmação. Para ocultar temporariamente, desmarque **Mostrar no catálogo público** e guarde.
 - Fotos de produto são públicas por URL. O painel reprocessa JPG, PNG e WebP para WebP e limita o tamanho. Envie somente imagens de catálogo. Preserve as imagens antigas até conferir referências e backups antes de removê-las no Storage.
 - No checkout, o cliente envia a mensagem e recebe confirmação da loja pelo WhatsApp. A taxa de entrega é combinada com a Gabriela. O app mantém a seleção ao abrir o WhatsApp em outra aba e permite copiar a mensagem. A seleção e os dados são descartados ao recarregar.
 - Para reverter o frontend, use o deploy anterior no projeto Vercel. Trate reversão de dados como uma operação independente. Preserve as edições feitas no catálogo e confirme a versão de recuperação antes de qualquer alteração na base.
+
+## Android e iOS
+
+O projeto inclui as plataformas Capacitor e ícones da marca. Use npm run native:sync para compilar a web e sincronizar os projetos. SDKs, builds assinadas, retorno de autenticação e testes físicos são necessários antes da distribuição. [Guia nativo](docs/NATIVE.md).
