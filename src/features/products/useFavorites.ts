@@ -1,14 +1,17 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 
-import { activeStoreId, pilotStoreId } from './storeContext';
+import { activeStoreId, pilotStoreId } from "./storeContext";
 const STORAGE_KEY = () =>
   activeStoreId() === pilotStoreId
-    ? 'pd_favorites'
-    : 'pd_favorites:' + activeStoreId();
+    ? "pd_favorites"
+    : "pd_favorites:" + activeStoreId();
 
 function loadFavorites(): string[] {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY()) ?? '[]');
+    const value = JSON.parse(localStorage.getItem(STORAGE_KEY()) ?? "[]");
+    return Array.isArray(value)
+      ? value.filter((id): id is string => typeof id === "string")
+      : [];
   } catch {
     return [];
   }
@@ -24,7 +27,11 @@ export function useFavorites() {
         const next = prev.includes(productId)
           ? prev.filter((id) => id !== productId)
           : [...prev, productId];
-        localStorage.setItem(STORAGE_KEY(), JSON.stringify(next));
+        try {
+          localStorage.setItem(STORAGE_KEY(), JSON.stringify(next));
+        } catch {
+          /* Favorites remain usable in this session when storage is unavailable. */
+        }
         return next;
       });
     },

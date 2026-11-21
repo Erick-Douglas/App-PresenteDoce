@@ -1,5 +1,4 @@
 import { AccountProvider } from "./features/account/AccountProvider";
-import { useAppearance } from "./features/appearance/AppearanceProvider";
 import { hasPurchaseOptions } from "./features/products/options";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
@@ -50,7 +49,6 @@ import { SettingsScreen } from "./pages/SettingsScreen";
 import { WelcomeScreen } from "./pages/WelcomeScreen";
 
 import { AdminPage } from "./components/AdminPage";
-import { ContactAssistant } from "./components/ContactAssistant";
 import { FloatingCart } from "./components/FloatingCart";
 import { Sidebar } from "./components/Sidebar";
 import { StoreDialog } from "./components/StoreDialog";
@@ -143,7 +141,6 @@ function readRoute(productOpen = false): Route {
 }
 
 export default function App() {
-  const { resolved: appearance } = useAppearance();
   const [profileOpen, setProfileOpen] = useState(false);
   const { store, reload: reloadStore } = useStore();
   const [preview, setPreview] = useState(false);
@@ -247,30 +244,6 @@ export default function App() {
   useEffect(() => {
     if (session && !recoveringAccess) setLoginOpen(false);
   }, [session, recoveringAccess]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const meta = document.querySelector('meta[name="theme-color"]');
-    const colors = getComputedStyle(root);
-    const brand = colors.getPropertyValue("--pd-color-brand").trim();
-    const canvas = colors.getPropertyValue("--pd-color-canvas").trim();
-    const masthead =
-      currentView === "home" ||
-      currentView === "welcome" ||
-      currentView === "categories-list" ||
-      adminView;
-    function updateStatusArea() {
-      const showBrand =
-        masthead && (lockedScroll.current ?? window.scrollY) < 8;
-      const state = String(showBrand);
-      if (root.dataset.brandStatus === state) return;
-      root.dataset.brandStatus = state;
-      meta?.setAttribute("content", showBrand ? brand : canvas);
-    }
-    updateStatusArea();
-    window.addEventListener("scroll", updateStatusArea, { passive: true });
-    return () => window.removeEventListener("scroll", updateStatusArea);
-  }, [currentView, adminView, appearance]);
 
   useLayoutEffect(() => {
     if (!overlayOpen) return;
@@ -441,11 +414,14 @@ export default function App() {
   }
 
   const handleProductClick = useCallback(
-    (product: Product) => {
+    (product: Product, newConfiguration = false) => {
       setPreviousView(currentView);
       setSelectedProduct(product);
       setEditingCartItem(
-        [...cart].reverse().find((item) => item.id === product.id) ?? null,
+        newConfiguration
+          ? null
+          : ([...cart].reverse().find((item) => item.id === product.id) ??
+              null),
       );
       handleNavigate("product-details");
     },
@@ -470,7 +446,7 @@ export default function App() {
   const selectOrConfigure = (product: Product, event?: React.MouseEvent) => {
     if (hasPurchaseOptions(product)) {
       event?.stopPropagation();
-      handleProductClick(product);
+      handleProductClick(product, true);
       return;
     }
     event?.stopPropagation();
@@ -777,6 +753,7 @@ export default function App() {
                     favorites={favorites}
                     onAddToCart={addToCart}
                     onUpdateCartItem={updateCartItem}
+                    onStartAnother={() => setEditingCartItem(null)}
                     editingItem={editingCartItem}
                     onToggleFavorite={toggleFavorite}
                     onNavigate={handleNavigate}
@@ -1056,23 +1033,6 @@ export default function App() {
                 currentView !== "product-details"
               }
             />
-            {!managing && (
-              <ContactAssistant
-                visible={
-                  !overlayOpen &&
-                  [
-                    "home",
-                    "categories-list",
-                    "product-list",
-                    "product-details",
-                    "saved",
-                  ].includes(currentView)
-                }
-                aboveOrder={
-                  cart.length > 0 || currentView === "product-details"
-                }
-              />
-            )}
 
             <AnimatePresence></AnimatePresence>
           </div>

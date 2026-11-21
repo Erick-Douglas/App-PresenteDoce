@@ -173,6 +173,7 @@ export async function browserPlatform(context, origin) {
             "name",
             "phone",
             "email",
+            "birth_date",
             "address",
             "notes",
             "archived",
@@ -195,12 +196,12 @@ export async function browserPlatform(context, origin) {
           assert.ok(cols.every((c) => allowedFields.includes(c)));
           const params = cols.map((c) => {
             values.push(
-              typeof body[c] === "object" ? JSON.stringify(body[c]) : body[c],
+              body[c] !== null && typeof body[c] === "object" ? JSON.stringify(body[c]) : body[c],
             );
             return (
               "$" +
               values.length +
-              (typeof body[c] === "object" ? "::jsonb" : "")
+              (body[c] !== null && typeof body[c] === "object" ? "::jsonb" : "")
             );
           });
           const sql =

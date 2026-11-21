@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-21",
+  "baseline": "3fe22ff908762374cac2858f4fc7268e7e1f92fe",
+  "ids": [
+    "PD-CART-01",
+    "PD-CART-02",
+    "PD-CART-03",
+    "PD-CART-04"
+  ],
+  "unitTests": {
+    "passed": 68,
+    "failed": 0
+  },
+  "database": {
+    "project": "gpwcuuqsvnsqudghkylb",
+    "migration": "20261121173213_checkout_customer_birth_date",
+    "edgeVersion": 7,
+    "customerRls": true,
+    "anonymousBirthDateRead": false,
+    "historicalBirthDatesPopulated": 0,
+    "operationalCountsBeforeAndAfter": {
+      "products": 17,
+      "categories": 7,
+      "orders": 2,
+      "customers": 2,
+      "finance": 0
+    }
+  },
+  "browser": {
+    "writes": "isolated PostgreSQL; real gateway/Edge/SQL, simulated Auth identity/provider transport",
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "widths": [
+      320,
+      390,
+      768,
+      1024,
+      1440,
+      1920
+    ],
+    "cart": [
+      "distinct generic and legacy configurations",
+      "edit one",
+      "identical configuration merges quantity",
+      "canonical two-line order and idempotent retry",
+      "remove one",
+      "favorite save/remove/reload",
+      "local add feedback"
+    ],
+    "checkout": [
+      "right top actions, price above quantity",
+      "item count and card subtotal",
+      "address, notice hours and agenda maintained",
+      "optional birth date persists on edit",
+      "CRM read/edit/clear"
+    ],
+    "statusArea": [
+      "no fixed overlay",
+      "transparent HTML meta not changed by scroll",
+      "manifest no imposed theme color"
+    ],
+    "otherRegressions": [
+      "modifier-journey",
+      "checkout-journey",
+      "buyer-admin-flows",
+      "admin-workflows",
+      "appearance-journey",
+      "public-layout dark"
+    ]
+  },
+  "checks": [
+    "client tsc",
+    "server tsc",
+    "Vite build",
+    "Capacitor sync"
+  ],
+  "limits": [
+    "physical device/native signing not tested",
+    "OS/browser owns status bar",
+    "leadership acceptance pending",
+    "paid leaked-password protection unavailable on Free; other Auth dependencies remain documented"
+  ]
+}

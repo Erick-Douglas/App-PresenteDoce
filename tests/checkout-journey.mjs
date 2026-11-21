@@ -68,7 +68,7 @@ try {
     eligible,
   );
   await page.getByLabel("Nome", { exact: true }).fill("Cliente QA endereço");
-  await page.getByLabel("Telefone", { exact: true }).fill("+351000000000");
+  await page.getByLabel("WhatsApp", { exact: true }).fill("+351000000000");
   await page
     .getByLabel("E-mail (opcional)", { exact: true })
     .fill("fixture@example.test");
@@ -96,7 +96,7 @@ try {
     "Cliente QA endereço",
   );
   assert.equal(
-    await page.getByLabel("Telefone", { exact: true }).inputValue(),
+    await page.getByLabel("WhatsApp", { exact: true }).inputValue(),
     "+351000000000",
   );
   assert.equal(

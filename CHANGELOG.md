@@ -1,5 +1,15 @@
 # Changelog
 
+## 21/11/2026 · Personalizações independentes e checkout
+
+- + inicia outro bolo; lápis edita a linha escolhida; combinações iguais somam e diferentes ficam separadas.
+- Favoritos com guardar/remover, vidro transparente e retorno local no +; retirada a assistente e o badge Personalizável.
+- Checkout compacto, ações superiores direitas, preço/quantidade e subtotal; nome, WhatsApp e nascimento opcional, editável no CRM.
+- Retirada pintura da área superior e fundos de cabeçalhos no scroll; temas e área segura preservados.
+- Migração aditiva de nascimento/RLS e Edge v7. 68 testes + jornadas reais de navegador em banco isolado.
+
+[Critérios, evidência e limites](docs/CARRINHO-E-CHECKOUT.md).
+
 ## 21/11/2026 · Compra, gestão e refinamento visual
 
 - Sacola fixa restaurada no Live Mode e compra no produto acima da navegação inferior. Botões explícitos, unidades acrescentadas e opções/sabores validados.

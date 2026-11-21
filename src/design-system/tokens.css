@@ -24,6 +24,9 @@
 
 @layer theme {
   :root {
+    --pd-color-favorite: #e6384b;
+    --pd-control-photo-glass: #ffffff12;
+    --pd-control-photo-border: #ffffff40;
     --pd-font-body: "Lato", system-ui, sans-serif;
     --pd-font-display: "Great Vibes", "Palatino Linotype", Georgia, serif;
     --pd-weight-regular: 400;

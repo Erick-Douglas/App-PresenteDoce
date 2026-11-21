@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { hasPurchaseOptions } from "../features/products/options";
 import type { Product } from "../config/types";
@@ -23,6 +24,18 @@ export function CatalogCard({
   onEdit,
 }: CatalogCardProps) {
   const { stock } = useStore();
+  const [added, setAdded] = useState(false);
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  useEffect(() => () => clearTimeout(feedbackTimer.current), []);
+  function buy() {
+    onCart(product);
+    if (needsOptions) return;
+    clearTimeout(feedbackTimer.current);
+    setAdded(true);
+    feedbackTimer.current = setTimeout(() => setAdded(false), 1100);
+  }
   const ready = false;
   const available = stock
     .filter((s) => s.product_id === product.id)
@@ -82,11 +95,15 @@ export function CatalogCard({
         </span>
         <button
           type="button"
-          onClick={() => onCart(product)}
+          onClick={buy}
           aria-label={cartAction + product.name}
           className="product-buy"
           data-active={inCart}
+          data-added={added}
         >
+          <span className="product-add-feedback" aria-hidden="true">
+            {added ? "+1" : ""}
+          </span>
           <CartIcon size={15} strokeWidth={1.7} aria-hidden="true" />
           <span className="sr-only">
             {needsOptions ? "Escolher" : "Adicionar"}
