@@ -60,3 +60,8 @@ Executar também node tests/catalog-journey.mjs, node tests/checkout-journey.mjs
 ## Suíte vigente de modificadores · 21/11/2026
 
 Executar node tests/modifier-journey.mjs, catalog-journey.mjs, admin-workflows.mjs, buyer-admin-flows.mjs, checkout-journey.mjs, pricing-journey.mjs e public-layout.mjs com preview ativo. Os antigos cenários de tópicos/etiquetas em admin-workflows e catalog-journey foram substituídos por grupos de compra e PostgreSQL isolado, não por respostas de gravação fictícias. Auth/provedor continuam simulados. A pronta entrega é exercitada como regressão SQL futura; a interface atual fica desativada. [Escopo e limites](GRUPOS-E-ENCOMENDAS.md). Capturas ignoradas em node_modules/.cache/pd-modifier-journey, pd-catalog-journey e pd-admin-journey. Não somar contagens antigas de vistas como se fossem resultados desta entrega.
+
+
+## Perfil e aparência · 21/11/2026
+
+node tests/appearance-journey.mjs e node --test tests/account-avatars.test.mjs. PD_THEME=dark habilita os ensaios escuros de public-layout.mjs e modifier-journey.mjs. Esses testes preservam o padrão claro por omissão. [Escopo e limites](PERFIL-E-APARENCIA.md). Evidência em node_modules/.cache/pd-appearance-journey e pd-modifier-journey-dark. Fotos/metadados de conta real não são alterados pelos ensaios.

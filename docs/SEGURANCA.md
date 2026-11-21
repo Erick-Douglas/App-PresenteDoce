@@ -37,3 +37,8 @@ O teste hospedado identificou timeout de resposta ao recusar corpos grandes no r
 O web app passa suas mutações por /api/store na Vercel: limite de 64 KiB antes do encaminhamento, prazo de leitura, origem, encaminhamento do JWT e IP controlado pela Vercel, timeout do upstream e erros sem detalhes privados. Continua sem service_role na Vercel ou no navegador. A autorização, os preços e as quotas continuam no backend/RLS. Clientes locais/nativos preservam o caminho direto com limite no cliente. O endpoint direto do Supabase ainda depende do relay do provedor para entregar a resposta de rejeição; não alegar que o transporte upstream foi corrigido.
 
 A API hospedada também recusou leitura anônima de clientes, pedidos, movimentos e fichas, JWT inválido, origem externa e preço inserido no payload. A consulta pública de Auth confirmou cadastro nativo ainda habilitado: desativá-lo depende da conexão administrativa solicitada. O onboarding comercial do aplicativo segue fechado no frontend e no banco.
+
+
+## Avatar da conta · 21/11/2026
+
+Bucket account-avatars separado do catálogo, 2 MB, JPEG/PNG/WebP, caminho por auth.uid() e UUID. Políticas de escrita/remoção limitadas ao dono, upload de conta anônima recusado. Metadados de perfil servem somente à apresentação; não concedem papel. [Segurança, limpeza e limites de evidência](PERFIL-E-APARENCIA.md).

@@ -1,0 +1,61 @@
+{
+  "date": "2026-11-21",
+  "baseline": "9d34462ff8cb8103888ba676b8755140cf63ecad",
+  "ids": [
+    "PD-DARK-01",
+    "PD-DARK-02",
+    "PD-DARK-03",
+    "PD-DARK-04",
+    "PD-DARK-05"
+  ],
+  "unitTests": {
+    "passed": 66,
+    "failed": 0
+  },
+  "appearance": {
+    "choices": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "modules": 10,
+    "themes": 2,
+    "widths": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "essentialContrast": ">=4.5 on shared surfaces in both palettes",
+    "bootstrap": "verified before React",
+    "profile": "upload/replace/remove/reload and rollback on Auth metadata failure"
+  },
+  "publicLayouts": {
+    "perTheme": 20,
+    "widths": [
+      320,
+      390,
+      768,
+      1024,
+      1440,
+      1920
+    ]
+  },
+  "regression": [
+    "modifier-journey light/dark",
+    "admin-workflows",
+    "public-layout light/dark"
+  ],
+  "migration": "20261121164842_account_avatars",
+  "scope": "Isolated PostgreSQL with real RLS and browser image processing; Auth/provider metadata transport simulated. No test avatar uploaded to operation or real account changed.",
+  "references": [
+    "IMG_2468.jpg",
+    "IMG_2469.PNG",
+    "IMG_2470.PNG",
+    "Gestly screenshots",
+    "Coffee"
+  ],
+  "native": "Capacitor synchronized; no signed build/device test",
+  "leaderAcceptance": "pending",
+  "session": "open"
+}

@@ -109,18 +109,18 @@
     width: 0.25rem;
     height: 0.85rem;
     border-radius: 1rem;
-    background: color-mix(in srgb, var(--pd-color-brand) 65%, white);
+    background: color-mix(in srgb, var(--pd-color-brand) 65%, var(--pd-color-surface));
     flex: none;
   }
   .module-inset {
-    background: color-mix(in srgb, var(--pd-color-canvas) 70%, white);
+    background: color-mix(in srgb, var(--pd-color-canvas) 70%, var(--pd-color-surface));
   }
   .sidebar-group h3 {
     font-weight: 700;
     letter-spacing: 0.07em;
   }
   .sidebar-group:nth-child(2) svg {
-    color: var(--pd-color-brand);
+    color: var(--pd-color-brand-ink);
   }
   .sidebar-group:nth-child(3) svg {
     color: var(--pd-color-success);
@@ -375,6 +375,6 @@
     color: var(--pd-color-muted);
   }
   .sidebar-group button:hover .menu-group-icon {
-    color: var(--pd-color-brand);
+    color: var(--pd-color-brand-ink);
   }
 }

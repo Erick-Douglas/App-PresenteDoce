@@ -1,5 +1,9 @@
+import { useAccount } from "../features/account/AccountProvider";
+import { BUSINESS_INFO } from "../config/constants";
 import { useStore } from "../features/platform/StoreProvider";
 import {
+  UserRound,
+  Share2,
   Download,
   Eye,
   FileText,
@@ -13,7 +17,7 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { View } from "../config/types";
 import { managementLinks } from "./ManagementNav";
 
@@ -41,6 +45,8 @@ export function Sidebar({
   canInstallDirectly,
 }: SidebarProps) {
   const { settings } = useStore();
+  const account = useAccount();
+  const [shareNotice, setShareNotice] = useState("");
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -58,7 +64,33 @@ export function Sidebar({
     onClose();
   }
 
+  async function share() {
+    setShareNotice("");
+    const { name, description, website } = BUSINESS_INFO;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: name, text: description, url: website });
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(
+        [name, description, website].join("\n"),
+      );
+      setShareNotice("Descrição e link copiados.");
+    } catch {
+      setShareNotice(website);
+    }
+  }
   const menuItems = [
+    {
+      icon: UserRound,
+      label: "Perfil e aparência",
+      action: () => account?.openAccount(),
+    },
+    { icon: Share2, label: "Partilhar catálogo", action: () => void share() },
     { icon: Home, label: "Início", action: () => onNavigate("home") },
     {
       icon: LayoutGrid,
@@ -114,7 +146,12 @@ export function Sidebar({
   const groups = [
     {
       title: "Vitrine",
-      labels: ["Início", "Todas as categorias", "Favoritos"],
+      labels: [
+        "Início",
+        "Todas as categorias",
+        "Favoritos",
+        "Partilhar catálogo",
+      ],
     },
     {
       title: "Negócio",
@@ -148,6 +185,7 @@ export function Sidebar({
     {
       title: "Conta",
       labels: [
+        "Perfil e aparência",
         "Pré-visualizar como cliente",
         "Entrar",
         "Instalar app",
@@ -158,7 +196,12 @@ export function Sidebar({
   ]
     .map((group) => ({
       ...group,
-      items: menuItems.filter((item) => group.labels.includes(item.label)),
+      items: menuItems
+        .filter((item) => group.labels.includes(item.label))
+        .sort(
+          (a, b) =>
+            group.labels.indexOf(a.label) - group.labels.indexOf(b.label),
+        ),
     }))
     .filter((group) => group.items.length);
   return (
@@ -172,11 +215,12 @@ export function Sidebar({
       onClick={(event) => {
         if (event.target === event.currentTarget) dismiss();
       }}
-      className="fixed inset-y-0 right-auto left-0 m-0 h-dvh max-h-none w-[300px] max-w-[90vw] bg-porcelain text-on-surface shadow-xl backdrop:bg-overlay/50"
+      data-admin={isAdmin}
+      className="store-menu bg-porcelain text-on-surface"
     >
       <div className="flex h-full flex-col">
         <div className="mx-5 flex items-center justify-between border-b border-outline pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))]">
-          <h2 id={titleId} className="type-module text-primary">
+          <h2 id={titleId} className="type-module">
             Menu
           </h2>
           <button
@@ -189,40 +233,49 @@ export function Sidebar({
           </button>
         </div>
 
-        <div className="overflow-y-auto overscroll-y-contain px-3 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="store-menu-scroll overflow-y-auto overscroll-y-contain px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {shareNotice && (
+            <p role="status" className="text-sm mb-3">
+              {shareNotice}
+            </p>
+          )}
           <nav aria-label="Menu principal" className="menu-groups">
             {groups.map((group) => (
               <section key={group.title} className="sidebar-group">
                 <h3>{group.title}</h3>
-                {group.items.map(({ icon: Icon, label, action }) => (
-                  <button
-                    key={label}
-                    disabled={
-                      label === "Pronta entrega" &&
-                      settings.preorder_only !== false
-                    }
-                    type="button"
-                    onClick={() => {
-                      dismiss();
-                      action();
-                    }}
-                    className="group flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-on-surface transition-colors hover:bg-primary/5 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <Icon
-                      size={17}
-                      strokeWidth={1.65}
-                      aria-hidden="true"
-                      className="menu-group-icon"
-                    />
-                    <span>
-                      {label}
-                      {label === "Pronta entrega" &&
-                      settings.preorder_only !== false
-                        ? " · Em breve"
-                        : ""}
-                    </span>
-                  </button>
-                ))}
+                <div className="menu-module-list">
+                  {group.items.map(({ icon: Icon, label, action }) => (
+                    <button
+                      key={label}
+                      disabled={
+                        label === "Pronta entrega" &&
+                        settings.preorder_only !== false
+                      }
+                      type="button"
+                      onClick={() => {
+                        if (label !== "Partilhar catálogo") dismiss();
+                        action();
+                      }}
+                      className="menu-module-pill"
+                    >
+                      <span className="menu-module-icon">
+                        <Icon
+                          size={17}
+                          strokeWidth={1.65}
+                          aria-hidden="true"
+                          className="menu-group-icon"
+                        />
+                      </span>
+                      <span>
+                        {label}
+                        {label === "Pronta entrega" &&
+                        settings.preorder_only !== false
+                          ? " · Em breve"
+                          : ""}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </section>
             ))}
           </nav>

@@ -22,7 +22,7 @@ export function ProductEditButton({
       }}
       className={overlay ? "catalog-edit-overlay" : "ui-edit-action"}
     >
-      <SquarePen size={21} strokeWidth={1.65} aria-hidden="true" />{" "}
+      <SquarePen size={19} strokeWidth={1.65} aria-hidden="true" />{" "}
       {!overlay && "Editar"}
     </button>
   );

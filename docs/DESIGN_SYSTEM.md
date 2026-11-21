@@ -109,3 +109,8 @@ Tópicos pertencem à categoria e são associados por ID ao produto. Criar a def
 ## Atualização PD-OPT · 21/11/2026
 
 [Grupos, encomendas e composição atual](GRUPOS-E-ENCOMENDAS.md). modifiers.css centraliza grupos de compra/edição, cabeçalho administrativo, sacola e ordem das ações. Editar produto é a exceção de gestão sobre a foto, no canto superior direito; compra mantém + compacto abaixo da foto. Hambúrguer no topo esquerdo e nenhum Mais inferior. Guardar bordô, cancelar neutro e excluir destrutivo discreto; sacola mais estreita/alta com ícone amarelo. As opções da compra ficam em cards por grupo, nunca numa faixa de etiquetas acima do catálogo.
+
+
+## Perfil e dois temas · 21/11/2026
+
+[Composição e regras vigentes](PERFIL-E-APARENCIA.md): avatar de 40 px à esquerda, menu à direita, gestão em tela inteira e visitante em painel. Grupos com títulos externos e módulos em pílulas compactas. Tokens claros/escuros no mesmo tokens.css; appearance.css compõe perfil/menu/vidro. Claro/Escuro/Sistema em Perfil e aparência. Ícone de edição de categoria 26 px/área 48 px, produto 19 px/área 44 px, ambos com vidro. Esta decisão de Erick substitui a posição anterior do hambúrguer à esquerda.
