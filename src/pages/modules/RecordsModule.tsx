@@ -236,6 +236,7 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
   );
 }
 export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
+  const { settings: storeRules } = useStore();
   const [query, setQuery] = useState(""),
     [selected, setSelected] = useState(""),
     [limit, setLimit] = useState(8);
@@ -254,6 +255,16 @@ export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
     available = (id: string, option: string) =>
       data.stock.find((s) => s.product_id === id && s.option_key === option)
         ?.available || 0;
+  if (storeRules.preorder_only !== false)
+    return (
+      <Panel title="Pronta entrega em preparação">
+        <p className="text-sm text-muted">
+          A loja trabalha por encomenda, com pelo menos 48 horas de
+          antecedência. Este módulo e os saldos existentes estão preservados
+          para uma etapa futura.
+        </p>
+      </Panel>
+    );
   return (
     <div className="admin-form">
       <Metrics

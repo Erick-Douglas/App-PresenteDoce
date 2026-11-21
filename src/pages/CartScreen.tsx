@@ -1,3 +1,4 @@
+import { selectedSummary } from "../features/products/options";
 import { AppSelect } from "../components/AppSelect";
 import {
   ArrowLeft,
@@ -35,6 +36,8 @@ import {
 import {
   cartUnits,
   dateProblem,
+  earliestSlot,
+  slotProblem,
   firstEligibleDate,
   plusDays,
 } from "../features/checkout/schedule";
@@ -57,10 +60,12 @@ function orderPayload(
   date: string,
   address: string,
   key: string,
+  preorderOnly: boolean,
 ): OrderPayload {
   return {
     idempotency_key: key,
     delivery_date: date,
+    delivery_time: draft.time,
     fulfillment,
     customer: {
       name: draft.name.trim(),
@@ -78,7 +83,7 @@ function orderPayload(
       product_id: i.id,
       variant: i.variant || i.tamanho || "",
       quantity: i.quantity,
-      mode: i.mode || "preorder",
+      mode: preorderOnly ? "preorder" : i.mode || "preorder",
       configuration: Object.fromEntries(
         Object.entries({
           massa: i.massa,
@@ -86,6 +91,9 @@ function orderPayload(
           recheio2: i.recheio2,
           tema: i.tema,
           selectedFlavors: i.selectedFlavors,
+          ...(i.optionGroups !== undefined
+            ? { selections: i.selections ?? {} }
+            : {}),
           observations: i.observations,
         }).filter(([, v]) => v !== undefined && v !== ""),
       ),
@@ -111,9 +119,25 @@ export function CartScreen({
     draft.intent ?? { signature: "", key: crypto.randomUUID() },
   );
   const currentDay = today(store.timezone),
-    hasReady = cart.some((i) => i.mode === "ready");
-  const minimum = plusDays(currentDay, hasReady ? 0 : settings.lead_days),
-    units = cartUnits(cart);
+    hasReady =
+      settings.preorder_only === false && cart.some((i) => i.mode === "ready");
+  const notice = hasReady
+    ? 0
+    : Math.max(
+        settings.preorder_only !== false ? 48 : 0,
+        settings.min_notice_hours ?? 48,
+        settings.lead_days * 24,
+      );
+  const earliest = earliestSlot(store.timezone, notice);
+  const minimum = earliest.date,
+    units = cart.reduce(
+      (n, i) =>
+        n +
+        (hasReady && i.mode === "ready"
+          ? 0
+          : i.quantity * (i.capacityUnits ?? 1)),
+      0,
+    );
   const initialDate = firstEligibleDate(
     minimum,
     hasReady,
@@ -124,26 +148,44 @@ export function CartScreen({
   );
   const date = draft.date || initialDate,
     fulfillment = settings.delivery_enabled ? draft.fulfillment : "pickup";
+  const time = draft.time || (date === earliest.date ? earliest.time : "12:00");
   const address = deliveryAddress(draft);
   const currentSignature = JSON.stringify({
-    ...orderPayload(cart, draft, fulfillment, date, address, ""),
+    ...orderPayload(
+      cart,
+      { ...draft, time },
+      fulfillment,
+      date,
+      address,
+      "",
+      settings.preorder_only !== false,
+    ),
     idempotency_key: "",
   });
-  const dateError = dateProblem(
-    date,
-    minimum,
-    hasReady,
-    currentDay,
-    blocks,
-    draft.submittedSignature === currentSignature ? [] : days,
-    units,
-  );
+  const dateError =
+    (draft.submittedSignature === currentSignature
+      ? ""
+      : slotProblem(date, time, store.timezone, notice)) ||
+    dateProblem(
+      date,
+      minimum,
+      hasReady,
+      currentDay,
+      blocks,
+      draft.submittedSignature === currentSignature ? [] : days,
+      units,
+    );
   const subtotal = orderSubtotal(cart);
   const fee = fulfillment === "delivery" ? settings.delivery_fee_cents : 0;
   // Preserve the selected eligible day when navigating to an item and back.
   useEffect(() => {
     if (!draft.date && initialDate)
-      setDraft((d) => ({ ...d, date: initialDate }));
+      setDraft((d) => ({
+        ...d,
+        date: initialDate,
+        time:
+          d.time || (initialDate === earliest.date ? earliest.time : "12:00"),
+      }));
   }, [draft.date, initialDate, setDraft]);
   const update = <K extends keyof CheckoutDraft>(
     name: K,
@@ -202,6 +244,7 @@ export function CartScreen({
         );
       const preview = prepareOrder(cart, {
         ...draft,
+        time,
         fulfillment,
         date,
         address,
@@ -218,11 +261,12 @@ export function CartScreen({
       if (popup) popup.opener = null;
       const payload = orderPayload(
         cart,
-        draft,
+        { ...draft, time },
         fulfillment,
         date,
         address,
         retry.current.key,
+        settings.preorder_only !== false,
       );
       const signature = JSON.stringify({ ...payload, idempotency_key: "" });
       if (signature !== retry.current.signature)
@@ -313,6 +357,14 @@ export function CartScreen({
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
+                      {selectedSummary(
+                        item.optionGroups ?? [],
+                        item.selections ?? {},
+                      ).map((g) => (
+                        <p className="text-xs text-muted" key={g.title}>
+                          {g.title}: {g.options.map((o) => o.label).join(", ")}
+                        </p>
+                      ))}
                       <span className="text-xs text-muted">
                         {item.mode === "ready"
                           ? "Pronta entrega hoje"
@@ -468,6 +520,20 @@ export function CartScreen({
                   aria-describedby="checkout-date-help"
                 />
               </label>
+              <label className="module-field mt-4">
+                <span>Horário pretendido</span>
+                <input
+                  name="time"
+                  type="time"
+                  required
+                  step={60}
+                  min={date === earliest.date ? earliest.time : undefined}
+                  value={time}
+                  onChange={(e) => update("time", e.target.value)}
+                  className="ui-field"
+                  aria-describedby="checkout-date-help"
+                />
+              </label>
               <p
                 id="checkout-date-help"
                 role={dateError ? "alert" : undefined}
@@ -478,7 +544,7 @@ export function CartScreen({
                 {dateError ||
                   (hasReady
                     ? "Pronta entrega disponível hoje."
-                    : "A primeira data disponível considera a antecedência e a agenda da confeitaria. A disponibilidade é confirmada ao continuar.")}
+                    : "Encomendas com antecedência mínima de 48 horas. Escolha a data e o horário para entrega ou recolha; a confeitaria confirma a disponibilidade.")}
               </p>
             </section>
             <section className="checkout-card">

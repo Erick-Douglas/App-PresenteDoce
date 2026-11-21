@@ -91,3 +91,8 @@ Antes da venda em volume: conta/gateway, privacidade/retenção, recuperação i
 ## Entrada de mutações web · 21/11/2026
 
 O browser HTTPS usa /api/store em Node.js/Vercel, preservando React/Vite. O gateway usa somente URL/chave publicável de ambiente, encaminha JWT e IP de origem e limita bytes/tempo. Edge Function e RLS permanecem a fronteira de autorização e preço; o gateway não concede privilégios. Leituras públicas/Auth/Storage continuam em Supabase. Local e Capacitor mantêm o caminho direto compatível, com validação de tamanho antes do envio. O motivo e o limite do relay do provedor estão em [Segurança](SEGURANCA.md).
+
+
+## Grupos e horários · 21/11/2026
+
+[Contrato e migrações](GRUPOS-E-ENCOMENDAS.md): UUID de grupos/opções; padrões de categoria e override de produto; snapshots de escolhas/preços por item; resolução transacional no banco; delivery_time e delivery_at. Manter RLS, revisão e versão. Nenhuma migração para Next.js.

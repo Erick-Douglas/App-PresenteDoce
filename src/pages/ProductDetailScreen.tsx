@@ -1,3 +1,9 @@
+import { ProductChoices } from "../components/ProductChoices";
+import {
+  optionsExtra,
+  selectionProblem,
+  type Selections,
+} from "../features/products/options";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -38,6 +44,8 @@ interface ProductDetailScreenProps {
       mode?: "ready" | "preorder";
       variant?: string;
       selectedFlavors?: string[];
+      selections?: Selections;
+      basePrice?: number;
     },
   ) => void;
   onUpdateCartItem?: (
@@ -56,6 +64,8 @@ interface ProductDetailScreenProps {
       mode?: "ready" | "preorder";
       variant?: string;
       selectedFlavors?: string[];
+      selections?: Selections;
+      basePrice?: number;
     },
   ) => void;
   editingItem?: CartItem | null;
@@ -201,6 +211,20 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   categoryId,
 }) => {
   const { settings, stock } = useStore();
+  const hasGeneric = product.optionGroups !== undefined;
+  const groups = product.optionGroups ?? [];
+  const cleanSelections = (value: Selections): Selections =>
+    Object.fromEntries(
+      groups.map((g) => [
+        g.id,
+        (value[g.id] ?? []).filter((id) => g.options.some((o) => o.id === id)),
+      ]),
+    );
+  const [selections, setSelections] = useState<Selections>(() =>
+    cleanSelections(editingItem?.selections ?? {}),
+  );
+  const optionsError = selectionProblem(groups, selections);
+  const preorderOnly = settings.preorder_only !== false;
   const MASSAS_BT = cakeOptions(settings.cake_masses).map((v) => ({
     label: v.label,
     extra: v.extra_cents / 100,
@@ -240,6 +264,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       setTema(editingItem.tema || "");
       setVariant(editingItem.variant || "");
       setSelectedFlavors(editingItem.selectedFlavors || []);
+      setSelections(cleanSelections(editingItem.selections ?? {}));
     } else {
       setQuantity(1);
       setObservations("");
@@ -250,13 +275,14 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       setTema("");
       setVariant("");
       setSelectedFlavors([]);
+      setSelections({});
     }
   }, [editingItem]);
 
   const isFav = favorites.includes(product.id);
   const isSimples = product.simples === true;
   const orderMode = productOrderMode(product);
-  const isConfiguravel = orderMode !== "simple";
+  const isConfiguravel = !hasGeneric && orderMode !== "simple";
   const hasBoxOptions = orderMode === "brigadeiros" || orderMode === "salgados";
 
   const tamanhos =
@@ -266,6 +292,12 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
   // Preço calculado dinamicamente
   const calculatedPrice = useMemo(() => {
+    if (hasGeneric)
+      return (
+        ((Math.round(product.price * 100) + optionsExtra(groups, selections)) *
+          quantity) /
+        100
+      );
     if (!isConfiguravel) return product.price * quantity;
 
     if (hasBoxOptions && product.variants) {
@@ -296,6 +328,9 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     tamanhos,
     settings.cake_masses,
     settings.cake_fillings,
+    hasGeneric,
+    groups,
+    selections,
   ]);
 
   // Lógica: 1º clique = seleciona, 2º no mesmo = duplica ("só esse"), 3º = cancela
@@ -327,8 +362,9 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
     product.flavors?.length ??
     0;
   const canAdd =
-    (saleMode !== "ready" || quantity <= available) &&
-    (!hasBoxOptions || selectedFlavors.length <= flavorLimit) &&
+    (preorderOnly || saleMode !== "ready" || quantity <= available) &&
+    (!hasGeneric || !optionsError) &&
+    (hasGeneric || !hasBoxOptions || selectedFlavors.length <= flavorLimit) &&
     (!isConfiguravel ||
       (hasBoxOptions
         ? !!product.variants?.some((option) => option.label === variant)
@@ -338,10 +374,34 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
   const handleAdd = () => {
     if (!canAdd) return;
+    if (hasGeneric) {
+      const next = {
+        mode: "preorder" as const,
+        selections,
+        observations,
+        quantity,
+        basePrice: product.price,
+      };
+      if (editingItem && onUpdateCartItem)
+        onUpdateCartItem(
+          editingItem.cartId,
+          { ...product, price: calculatedPrice / quantity },
+          next,
+        );
+      else onAddToCart({ ...product, price: calculatedPrice / quantity }, next);
+      onBack();
+      return;
+    }
     const options = hasBoxOptions
-      ? { mode: saleMode, variant, selectedFlavors, observations, quantity }
+      ? {
+          mode: preorderOnly ? "preorder" : saleMode,
+          variant,
+          selectedFlavors,
+          observations,
+          quantity,
+        }
       : {
-          mode: saleMode,
+          mode: preorderOnly ? "preorder" : saleMode,
           massa,
           recheio1,
           recheio2,
@@ -360,7 +420,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
         );
       } else {
         onUpdateCartItem(editingItem.cartId, product, {
-          mode: saleMode,
+          mode: preorderOnly ? "preorder" : saleMode,
           sauce,
           observations,
           quantity,
@@ -370,11 +430,15 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       if (isConfiguravel) {
         onAddToCart({ ...product, price: calculatedPrice / quantity }, options);
       } else {
-        onAddToCart(product, { mode: saleMode, sauce, observations, quantity });
+        onAddToCart(product, {
+          mode: preorderOnly ? "preorder" : saleMode,
+          sauce,
+          observations,
+          quantity,
+        });
       }
     }
-    if (editingItem) onNavigate("cart");
-    else onBack();
+    onBack();
   };
 
   const fmtExtra = (extra: number) => "+" + formatEuros(extra);
@@ -447,13 +511,6 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 {product.description}
               </p>
 
-              {!!product.tags?.length && (
-                <ul className="product-topics" aria-label="Tópicos do produto">
-                  {product.tags.map((tag) => (
-                    <li key={tag}>{tag}</li>
-                  ))}
-                </ul>
-              )}
               {/* Preço total — bem visível */}
               <div className="flex items-baseline gap-2">
                 {isConfiguravel &&
@@ -480,58 +537,24 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
               </div>
             </div>
 
-            <Section
-              title={
-                (product.saleModes || ["preorder"]).length > 1
-                  ? "Disponibilidade"
-                  : "Feito para si"
-              }
-              optional
-            >
-              {(product.saleModes || ["preorder"]).length > 1 && (
-                <div className="category-rail">
-                  {(product.saleModes || ["preorder"]).map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      className="category-pill"
-                      aria-pressed={saleMode === m}
-                      onClick={() => setSaleMode(m)}
-                    >
-                      {m === "ready" ? "Pronta entrega hoje" : "Por encomenda"}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <p className="text-sm text-muted py-2">
-                {saleMode === "ready"
-                  ? available +
-                    " unidades disponíveis desta opção. Confirmamos o estoque ao enviar."
-                  : "Preparado por encomenda. Escolha as opções abaixo e indique a data no carrinho."}
-              </p>
-            </Section>
-            {!!gallery.length && (
-              <Section title="Modelos para inspirar" optional>
-                <div className="flex gap-3 overflow-x-auto py-2">
-                  {[{ image: product.image, title: "Produto" }, ...gallery].map(
-                    (g) => (
-                      <button
-                        type="button"
-                        className="shrink-0 w-24 text-left"
-                        key={g.image}
-                        onClick={() => setHero(imageUrl(g.image))}
-                      >
-                        <img
-                          src={imageUrl(g.image)}
-                          alt={g.title || "Modelo de referência"}
-                          className="w-24 h-24 rounded-lg object-cover"
-                        />
-                        <span className="text-xs">{g.title}</span>
-                      </button>
-                    ),
-                  )}
-                </div>
-              </Section>
+            {hasGeneric && (
+              <>
+                <ProductChoices
+                  groups={groups}
+                  selections={selections}
+                  onChange={setSelections}
+                />
+                <Section title="Observações" optional>
+                  <textarea
+                    className="ui-field min-h-20 resize-y"
+                    aria-label="Observações do produto"
+                    maxLength={300}
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    placeholder="Algum pedido especial?"
+                  />
+                </Section>
+              </>
             )}
             {/* ── BRIGADEIROS / SALGADOS ── */}
             {isConfiguravel && hasBoxOptions && (
@@ -682,19 +705,6 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 </Section>
 
                 {/* Tema */}
-                <Section
-                  title="Tema / Referência"
-                  optional
-                  hint="Descreva o tema ou informe que enviará fotos pelo WhatsApp."
-                >
-                  <textarea
-                    value={tema}
-                    maxLength={200}
-                    onChange={(e) => setTema(e.target.value)}
-                    placeholder="Ex: Mickey Mouse, azul e amarelo. Enviarei 2 fotos de referência no WhatsApp."
-                    className="w-full h-24 bg-subtle rounded-xl p-3.5 text-base text-on-surface border border-black/8 focus:border-primary/30 outline-none transition-all resize-none placeholder:text-muted mt-1"
-                  />
-                </Section>
 
                 {/* Observações */}
                 <Section title="Observações" optional>
@@ -710,14 +720,8 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
             )}
 
             {/* ── BOLOS CASEIROS (simples) ── */}
-            {isSimples && (
+            {!hasGeneric && isSimples && (
               <div className="divide-y divide-black/[0.06]">
-                <div className="px-6 py-4 bg-green-50 flex gap-3 items-center">
-                  <Check size={16} className="text-green-600 shrink-0" />
-                  <p className="text-sm text-green-700 font-bold">
-                    Produto artesanal, pronto para encomendar.
-                  </p>
-                </div>
                 <Section title="Observações" optional>
                   <textarea
                     value={observations}
@@ -731,7 +735,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
             )}
 
             {/* ── GENÉRICO (Doces, Salgados, Kit Festa) ── */}
-            {!isSimples && !isConfiguravel && (
+            {!hasGeneric && !isSimples && !isConfiguravel && (
               <Section title="Observações" optional>
                 <textarea
                   value={observations}
@@ -785,7 +789,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 className="hidden shrink-0 sm:block"
                 aria-hidden="true"
               />
-              <span>{editingItem ? "Atualizar" : "Adicionar"}</span>
+              <span>{editingItem ? "Atualizar no carrinho" : "Adicionar"}</span>
             </div>
             {calculatedPrice > 0 && (
               <span className="whitespace-nowrap tabular-nums">

@@ -1,3 +1,4 @@
+import { useStore } from "../features/platform/StoreProvider";
 import {
   Calculator,
   CalendarDays,
@@ -43,6 +44,7 @@ export function ManagementNav({
   preview: boolean;
   onPreview: () => void;
 }) {
+  const { settings } = useStore();
   return (
     <>
       <aside
@@ -59,6 +61,9 @@ export function ManagementNav({
             {managementLinks.map(({ view, label, icon: Icon }) => (
               <button
                 key={view}
+                disabled={
+                  view === "inventory" && settings.preorder_only !== false
+                }
                 aria-current={current === view ? "page" : undefined}
                 onClick={() => onNavigate(view)}
               >
@@ -66,9 +71,6 @@ export function ManagementNav({
                 <span>{label}</span>
               </button>
             ))}
-            <button onClick={onMenu}>
-              <MoreHorizontal size={18} /> Mais opções
-            </button>
           </nav>
         )}
       </aside>
@@ -96,10 +98,6 @@ export function ManagementNav({
                   </span>
                 </button>
               ))}
-            <button onClick={onMenu}>
-              <MoreHorizontal size={19} />
-              Mais
-            </button>
           </>
         )}
       </nav>

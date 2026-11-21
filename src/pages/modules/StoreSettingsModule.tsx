@@ -199,6 +199,11 @@ export function StoreSettingsModule({
                 address: text(f, "address"),
                 hours: text(f, "hours"),
                 lead_days: number(f, "lead"),
+                preorder_only: initial.preorder_only !== false,
+                min_notice_hours: Math.max(
+                  initial.preorder_only !== false ? 48 : 0,
+                  initial.min_notice_hours ?? 48,
+                ),
                 daily_capacity: number(f, "capacity"),
                 deposit_percent: number(f, "deposit"),
                 delivery_enabled: f.get("delivery") === "on",
@@ -340,12 +345,15 @@ export function StoreSettingsModule({
             <div className="collapse-body">
               <div className="module-grid">
                 <Field
-                  label="Antecedência mínima (dias)"
+                  label="Antecedência mínima (dias, pelo menos 48 horas)"
                   name="lead"
                   type="number"
-                  min={0}
+                  min={initial.preorder_only !== false ? 2 : 0}
                   max={99}
-                  value={initial.lead_days}
+                  value={Math.max(
+                    initial.preorder_only !== false ? 2 : 0,
+                    initial.lead_days,
+                  )}
                   required
                 />
                 <Field

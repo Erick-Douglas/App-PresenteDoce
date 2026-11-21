@@ -1,3 +1,4 @@
+import { useStore } from "../features/platform/StoreProvider";
 import {
   Download,
   Eye,
@@ -39,6 +40,7 @@ export function Sidebar({
   onInstall,
   canInstallDirectly,
 }: SidebarProps) {
+  const { settings } = useStore();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
@@ -195,6 +197,10 @@ export function Sidebar({
                 {group.items.map(({ icon: Icon, label, action }) => (
                   <button
                     key={label}
+                    disabled={
+                      label === "Pronta entrega" &&
+                      settings.preorder_only !== false
+                    }
                     type="button"
                     onClick={() => {
                       dismiss();
@@ -208,7 +214,13 @@ export function Sidebar({
                       aria-hidden="true"
                       className="menu-group-icon"
                     />
-                    <span>{label}</span>
+                    <span>
+                      {label}
+                      {label === "Pronta entrega" &&
+                      settings.preorder_only !== false
+                        ? " · Em breve"
+                        : ""}
+                    </span>
                   </button>
                 ))}
               </section>

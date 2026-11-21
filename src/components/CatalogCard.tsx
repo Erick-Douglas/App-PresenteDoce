@@ -1,4 +1,5 @@
-import { ArrowUpRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import { hasPurchaseOptions } from "../features/products/options";
 import type { Product } from "../config/types";
 import { currencySymbol } from "../features/checkout/order";
 import { LiveProductStock } from "../features/platform/LiveEditing";
@@ -22,16 +23,17 @@ export function CatalogCard({
   onEdit,
 }: CatalogCardProps) {
   const { stock } = useStore();
-  const ready = product.saleModes?.includes("ready");
+  const ready = false;
   const available = stock
     .filter((s) => s.product_id === product.id)
     .reduce((sum, s) => sum + s.available, 0);
-  const needsOptions = product.configuravel || ready;
-  const CartIcon = needsOptions ? ArrowUpRight : Plus;
+  const needsOptions = hasPurchaseOptions(product);
+  const CartIcon = Plus;
   const cartAction = needsOptions ? "Personalizar " : "Adicionar ao carrinho ";
 
   return (
     <article className="ui-card group relative flex min-w-0 flex-col overflow-hidden transition-shadow hover:shadow-md">
+      <ProductEditButton product={product} onEdit={onEdit} overlay />
       <h3 className="type-label">
         <button
           type="button"
@@ -93,7 +95,6 @@ export function CatalogCard({
       </div>
       {onEdit && (
         <div className="catalog-live-row border-t border-muted-fill px-3 sm:px-4">
-          <ProductEditButton product={product} onEdit={onEdit} />
           <LiveProductStock product={product} />
         </div>
       )}

@@ -1,3 +1,6 @@
+import { ProductChoices } from "../../components/ProductChoices";
+import type { Selections } from "../../features/products/options";
+import { earliestSlot } from "../../features/checkout/schedule";
 import { AppSelect } from "../../components/AppSelect";
 import { ChevronLeft, ChevronRight, MessageCircle, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -42,6 +45,7 @@ export function OrderComposer({
     [lines, setLines] = useState([
       {
         id: crypto.randomUUID(),
+        selections: {} as Selections,
         product: "",
         variant: "",
         quantity: 1,
@@ -49,6 +53,13 @@ export function OrderComposer({
       },
     ]),
     [customerId, setCustomerId] = useState("");
+  const firstSlot = earliestSlot(
+    store.timezone,
+    Math.max(
+      settings.preorder_only !== false ? 48 : 0,
+      settings.min_notice_hours ?? 48,
+    ),
+  );
   const selected = data.customers.find((c) => c.id === customerId);
   return (
     <Panel
@@ -72,6 +83,7 @@ export function OrderComposer({
         build={(f, key): OrderPayload => ({
           idempotency_key: key,
           delivery_date: text(f, "day"),
+          delivery_time: text(f, "delivery_time"),
           fulfillment: text(f, "fulfillment") as "pickup" | "delivery",
           kind: text(f, "kind") as "order" | "quote",
           customer: {
@@ -86,12 +98,21 @@ export function OrderComposer({
             product_id: l.product,
             variant: l.variant,
             quantity: l.quantity,
-            mode: l.mode as "preorder" | "ready",
-            configuration: Object.fromEntries(
-              ["massa", "recheio1", "recheio2", "tema", "observations"]
-                .map((key) => [key, text(f, l.id + ":" + key)])
-                .filter(([, value]) => value),
-            ),
+            mode:
+              settings.preorder_only !== false
+                ? "preorder"
+                : (l.mode as "preorder" | "ready"),
+            configuration: {
+              ...Object.fromEntries(
+                ["massa", "recheio1", "recheio2", "tema", "observations"]
+                  .map((key) => [key, text(f, l.id + ":" + key)])
+                  .filter(([, value]) => value),
+              ),
+              ...(rows.find((r) => r.id === l.product)?.details.optionGroups !==
+              undefined
+                ? { selections: l.selections }
+                : {}),
+            },
           })),
         })}
       >
@@ -153,7 +174,15 @@ export function OrderComposer({
             label="Data"
             name="day"
             type="date"
-            value={today(store.timezone)}
+            value={firstSlot.date}
+            min={firstSlot.date}
+            required
+          />
+          <Field
+            label="Horário"
+            name="delivery_time"
+            type="time"
+            value={firstSlot.time}
             required
           />
           <Field label="Receção">
@@ -183,6 +212,7 @@ export function OrderComposer({
                         const p = rows.find((r) => r.id === e.target.value);
                         update({
                           product: e.target.value,
+                          selections: {},
                           variant: p?.details.variants?.[0]?.label || "",
                           mode: p?.details.saleModes?.[0] || "preorder",
                         });
@@ -210,78 +240,93 @@ export function OrderComposer({
                       }
                     />
                   </Field>
-                  {!!product?.details.variants?.length && (
-                    <Field label="Tamanho ou opção">
-                      <AppSelect
-                        className="ui-field"
-                        value={line.variant}
-                        onChange={(e) => update({ variant: e.target.value })}
-                      >
-                        {product.details.variants.map((v) => (
-                          <option key={v.label} value={v.label}>
-                            {v.label} · {formatEuros(v.price)}
-                          </option>
-                        ))}
-                      </AppSelect>
-                    </Field>
-                  )}
-                  <Field label="Disponibilidade">
-                    <AppSelect
-                      className="ui-field"
-                      value={line.mode}
-                      onChange={(e) => update({ mode: e.target.value })}
-                    >
-                      {(product?.details.saleModes || ["preorder"]).map((m) => (
-                        <option key={m} value={m}>
-                          {m === "ready"
-                            ? "Pronta entrega (hoje)"
-                            : "Por encomenda"}
-                        </option>
-                      ))}
-                    </AppSelect>
-                  </Field>
-                </div>
-                {product?.details.orderMode === "cake" && (
-                  <div className="module-grid mt-3">
-                    {(["massa", "recheio1", "recheio2"] as const).map((key) => (
-                      <Field
-                        key={key}
-                        label={
-                          key === "massa"
-                            ? "Massa"
-                            : key === "recheio1"
-                              ? "Recheio principal"
-                              : "Segundo recheio (opcional)"
-                        }
-                      >
+                  {product?.details.optionGroups === undefined &&
+                    !!product?.details.variants?.length && (
+                      <Field label="Tamanho ou opção">
                         <AppSelect
                           className="ui-field"
-                          name={line.id + ":" + key}
-                          required={key !== "recheio2"}
+                          value={line.variant}
+                          onChange={(e) => update({ variant: e.target.value })}
                         >
-                          <option value="">Escolher</option>
-                          {options(
-                            key === "massa"
-                              ? settings.cake_masses
-                              : settings.cake_fillings,
-                          ).map((v) => (
+                          {product.details.variants.map((v) => (
                             <option key={v.label} value={v.label}>
-                              {v.label}
-                              {v.extra_cents
-                                ? " + " + formatEuros(v.extra_cents / 100)
-                                : ""}
+                              {v.label} · {formatEuros(v.price)}
                             </option>
                           ))}
                         </AppSelect>
                       </Field>
-                    ))}
-                    <Field
-                      label="Tema ou referência"
-                      name={line.id + ":tema"}
-                      maxLength={300}
-                    />
-                  </div>
+                    )}
+                  {settings.preorder_only === false && (
+                    <Field label="Disponibilidade">
+                      <AppSelect
+                        className="ui-field"
+                        value={line.mode}
+                        onChange={(e) => update({ mode: e.target.value })}
+                      >
+                        {(product?.details.saleModes || ["preorder"]).map(
+                          (m) => (
+                            <option key={m} value={m}>
+                              {m === "ready"
+                                ? "Pronta entrega (hoje)"
+                                : "Por encomenda"}
+                            </option>
+                          ),
+                        )}
+                      </AppSelect>
+                    </Field>
+                  )}
+                </div>
+                {product?.details.optionGroups !== undefined && (
+                  <ProductChoices
+                    groups={product.details.optionGroups}
+                    selections={line.selections}
+                    onChange={(selections) => update({ selections })}
+                  />
                 )}
+                {product?.details.optionGroups === undefined &&
+                  product?.details.orderMode === "cake" && (
+                    <div className="module-grid mt-3">
+                      {(["massa", "recheio1", "recheio2"] as const).map(
+                        (key) => (
+                          <Field
+                            key={key}
+                            label={
+                              key === "massa"
+                                ? "Massa"
+                                : key === "recheio1"
+                                  ? "Recheio principal"
+                                  : "Segundo recheio (opcional)"
+                            }
+                          >
+                            <AppSelect
+                              className="ui-field"
+                              name={line.id + ":" + key}
+                              required={key !== "recheio2"}
+                            >
+                              <option value="">Escolher</option>
+                              {options(
+                                key === "massa"
+                                  ? settings.cake_masses
+                                  : settings.cake_fillings,
+                              ).map((v) => (
+                                <option key={v.label} value={v.label}>
+                                  {v.label}
+                                  {v.extra_cents
+                                    ? " + " + formatEuros(v.extra_cents / 100)
+                                    : ""}
+                                </option>
+                              ))}
+                            </AppSelect>
+                          </Field>
+                        ),
+                      )}
+                      <Field
+                        label="Tema ou referência"
+                        name={line.id + ":tema"}
+                        maxLength={300}
+                      />
+                    </div>
+                  )}
                 {lines.length > 1 && (
                   <button
                     type="button"
@@ -306,6 +351,7 @@ export function OrderComposer({
               ...ls,
               {
                 id: crypto.randomUUID(),
+                selections: {} as Selections,
                 product: "",
                 variant: "",
                 quantity: 1,
@@ -364,7 +410,7 @@ function OrderDetail({
         " — " +
         formatEuros((i.quantity * i.unit_cents) / 100),
     ),
-    o.delivery_date,
+    o.delivery_date + (o.delivery_time ? " às " + o.delivery_time : ""),
     "Total: " +
       formatEuros(o.total_cents / 100) +
       (o.delivery_pending ? " + entrega a confirmar" : ""),
@@ -375,7 +421,12 @@ function OrderDetail({
     <Panel
       focusOnOpen
       title={"#" + o.reference + " · " + o.customer_snapshot.name}
-      description={labels[o.status] + " · " + o.delivery_date}
+      description={
+        labels[o.status] +
+        " · " +
+        o.delivery_date +
+        (o.delivery_time ? " às " + o.delivery_time : "")
+      }
     >
       <Metrics
         items={[
@@ -405,11 +456,25 @@ function OrderDetail({
               {i.mode === "ready" ? "Pronta entrega" : "Por encomenda"} ·{" "}
               {formatEuros((i.quantity * i.unit_cents) / 100)}
             </p>
-            {Object.entries(i.configuration || {}).map(([k, v]) => (
-              <p key={k} className="text-muted">
-                {k}: {Array.isArray(v) ? v.join(", ") : String(v)}
-              </p>
-            ))}
+            {Array.isArray(i.configuration?.option_labels) &&
+              (
+                i.configuration.option_labels as {
+                  title: string;
+                  options: { label: string }[];
+                }[]
+              ).map((g) => (
+                <p key={g.title} className="text-muted">
+                  {g.title}: {g.options.map((o) => o.label).join(", ")}
+                </p>
+              ))}
+            {Object.entries(i.configuration || {})
+              .filter(([k]) => !["selections", "option_labels"].includes(k))
+              .map(([k, v]) => (
+                <p key={k} className="text-muted">
+                  {k === "observations" ? "Observações" : k}:{" "}
+                  {Array.isArray(v) ? v.join(", ") : String(v)}
+                </p>
+              ))}
           </div>
         ))}
       </div>
@@ -597,7 +662,8 @@ export function OrdersModule(props: ModuleProps) {
                   #{o.reference} · {o.customer_snapshot.name}
                 </p>
                 <p className="text-sm text-muted">
-                  {o.delivery_date} ·{" "}
+                  {o.delivery_date}
+                  {o.delivery_time ? " às " + o.delivery_time : ""} ·{" "}
                   {o.fulfillment === "pickup" ? "Recolha" : "Entrega"}
                 </p>
               </div>

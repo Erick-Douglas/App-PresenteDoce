@@ -70,6 +70,7 @@ export async function browserPlatform(context, origin) {
             "set_delivery_fee",
             "adjust_stock",
             "save_catalog_category",
+            "save_catalog_configuration",
             "delete_catalog_category",
           ];
           assert.ok(allowed.includes(fn), "Unexpected RPC " + fn);
@@ -185,6 +186,9 @@ export async function browserPlatform(context, origin) {
             "home_description",
             "admin_name",
             "about_text",
+            "topics",
+            "option_groups",
+            "order_mode",
           ];
           const cols = Object.keys(body);
           assert.ok(cols.every((c) => allowedFields.includes(c)));

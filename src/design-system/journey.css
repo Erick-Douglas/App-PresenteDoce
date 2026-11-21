@@ -1,9 +1,6 @@
 /* Coffee composition, Presente Doce tokens. Functional touch targets remain 44px. */
 @layer components {
-  .with-management .masthead-menu {
-    visibility: hidden;
-    pointer-events: none;
-  }
+
   .with-management .store-masthead .page-width {
     grid-template-columns: 2.75rem 1fr 2.75rem;
   }

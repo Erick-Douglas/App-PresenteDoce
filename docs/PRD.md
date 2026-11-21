@@ -170,3 +170,8 @@ Os IDs PD-REV-01 a PD-REV-07 detalham o retorno de uso após a implementação i
 
 A correção atual detalha persistência de tópicos, edição sem perda de checkout, endereço estruturado sem API externa, disponibilidade por agenda, sacola compacta e menu único por contexto. [Especificações e evidências](CORRECOES-JORNADA-2026-11-21.md). O aceite visual e a comparação das receitas reais com a planilha não são substituídos pelos testes automatizados.
 
+
+
+## Definição vigente · Grupos e 48 horas · 21/11/2026
+
+Tópicos são grupos de opções de compra, com limites e adicionais gratuitos/pagos. A operação atual é só por encomenda, com 48 horas reais e data/hora no checkout; pronta entrega fica em standby. [Especificação PD-OPT-01 a PD-OPT-06](GRUPOS-E-ENCOMENDAS.md). Esta definição substitui as descrições anteriores de tópicos como etiquetas e da operação híbrida ativa.
