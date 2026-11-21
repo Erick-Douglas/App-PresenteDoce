@@ -161,7 +161,7 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       <input name="email" type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} className={field} />
     </label>
   );
-  const feedback = error && <p role="alert" className="text-sm font-bold text-primary">{error}</p>;
+  const feedback = error && <p role="alert" className="module-error">{error}</p>;
   const authCheck = <>
     {retrySeconds === 0 && <AuthChallenge key={authStep + ':' + challengeVersion} onToken={setCaptchaToken} />}
     {retrySeconds > 0 && <p className="text-sm text-on-surface">Nova tentativa em {retrySeconds} s.</p>}
@@ -175,7 +175,7 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       {emailField}
       {feedback}
       {authCheck}
-      <div className="flex flex-wrap items-center gap-x-4">
+      <div className="admin-actions">
         <button type="submit" className={primary} disabled={submitDisabled}>{busy ? 'A enviar…' : 'Enviar link'}</button>
         <button type="button" className={secondary} disabled={busy} onClick={() => show('login')}>Voltar a entrar</button>
       </div>
@@ -190,7 +190,7 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
           ? 'Se o endereço estiver cadastrado, abra o botão do e-mail para escolher a nova senha.'
           : 'Se o endereço estiver cadastrado, você receberá um e-mail. Use a recuperação manual com o endereço do botão.'}
       </p>
-      <div className="flex flex-wrap items-center gap-x-4">
+      <div className="admin-actions">
         {!directRecovery && <button type="button" className={secondary} onClick={() => show('manual')}>Usar link manualmente</button>}
         <button type="button" className={secondary} onClick={() => show('login')}>Voltar a entrar</button>
       </div>
@@ -210,7 +210,7 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       <label className={label}>Confirmar senha<input name="confirmPassword" type="password" required minLength={12} maxLength={64} autoComplete="new-password" className={field} /></label>
       <p className="text-xs text-muted">Use pelo menos 12 caracteres.</p>
       {feedback}
-      <div className="flex flex-wrap items-center gap-x-4">
+      <div className="admin-actions">
         <button type="submit" className={primary} disabled={busy}>{busy ? 'A guardar…' : 'Guardar senha'}</button>
         <button type="button" className={secondary} disabled={busy} onClick={restartRecovery}>Pedir novo link</button>
       </div>
@@ -242,7 +242,7 @@ export default function AccountForm({ initialRecovery, callback, onLogin, onReco
       {notice && <p role="status" className="text-sm text-on-surface">{notice}</p>}
       {feedback}
       {authCheck}
-      <div className="flex flex-wrap items-center gap-x-4">
+      <div className="admin-actions">
         <button type="submit" className={primary + ' inline-flex items-center gap-2'} disabled={submitDisabled}><LogIn size={15} aria-hidden="true" />{busy ? 'A entrar…' : 'Entrar com e-mail'}</button>
         <button type="button" className={secondary} disabled={busy} onClick={() => show('request')}>Esqueci a senha</button>
       </div>

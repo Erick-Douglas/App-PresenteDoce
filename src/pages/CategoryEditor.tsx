@@ -1,3 +1,4 @@
+import { AppSelect } from "../components/AppSelect";
 import {
   ArrowDown,
   ArrowUp,
@@ -395,7 +396,7 @@ export function CategoryEditor({
             <div className="module-inset space-y-3">
               <label className="module-field">
                 <span>Mover produto existente para esta categoria</span>
-                <select
+                <AppSelect
                   className="ui-field"
                   value={associate}
                   onChange={(e) => setAssociate(e.target.value)}
@@ -408,7 +409,7 @@ export function CategoryEditor({
                         {r.details.name} · {r.details.category}
                       </option>
                     ))}
-                </select>
+                </AppSelect>
               </label>
               <p className="text-xs text-muted">
                 O produto sai da categoria anterior. Os tópicos são associados
@@ -507,7 +508,7 @@ export function CategoryEditor({
                     {originalProducts.length === 1 ? 'produto' : 'produtos'}{' '}
                     para
                   </span>
-                  <select
+                  <AppSelect
                     className={catalogField}
                     value={destination}
                     onChange={(event) => setDestination(event.target.value)}
@@ -520,7 +521,7 @@ export function CategoryEditor({
                           {item.name}
                         </option>
                       ))}
-                  </select>
+                  </AppSelect>
                 </label>
                 <p className="text-sm text-muted">
                   Os produtos mantêm preços e opções de encomenda. Os tópicos

@@ -1,3 +1,4 @@
+import { AppSelect } from "../components/AppSelect";
 import { Calculator, Plus, Save, Trash2 } from 'lucide-react';
 import { useEffect, useState, type FormEvent } from 'react';
 import { formatEuros } from '../features/checkout/order';
@@ -248,7 +249,7 @@ export default function PricingScreen({
         <h2 className="type-item text-primary">Fichas da confeitaria</h2>
         <label className="block space-y-1">
           <span>Ficha guardada</span>
-          <select
+          <AppSelect
             aria-label="Ficha guardada"
             className="ui-field"
             disabled={busy || loading}
@@ -264,7 +265,7 @@ export default function PricingScreen({
                   'Ficha sem título'}
               </option>
             ))}
-          </select>
+          </AppSelect>
         </label>
         {loading && (
           <p role="status" className="text-xs text-muted">
@@ -273,7 +274,7 @@ export default function PricingScreen({
         )}
         <label className="block space-y-1">
           <span>Produto do catálogo</span>
-          <select
+          <AppSelect
             aria-label="Produto do catálogo"
             className="ui-field"
             value={productId}
@@ -295,12 +296,12 @@ export default function PricingScreen({
                 {row.published ? '' : ' · Rascunho'}
               </option>
             ))}
-          </select>
+          </AppSelect>
         </label>
         {product?.details.variants?.length ? (
           <label className="block space-y-1">
             <span>Tamanho ou opção</span>
-            <select
+            <AppSelect
               aria-label="Tamanho ou opção"
               className="ui-field"
               disabled={busy}
@@ -321,7 +322,7 @@ export default function PricingScreen({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </AppSelect>
           </label>
         ) : null}
         <p className="text-xs text-muted">
@@ -402,7 +403,7 @@ export default function PricingScreen({
                 </legend>
                 <label className="module-field mb-3">
                   <span>Origem do custo</span>
-                  <select
+                  <AppSelect
                     className="ui-field"
                     value={
                       row.ingredientId
@@ -467,7 +468,7 @@ export default function PricingScreen({
                           </option>
                         ))}
                     </optgroup>
-                  </select>
+                  </AppSelect>
                 </label>
                 {(row.ingredientId || row.recipeId) && (
                   <p className="text-xs text-muted mb-3">
@@ -490,7 +491,7 @@ export default function PricingScreen({
                   </label>
                   <label className="block space-y-1">
                     <span>Unidade</span>
-                    <select
+                    <AppSelect
                       className={input}
                       disabled={!!(row.ingredientId || row.recipeId)}
                       value={row.unit}
@@ -501,7 +502,7 @@ export default function PricingScreen({
                       <option value="g">g</option>
                       <option value="ml">ml</option>
                       <option value="un">unidade</option>
-                    </select>
+                    </AppSelect>
                   </label>
                   <label className="block space-y-1">
                     <span>Quantidade comprada</span>

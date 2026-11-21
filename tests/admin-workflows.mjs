@@ -33,7 +33,7 @@ const presentation={home_title:'Seja bem-vindo!',home_description:'Confeitaria a
 async function isolate(context) {
  await context.route('**/*',async route=>{
   const request=route.request(),url=new URL(request.url());
-  if(!url.hostname.endsWith('.supabase.co')) {
+  if(!url.hostname.endsWith('.supabase.co') && !(url.origin===origin && url.pathname==='/api/store')) {
    if(url.origin===origin||url.protocol==='data:'||url.protocol==='blob:')return route.continue();
    return route.abort();
   }
@@ -43,7 +43,7 @@ async function isolate(context) {
   if(p==='/rest/v1/rpc/storefront_config')return ok(publicConfig);
   if(p==='/rest/v1/rpc/storefront_availability')return ok({stock:state.stock,blocks:state.blocks});
   if(p==='/rest/v1/rpc/operations_snapshot')return ok(state);
-  if(p==='/functions/v1/store-api'){
+  if(p==='/functions/v1/store-api' || p==='/api/store'){
    const {action,payload:data}=body();
    if(action==='product.save'){
     if(data.version===null){const row={id:data.id,details:data.details,published:data.published,version:1};products.push(row);return ok(row);}
@@ -117,16 +117,24 @@ try{
  const page=await context.newPage();page.setDefaultTimeout(15000);
  const pageErrors=[];page.on('pageerror',error=>{pageErrors.push(error.message);console.log('PAGE_ERROR '+error.message);});
  const menu=async label=>{if(!await page.getByRole('button',{name:'Abrir menu',exact:true}).count())await page.getByRole('button',{name:'Voltar à vitrine',exact:true}).click();await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('dialog',{name:'Menu',exact:true}).getByRole('button',{name:label,exact:true}).click();};
+ const native=label=>page.locator('select').and(page.getByLabel(label,{exact:true}));
+ const choose=async(label,value)=>{
+   await page.waitForFunction(({label,value})=>Array.from(document.querySelectorAll('select')).some(s=>s.getAttribute('aria-label')===label && Array.from(s.options).some(o=>o.value===value)),{label,value});
+   const text=await native(label).locator('option').evaluateAll((items,v)=>items.find(i=>i.value===v)?.textContent.trim().replace(/\s+/g,' '),value);
+   assert.ok(text,'option '+label+' '+value);
+   await page.getByRole('combobox',{name:label,exact:true}).click();
+   await page.getByRole('option',{name:text,exact:true}).click();
+ };
  const login=async remember=>{await menu('Entrar');await page.getByLabel('E-mail',{exact:true}).fill('fixture@example.test');await page.getByLabel('Senha',{exact:true}).fill('isolated-fixture');
  await page.getByLabel('Manter sessão iniciada',{exact:true}).setChecked(remember);await page.getByRole('button',{name:'Entrar com e-mail',exact:true}).click();await page.getByRole('heading',{name:'Olá, Gabriela!'}).waitFor();};
  const png=async color=>Buffer.from(await page.evaluate(color=>{const c=document.createElement('canvas');c.width=c.height=32;const ctx=c.getContext('2d');ctx.fillStyle=color;ctx.fillRect(0,0,32,32);return c.toDataURL('image/png').split(',')[1];},color),'base64');
  await page.goto(origin);await page.getByRole('article').nth(2).waitFor();await login(true);
- await menu('Precificação');await page.getByLabel('Ficha guardada',{exact:true}).selectOption(originalRecipe.id);
+ await menu('Precificação');await choose('Ficha guardada',originalRecipe.id);
  await page.getByRole('button',{name:'Limpar rascunho local',exact:true}).click();
- assert.equal(await page.getByLabel('Ficha guardada',{exact:true}).inputValue(),'');
- assert.equal(await page.getByLabel('Produto do catálogo',{exact:true}).inputValue(),'');
+ assert.equal(await native('Ficha guardada').inputValue(),'');
+ assert.equal(await native('Produto do catálogo').inputValue(),'');
  await page.getByRole('button',{name:'Guardar ficha',exact:true}).click();await page.getByRole('alert').waitFor();assert.equal(recipeWrites,0);
- await page.getByLabel('Ficha guardada',{exact:true}).selectOption(originalRecipe.id);
+ await choose('Ficha guardada',originalRecipe.id);
  assert.equal(await page.getByLabel('Rendimento da receita',{exact:true}).inputValue(),'4');
  assert.deepEqual(recipes[0],originalRecipe);
  await page.getByLabel('Preço de venda por unidade (€)',{exact:true}).fill('12');
@@ -172,11 +180,9 @@ try{
  const bluePixel=await colorOf(uploadBuffers.at(-1));assert.ok(bluePixel[2]>200&&bluePixel[0]<50);
  pass('photo: valid → oversized → cancel keeps original upload; reopen, replace, failure and retry preserve form and pixels');
  await menu('Início');await page.getByRole('group',{name:'Filtrar por categoria'}).getByRole('button',{name:'Caseirinhos',exact:true}).click();
- await page.getByRole('group',{name:'Filtrar por tópico'}).getByRole('button',{name:'Sem açúcar',exact:true}).click();
- assert.equal(await page.getByRole('article').count(),2);
- await page.getByRole('group',{name:'Filtrar por tópico'}).getByRole('button',{name:'Todos os tópicos',exact:true}).click();assert.equal(await page.getByRole('article').count(),3);
- await page.getByRole('group',{name:'Filtrar por tópico'}).getByRole('button',{name:'Sem lactose',exact:true}).click();assert.equal(await page.getByRole('article').count(),1);
- pass('topics: association persists on reopen; public category/topic filters select the associated products');
+ assert.equal(await page.getByRole('group',{name:'Filtrar por tópico'}).count(),0);
+ assert.equal(await page.getByRole('article').count(),3);
+ pass('topics: associations persist in management; topic chips are absent from the storefront');
 
  await menu('Clientes');await page.getByRole('button',{name:'Novo cliente',exact:true}).click();
  await page.getByLabel('Nome',{exact:true}).fill('Cliente QA');
@@ -189,17 +195,17 @@ try{
  await page.getByLabel('Preço da embalagem (EUR)',{exact:true}).fill('4');
  await page.getByRole('button',{name:'Guardar',exact:true}).click();await page.getByRole('button',{name:/Farinha QA/}).waitFor();assert.equal(state.ingredients[0].pack_price_cents,400);
  await menu('Encomendas');await page.getByRole('button',{name:'Nova encomenda',exact:true}).click();
- await page.getByLabel('Cliente existente',{exact:true}).selectOption(state.customers[0].id);
- await page.getByLabel('Produto',{exact:true}).selectOption('qa-original');
+ await choose('Cliente existente',state.customers[0].id);
+ await choose('Produto','qa-original');
  await page.getByLabel('Data',{exact:true}).fill('2026-12-20');
  await page.getByRole('button',{name:'Guardar encomenda',exact:true}).click();await page.getByRole('button',{name:/#1 · Cliente QA/}).waitFor();assert.equal(state.orders.length,1);assert.equal(state.orders[0].total_cents,1200);
- await menu('Financeiro');await page.getByLabel('Encomenda',{exact:true}).selectOption(state.orders[0].id);
- await page.getByLabel(/Confirmei que este valor/).check();
+ await menu('Financeiro');await page.getByRole('button',{name:'Novo movimento',exact:true}).click();await choose('Encomenda',state.orders[0].id);
+ await page.getByLabel('Descrição',{exact:true}).fill('Sinal de teste');
  await page.getByRole('button',{name:'Confirmar movimento',exact:true}).click();
- await page.getByText('Recebimento de encomenda',{exact:true}).waitFor();assert.equal(state.finance[0].amount_cents,600);
- await menu('Pronta entrega');await page.getByLabel('Produto e opção',{exact:true}).selectOption(JSON.stringify(['qa-original','']));
+ await page.getByText('Sinal de teste',{exact:true}).waitFor();assert.equal(state.finance[0].amount_cents,600);
+ await menu('Pronta entrega');await choose('Produto e opção',JSON.stringify(['qa-original','']));
  await page.getByLabel('Quantidade',{exact:true}).fill('3');await page.getByLabel('Motivo',{exact:true}).fill('Produção de teste');
- await page.getByRole('button',{name:'Confirmar ajuste',exact:true}).click();await page.getByText('3 un.',{exact:true}).waitFor();assert.equal(state.stock[0].available,3);
+ await page.getByRole('button',{name:'Confirmar ajuste',exact:true}).click();await page.getByText('Guardado.',{exact:true}).waitFor();assert.equal(state.stock[0].available,3);
  await menu('Agenda e produção');await page.getByLabel('Capacidade especial (vazio usa o padrão)',{exact:true}).fill('5');
  await page.getByRole('button',{name:'Guardar disponibilidade',exact:true}).click();await page.getByText('Guardado.',{exact:true}).waitFor();assert.equal(state.blocks[0].capacity,5);
  await menu('Início');await menu('Pré-visualizar como cliente');

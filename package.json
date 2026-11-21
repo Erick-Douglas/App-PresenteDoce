@@ -13,7 +13,7 @@
     "native:sync": "npm run build && cap sync",
     "native:android": "cap open android",
     "native:ios": "cap open ios",
-    "check:server": "tsc --noEmit --module esnext --moduleResolution bundler --target ES2022 --lib es2022,dom --skipLibCheck true --strict true supabase/functions/store-api/handler.ts"
+    "check:server": "tsc --noEmit --module esnext --moduleResolution bundler --target ES2022 --lib es2022,dom --skipLibCheck true --strict true supabase/functions/store-api/handler.ts api/store.ts"
   },
   "dependencies": {
     "@capacitor/android": "8.6.2",

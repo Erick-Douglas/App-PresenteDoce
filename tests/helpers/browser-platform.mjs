@@ -1,0 +1,256 @@
+// Browser → real Edge handler → isolated PostgreSQL. Only Auth identity is simulated.
+import assert from "node:assert/strict";
+import { createDatabase, scope } from "./database.mjs";
+import { handleGateway } from "../../server/storeGateway.ts";
+import { handleRequest } from "../../supabase/functions/store-api/handler.ts";
+export async function browserPlatform(context, origin) {
+  const db = await createDatabase(),
+    sid = "11111111-1111-4111-a111-111111111111",
+    uid = "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa";
+  const token = "isolated-admin-identity",
+    service = "isolated-service-identity";
+  await db.exec(
+    "update public.store_settings set settings=jsonb_set(settings,'{whatsapp}',to_jsonb('+351000000000'::text))",
+  );
+  const productRows = (
+    await db.query(
+      "select to_jsonb(p) d from public.catalog_products p order by display_order nulls last,created_at,id",
+    )
+  ).rows.map((r) => r.d);
+  const config = (await db.query("select public.storefront_config() d")).rows[0]
+    .d;
+  const errors = [];
+  let queue = Promise.resolve();
+  function serial(fn) {
+    const next = queue.then(fn);
+    queue = next.catch(() => {});
+    return next;
+  }
+  async function provider(url, init = {}) {
+    const u = new URL(url),
+      p = u.pathname,
+      h = new Headers(init.headers),
+      auth = (h.get("Authorization") || "").replace("Bearer ", "");
+    if (p === "/auth/v1/user")
+      return Response.json(
+        auth === token ? { id: uid } : { message: "Unauthorized" },
+        { status: auth === token ? 200 : 401 },
+      );
+    return serial(async () => {
+      try {
+        const role =
+          auth === service
+            ? "service_role"
+            : auth === token
+              ? "authenticated"
+              : "anon";
+        await scope(
+          db,
+          auth === token ? uid : "",
+          h.get("x-store-id") || sid,
+          role,
+        );
+        const body = init.body ? JSON.parse(init.body) : {};
+        if (p.startsWith("/rest/v1/rpc/")) {
+          const fn = p.split("/").at(-1);
+          const allowed = [
+            "is_catalog_admin",
+            "catalog_category_details",
+            "storefront_config",
+            "storefront_availability",
+            "operations_snapshot",
+            "consume_checkout_limit",
+            "checkout_order",
+            "create_order_admin",
+            "record_finance",
+            "correct_finance",
+            "save_store_settings",
+            "change_order_status",
+            "set_delivery_fee",
+            "adjust_stock",
+            "save_catalog_category",
+          ];
+          assert.ok(allowed.includes(fn), "Unexpected RPC " + fn);
+          const args = Object.keys(body),
+            values = args.map((k) =>
+              typeof body[k] === "object" && body[k] !== null
+                ? JSON.stringify(body[k])
+                : body[k],
+            );
+          const params = args
+            .map(
+              (k, i) =>
+                k +
+                " => $" +
+                (i + 1) +
+                (typeof body[k] === "object" && body[k] !== null
+                  ? "::jsonb"
+                  : ""),
+            )
+            .join(",");
+          const value = (
+            await db.query("select public." + fn + "(" + params + ") d", values)
+          ).rows[0].d;
+          return Response.json(value);
+        }
+        const table = p.split("/").at(-1);
+        assert.ok(
+          [
+            "catalog_products",
+            "catalog_categories",
+            "store_presentation",
+            "pricing_recipes",
+            "stores",
+            "customers",
+            "ingredients",
+            "order_items",
+          ].includes(table),
+          "Unexpected table " + table,
+        );
+        const conditions = [],
+          values = [];
+        for (const name of ["id", "version", "slug", "store_id", "order_id"])
+          if (u.searchParams.has(name)) {
+            values.push(u.searchParams.get(name).slice(3));
+            conditions.push(name + "=$" + values.length);
+          }
+        const where = conditions.length
+          ? " where " + conditions.join(" and ")
+          : "";
+        let rows;
+        if (!init.method || init.method === "GET") {
+          const columns = u.searchParams.get("select") || "*";
+          assert.match(columns, /^[a-z_,*]+$/);
+          rows = (
+            await db.query(
+              "select to_jsonb(t) d from (select " +
+                columns +
+                " from public." +
+                table +
+                where +
+                ") t",
+              values,
+            )
+          ).rows.map((r) => r.d);
+        } else {
+          const allowedFields = [
+            "id",
+            "details",
+            "published",
+            "name",
+            "phone",
+            "email",
+            "address",
+            "notes",
+            "archived",
+            "brand",
+            "unit",
+            "pack_quantity",
+            "pack_price_cents",
+            "stock_quantity",
+          ];
+          const cols = Object.keys(body);
+          assert.ok(cols.every((c) => allowedFields.includes(c)));
+          const params = cols.map((c) => {
+            values.push(
+              typeof body[c] === "object" ? JSON.stringify(body[c]) : body[c],
+            );
+            return (
+              "$" +
+              values.length +
+              (typeof body[c] === "object" ? "::jsonb" : "")
+            );
+          });
+          const sql =
+            init.method === "POST"
+              ? "insert into public." +
+                table +
+                "(" +
+                cols.join(",") +
+                ") values(" +
+                params.join(",") +
+                ") returning to_jsonb(" +
+                table +
+                ".*) d"
+              : "update public." +
+                table +
+                " set " +
+                cols.map((c, i) => c + "=" + params[i]).join(",") +
+                where +
+                " returning to_jsonb(" +
+                table +
+                ".*) d";
+          rows = (await db.query(sql, values)).rows.map((r) => r.d);
+        }
+        return Response.json(rows);
+      } catch (e) {
+        errors.push(p + ": " + e.message);
+        return Response.json(
+          { code: e.code || "P0001", message: e.message },
+          { status: e.code === "42501" ? 403 : 400 },
+        );
+      }
+    });
+  }
+  await context.route("**/*", async (route) => {
+    const req = route.request(),
+      u = new URL(req.url()),
+      p = u.pathname;
+    if (
+      !u.hostname.endsWith(".supabase.co") &&
+      !(u.origin === origin && p === "/api/store")
+    ) {
+      if (u.origin === origin || ["data:", "blob:"].includes(u.protocol))
+        return route.continue();
+      return route.abort();
+    }
+    let response;
+    if (p === "/auth/v1/token")
+      response = Response.json({
+        access_token: token,
+        refresh_token: "isolated-refresh",
+        expires_in: 3600,
+      });
+    else if (p === "/auth/v1/logout") response = Response.json({});
+    else if (p === "/functions/v1/store-api" || p === "/api/store") {
+      const request = new Request(origin + "/api/store", {
+        method: req.method(),
+        headers: { ...req.headers(), origin },
+        body: req.postData(),
+      });
+      response = await handleGateway(
+        request,
+        {
+          url: "https://fixture.supabase.co",
+          publicKey: "sb_publishable_fixture",
+        },
+        async (url, init) =>
+          handleRequest(
+            new Request(url, init),
+            { url: "https://fixture.supabase.co", serviceKey: service },
+            provider,
+          ),
+      );
+    } else
+      response = await provider(req.url(), {
+        method: req.method(),
+        headers: req.headers(),
+        body: req.postData(),
+      });
+    const body = await response.text();
+    if (response.status >= 400) errors.push(body);
+    return route.fulfill({
+      status: response.status,
+      headers: Object.fromEntries(response.headers),
+      body,
+    });
+  });
+  return {
+    db,
+    productRows,
+    config,
+    errors,
+    close: () => db.close(),
+    query: (fn) => serial(fn),
+  };
+}

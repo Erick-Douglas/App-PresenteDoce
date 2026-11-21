@@ -1,20 +1,20 @@
-import { ArrowRight, Download, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
-import { Empty, Metrics, Panel } from '../components/ModuleUI';
-import type { View } from '../config/types';
-import { formatEuros } from '../features/checkout/order';
-import { downloadJson, today } from '../features/platform/api';
-import { useStore } from '../features/platform/StoreProvider';
-import type { Snapshot } from '../features/platform/types';
-import type { CatalogRow } from '../features/products/catalogApi';
-import { FinanceModule } from './modules/FinanceModule';
-import { AgendaModule, OrdersModule } from './modules/OrdersModule';
+import { ArrowRight, Download, Plus, Search } from "lucide-react";
+import { useState } from "react";
+import { Empty, Metrics, Panel } from "../components/ModuleUI";
+import type { View } from "../config/types";
+import { formatEuros } from "../features/checkout/order";
+import { downloadJson, today } from "../features/platform/api";
+import { useStore } from "../features/platform/StoreProvider";
+import type { Snapshot } from "../features/platform/types";
+import type { CatalogRow } from "../features/products/catalogApi";
+import { FinanceModule } from "./modules/FinanceModule";
+import { AgendaModule, OrdersModule } from "./modules/OrdersModule";
 import {
   CustomersModule,
   IngredientsModule,
   InventoryModule,
-} from './modules/RecordsModule';
-import { StoreSettingsModule } from './modules/StoreSettingsModule';
+} from "./modules/RecordsModule";
+import { StoreSettingsModule } from "./modules/StoreSettingsModule";
 export type ModuleProps = {
   data: Snapshot;
   token: string;
@@ -32,36 +32,36 @@ export default function OperationsScreen({
   const props = { data, token, reload, rows };
   const { store } = useStore();
   const day = today(store.timezone),
-    [query, setQuery] = useState('');
-  if (view === 'orders') return <OrdersModule {...props} />;
-  if (view === 'agenda') return <AgendaModule {...props} />;
-  if (view === 'finance') return <FinanceModule {...props} />;
-  if (view === 'customers') return <CustomersModule {...props} />;
-  if (view === 'inventory') return <InventoryModule {...props} />;
-  if (view === 'ingredients') return <IngredientsModule {...props} />;
-  if (view === 'store-settings') return <StoreSettingsModule {...props} />;
+    [query, setQuery] = useState("");
+  if (view === "orders") return <OrdersModule {...props} />;
+  if (view === "agenda") return <AgendaModule {...props} />;
+  if (view === "finance") return <FinanceModule {...props} />;
+  if (view === "customers") return <CustomersModule {...props} />;
+  if (view === "inventory") return <InventoryModule {...props} />;
+  if (view === "ingredients") return <IngredientsModule {...props} />;
+  if (view === "store-settings") return <StoreSettingsModule {...props} />;
   const active = data.orders.filter(
-      (o) => !['draft', 'canceled', 'expired', 'completed'].includes(o.status),
+      (o) => !["draft", "canceled", "expired", "completed"].includes(o.status),
     ),
     due = active.filter((o) => o.delivery_date === day);
   const net = (id: string) =>
     data.finance
-      .filter((f) => f.order_id === id)
+      .filter((f) => !f.voided_at && f.order_id === id)
       .reduce(
         (s, f) =>
           s +
-          (f.type === 'receipt'
+          (f.type === "receipt"
             ? f.amount_cents
-            : f.type === 'refund'
+            : f.type === "refund"
               ? -f.amount_cents
               : 0),
         0,
       );
   const month = day.slice(0, 7),
     cash = data.finance
-      .filter((f) => f.day.startsWith(month))
+      .filter((f) => !f.voided_at && f.day.startsWith(month))
       .reduce(
-        (s, f) => s + (f.type === 'receipt' ? f.amount_cents : -f.amount_cents),
+        (s, f) => s + (f.type === "receipt" ? f.amount_cents : -f.amount_cents),
         0,
       );
   return (
@@ -71,16 +71,16 @@ export default function OperationsScreen({
           <p className="text-sm text-muted">O seu negócio, num só lugar</p>
           <h2 className="type-module">Vamos organizar o dia?</h2>
         </div>
-        <button className="ui-secondary" onClick={() => onNavigate('orders')}>
+        <button className="ui-secondary" onClick={() => onNavigate("orders")}>
           <Plus size={16} /> Gerir encomendas
         </button>
       </div>
       <Metrics
         items={[
-          { label: 'Encomendas em curso', value: active.length },
-          { label: 'Produção de hoje', value: due.length },
+          { label: "Encomendas em curso", value: active.length },
+          { label: "Produção de hoje", value: due.length },
           {
-            label: 'Sinais por receber',
+            label: "Sinais por receber",
             value: formatEuros(
               active.reduce(
                 (s, o) => s + Math.max(0, o.deposit_cents - net(o.id)),
@@ -89,19 +89,19 @@ export default function OperationsScreen({
             ),
           },
           {
-            label: 'Caixa do mês',
+            label: "Caixa do mês",
             value: formatEuros(cash / 100),
-            hint: 'Recebimentos − estornos − despesas',
+            hint: "Recebimentos − estornos − despesas",
           },
         ]}
       />
       <Panel title="Acesso rápido">
         <div className="module-shortcuts">
           {[
-            ['agenda', 'Agenda e produção'],
-            ['pricing', 'Calcular preços'],
-            ['inventory', 'Ajustar pronta entrega'],
-            ['catalog-admin', 'Organizar catálogo'],
+            ["agenda", "Agenda e produção"],
+            ["pricing", "Calcular preços"],
+            ["inventory", "Ajustar pronta entrega"],
+            ["catalog-admin", "Organizar catálogo"],
           ].map(([v, label]) => (
             <button
               key={v}
@@ -119,7 +119,7 @@ export default function OperationsScreen({
         action={
           <button
             className="ui-quiet-action"
-            onClick={() => onNavigate('orders')}
+            onClick={() => onNavigate("orders")}
           >
             Ver encomendas
           </button>
@@ -136,7 +136,7 @@ export default function OperationsScreen({
         </label>
         {active
           .filter((o) =>
-            (o.reference + ' ' + o.customer_snapshot.name)
+            (o.reference + " " + o.customer_snapshot.name)
               .toLowerCase()
               .includes(query.toLowerCase()),
           )
@@ -149,8 +149,8 @@ export default function OperationsScreen({
                   #{o.reference} · {o.customer_snapshot.name}
                 </p>
                 <p className="text-sm text-muted">
-                  {o.delivery_date} ·{' '}
-                  {o.fulfillment === 'pickup' ? 'Recolha' : 'Entrega'}
+                  {o.delivery_date} ·{" "}
+                  {o.fulfillment === "pickup" ? "Recolha" : "Entrega"}
                 </p>
               </div>
               <span className="type-price">
@@ -173,7 +173,7 @@ export default function OperationsScreen({
         <button
           className="ui-secondary mt-3"
           onClick={() =>
-            downloadJson('loja-' + store.slug + '-' + day + '.json', data)
+            downloadJson("loja-" + store.slug + "-" + day + ".json", data)
           }
         >
           <Download size={15} />

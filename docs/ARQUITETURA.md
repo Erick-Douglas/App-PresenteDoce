@@ -87,3 +87,7 @@ Todas as migrações são versionadas. Backup privado anterior à fundação fic
 Preview/testes não devem mutar dados reais de operação. Ensaios de UI usam API isolada; fixtures remotas são identificadas e removidas. Rollback de frontend não reverte dados novos. Não executar restore antigo sobre encomendas posteriores.
 
 Antes da venda em volume: conta/gateway, privacidade/retenção, recuperação integral ensaiada, paginação de grandes históricos, observabilidade e dimensionamento do snapshot de gestão. Antes das lojas nativas: SDKs, armazenamento adequado de sessão, retornos de autenticação, assinatura e teste físico. Sincronizar Capacitor não produz APK/IPA assinado.
+
+## Entrada de mutações web · 21/11/2026
+
+O browser HTTPS usa /api/store em Node.js/Vercel, preservando React/Vite. O gateway usa somente URL/chave publicável de ambiente, encaminha JWT e IP de origem e limita bytes/tempo. Edge Function e RLS permanecem a fronteira de autorização e preço; o gateway não concede privilégios. Leituras públicas/Auth/Storage continuam em Supabase. Local e Capacitor mantêm o caminho direto compatível, com validação de tamanho antes do envio. O motivo e o limite do relay do provedor estão em [Segurança](SEGURANCA.md).

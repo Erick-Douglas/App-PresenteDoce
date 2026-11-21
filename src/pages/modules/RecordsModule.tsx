@@ -1,5 +1,6 @@
-import { MessageCircle, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { AppSelect } from "../../components/AppSelect";
+import { MessageCircle, Plus } from "lucide-react";
+import { useState } from "react";
 import {
   ActionForm,
   cents,
@@ -9,12 +10,12 @@ import {
   number,
   Panel,
   text,
-} from '../../components/ModuleUI';
-import { formatEuros } from '../../features/checkout/order';
-import { useStore } from '../../features/platform/StoreProvider';
-import type { ModuleProps } from '../OperationsScreen';
+} from "../../components/ModuleUI";
+import { formatEuros } from "../../features/checkout/order";
+import { useStore } from "../../features/platform/StoreProvider";
+import type { ModuleProps } from "../OperationsScreen";
 export function CustomersModule({ data, token, reload }: ModuleProps) {
-  const [query, setQuery] = useState(''),
+  const [query, setQuery] = useState(""),
     [selected, setSelected] = useState<string | null>(null),
     [archived, setArchived] = useState(false);
   const customer = data.customers.find((c) => c.id === selected),
@@ -38,14 +39,14 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
           />
           Ver arquivados
         </label>
-        <button className="ui-primary" onClick={() => setSelected('new')}>
+        <button className="ui-primary" onClick={() => setSelected("new")}>
           <Plus size={15} />
           Novo cliente
         </button>
       </div>
       {selected !== null && (
         <Panel
-          title={customer ? 'Editar cliente' : 'Novo cliente'}
+          title={customer ? "Editar cliente" : "Novo cliente"}
           action={
             <button
               className="ui-quiet-action"
@@ -56,7 +57,7 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
           }
         >
           <ActionForm
-            key={selected + ':' + customer?.version}
+            key={selected + ":" + customer?.version}
             action="customer.save"
             token={token}
             onSaved={reload}
@@ -65,12 +66,12 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
                 ? { id: customer.id, version: customer.version }
                 : {}),
               data: {
-                name: text(f, 'name'),
-                phone: text(f, 'phone'),
-                email: text(f, 'email'),
-                address: text(f, 'address'),
-                notes: text(f, 'notes'),
-                ...(customer ? { archived: f.get('archived') === 'on' } : {}),
+                name: text(f, "name"),
+                phone: text(f, "phone"),
+                email: text(f, "email"),
+                address: text(f, "address"),
+                notes: text(f, "notes"),
+                ...(customer ? { archived: f.get("archived") === "on" } : {}),
               },
             })}
           >
@@ -127,7 +128,7 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
             <>
               <a
                 className="ui-secondary inline-flex mt-4"
-                href={'https://wa.me/' + customer.phone.replace(/\D/g, '')}
+                href={"https://wa.me/" + customer.phone.replace(/\D/g, "")}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -159,7 +160,7 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
           .filter(
             (c) =>
               (archived || !c.archived) &&
-              (c.name + ' ' + c.phone + ' ' + c.email)
+              (c.name + " " + c.phone + " " + c.email)
                 .toLowerCase()
                 .includes(query.toLowerCase()),
           )
@@ -172,14 +173,14 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
               <div>
                 <p className="type-item">
                   {c.name}
-                  {c.archived ? ' · Arquivado' : ''}
+                  {c.archived ? " · Arquivado" : ""}
                 </p>
                 <p className="text-sm text-muted">
-                  {c.phone} · {c.email || 'Sem e-mail'}
+                  {c.phone} · {c.email || "Sem e-mail"}
                 </p>
               </div>
               <span className="module-badge">
-                {data.orders.filter((o) => o.customer_id === c.id).length}{' '}
+                {data.orders.filter((o) => o.customer_id === c.id).length}{" "}
                 pedidos
               </span>
             </button>
@@ -201,17 +202,17 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
             submit="Unir contactos"
             onSaved={reload}
             build={(f) => ({
-              source: text(f, 'source'),
-              target: text(f, 'target'),
+              source: text(f, "source"),
+              target: text(f, "target"),
             })}
           >
             <div className="module-grid">
               {[
-                ['source', 'Contacto duplicado'],
-                ['target', 'Contacto a manter'],
+                ["source", "Contacto duplicado"],
+                ["target", "Contacto a manter"],
               ].map(([name, label]) => (
                 <Field key={name} label={label}>
-                  <select name={name} className="ui-field" required>
+                  <AppSelect name={name} className="ui-field" required>
                     <option value="">Escolher</option>
                     {data.customers
                       .filter((c) => !c.archived)
@@ -220,7 +221,7 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
                           {c.name} · {c.phone}
                         </option>
                       ))}
-                  </select>
+                  </AppSelect>
                 </Field>
               ))}
             </div>
@@ -235,12 +236,13 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
   );
 }
 export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
-  const [query, setQuery] = useState(''),
-    [selected, setSelected] = useState('');
+  const [query, setQuery] = useState(""),
+    [selected, setSelected] = useState(""),
+    [limit, setLimit] = useState(8);
   const choices = rows.flatMap((r) =>
     (r.details.variants?.length
       ? r.details.variants.map((v) => v.label)
-      : ['']
+      : [""]
     ).map((option) => ({
       key: JSON.stringify([r.id, option]),
       id: r.id,
@@ -257,12 +259,12 @@ export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
       <Metrics
         items={[
           {
-            label: 'Unidades disponíveis',
+            label: "Unidades disponíveis",
             value: data.stock.reduce((s, i) => s + i.available, 0),
           },
           {
-            label: 'Produtos com pronta entrega',
-            value: rows.filter((r) => r.details.saleModes?.includes('ready'))
+            label: "Produtos com pronta entrega",
+            value: rows.filter((r) => r.details.saleModes?.includes("ready"))
               .length,
           },
         ]}
@@ -272,7 +274,7 @@ export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
         description="Este saldo controla as unidades disponíveis para venda hoje. Encomendas reservam automaticamente."
       >
         <Field label="Produto e opção">
-          <select
+          <AppSelect
             className="ui-field"
             value={selected}
             onChange={(e) => setSelected(e.target.value)}
@@ -281,11 +283,11 @@ export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
             {choices.map((c) => (
               <option key={c.key} value={c.key}>
                 {c.name}
-                {c.option ? ' · ' + c.option : ''} · {available(c.id, c.option)}{' '}
+                {c.option ? " · " + c.option : ""} · {available(c.id, c.option)}{" "}
                 un.
               </option>
             ))}
-          </select>
+          </AppSelect>
         </Field>
         {choice && (
           <ActionForm
@@ -298,18 +300,18 @@ export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
               product_id: choice.id,
               option: choice.option,
               delta:
-                number(f, 'quantity') *
-                (text(f, 'direction') === 'remove' ? -1 : 1),
-              reason: text(f, 'reason'),
+                number(f, "quantity") *
+                (text(f, "direction") === "remove" ? -1 : 1),
+              reason: text(f, "reason"),
               idempotency_key: key,
             })}
           >
             <div className="module-grid">
               <Field label="Movimento">
-                <select className="ui-field" name="direction">
+                <AppSelect className="ui-field" name="direction">
                   <option value="add">Adicionar unidades</option>
                   <option value="remove">Retirar unidades</option>
-                </select>
+                </AppSelect>
               </Field>
               <Field
                 label="Quantidade"
@@ -331,49 +333,73 @@ export function InventoryModule({ data, token, reload, rows }: ModuleProps) {
           </ActionForm>
         )}
       </Panel>
-      <Panel title="Pronta entrega">
-        <Field label="Pesquisar produto">
-          <input
-            className="ui-field"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </Field>
-        {choices
-          .filter((c) =>
-            (c.name + ' ' + c.option)
+      <details className="module-collapse" open={!!query}>
+        <summary>Consultar saldos · {choices.length} produtos e opções</summary>
+        <div className="collapse-body">
+          <Field label="Pesquisar produto">
+            <input
+              className="ui-field"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setLimit(8);
+              }}
+            />
+          </Field>
+          {choices
+            .filter((c) =>
+              (c.name + " " + c.option)
+                .toLowerCase()
+                .includes(query.toLowerCase()),
+            )
+            .slice(0, limit)
+            .map((c) => (
+              <button
+                key={c.key}
+                className="module-row module-row-button"
+                onClick={() => setSelected(c.key)}
+              >
+                <div>
+                  <p className="type-item">{c.name}</p>
+                  <p className="text-sm text-muted">{c.option || "Unidade"}</p>
+                </div>
+                <span className="module-badge">
+                  {available(c.id, c.option)} un.
+                </span>
+              </button>
+            ))}
+          {choices.filter((c) =>
+            (c.name + " " + c.option)
               .toLowerCase()
               .includes(query.toLowerCase()),
-          )
-          .map((c) => (
-            <button
-              key={c.key}
-              className="module-row module-row-button"
-              onClick={() => setSelected(c.key)}
-            >
-              <div>
-                <p className="type-item">{c.name}</p>
-                <p className="text-sm text-muted">{c.option || 'Unidade'}</p>
-              </div>
-              <span className="module-badge">
-                {available(c.id, c.option)} un.
-              </span>
-            </button>
-          ))}
-      </Panel>
-      <Panel title="Últimos ajustes">
-        <p className="text-sm text-muted">
-          As movimentações e reservas ficam registradas para auditoria. Não
-          apague produtos com histórico: despublique-os no catálogo.
-        </p>
-      </Panel>
+          ).length > limit && (
+            <div className="page-actions">
+              <button
+                className="ui-secondary"
+                onClick={() => setLimit((n) => n + 8)}
+              >
+                Mostrar mais
+              </button>
+            </div>
+          )}
+        </div>
+      </details>
+      <details className="module-collapse">
+        <summary>Reservas e histórico</summary>
+        <div className="collapse-body">
+          <p className="text-sm text-muted">
+            As movimentações e reservas ficam registradas para auditoria. Não
+            apague produtos com histórico: despublique-os no catálogo.
+          </p>
+        </div>
+      </details>
     </div>
   );
 }
 export function IngredientsModule({ data, token, reload }: ModuleProps) {
   const { store } = useStore(),
     [selected, setSelected] = useState<string | null>(null),
-    [query, setQuery] = useState('');
+    [query, setQuery] = useState("");
   const item = data.ingredients.find((i) => i.id === selected);
   return (
     <div className="admin-form">
@@ -385,14 +411,14 @@ export function IngredientsModule({ data, token, reload }: ModuleProps) {
             onChange={(e) => setQuery(e.target.value)}
           />
         </Field>
-        <button className="ui-primary" onClick={() => setSelected('new')}>
+        <button className="ui-primary" onClick={() => setSelected("new")}>
           <Plus size={15} />
           Novo ingrediente
         </button>
       </div>
       {selected !== null && (
         <Panel
-          title={item ? 'Editar ingrediente' : 'Novo ingrediente'}
+          title={item ? "Editar ingrediente" : "Novo ingrediente"}
           description="Atualizar o preço recalcula as fichas vinculadas. O custo histórico das encomendas é preservado."
           action={
             <button
@@ -404,19 +430,19 @@ export function IngredientsModule({ data, token, reload }: ModuleProps) {
           }
         >
           <ActionForm
-            key={selected + ':' + item?.version}
+            key={selected + ":" + item?.version}
             action="ingredient.save"
             token={token}
             onSaved={reload}
             build={(f) => ({
               ...(item ? { id: item.id, version: item.version } : {}),
               data: {
-                name: text(f, 'name'),
-                brand: text(f, 'brand'),
-                unit: text(f, 'unit'),
-                pack_quantity: number(f, 'quantity'),
-                pack_price_cents: cents(f, 'price'),
-                stock_quantity: number(f, 'stock'),
+                name: text(f, "name"),
+                brand: text(f, "brand"),
+                unit: text(f, "unit"),
+                pack_quantity: number(f, "quantity"),
+                pack_price_cents: cents(f, "price"),
+                stock_quantity: number(f, "stock"),
               },
             })}
           >
@@ -435,15 +461,15 @@ export function IngredientsModule({ data, token, reload }: ModuleProps) {
                 maxLength={100}
               />
               <Field label="Unidade">
-                <select
+                <AppSelect
                   className="ui-field"
                   name="unit"
-                  defaultValue={item?.unit || 'g'}
+                  defaultValue={item?.unit || "g"}
                 >
                   <option value="g">Gramas (g)</option>
                   <option value="ml">Mililitros (ml)</option>
                   <option value="un">Unidades</option>
-                </select>
+                </AppSelect>
               </Field>
               <Field
                 label="Quantidade na embalagem"
@@ -453,10 +479,10 @@ export function IngredientsModule({ data, token, reload }: ModuleProps) {
                 required
               />
               <Field
-                label={'Preço da embalagem (' + store.currency + ')'}
+                label={"Preço da embalagem (" + store.currency + ")"}
                 name="price"
                 inputMode="decimal"
-                value={item ? item.pack_price_cents / 100 : ''}
+                value={item ? item.pack_price_cents / 100 : ""}
                 required
               />
               <Field
@@ -476,7 +502,7 @@ export function IngredientsModule({ data, token, reload }: ModuleProps) {
       >
         {data.ingredients
           .filter((i) =>
-            (i.name + ' ' + i.brand)
+            (i.name + " " + i.brand)
               .toLowerCase()
               .includes(query.toLowerCase()),
           )
@@ -489,7 +515,7 @@ export function IngredientsModule({ data, token, reload }: ModuleProps) {
               <div>
                 <p className="type-item">{i.name}</p>
                 <p className="text-sm text-muted">
-                  {i.brand || 'Sem marca'} · {i.pack_quantity} {i.unit} · Saldo{' '}
+                  {i.brand || "Sem marca"} · {i.pack_quantity} {i.unit} · Saldo{" "}
                   {i.stock_quantity} {i.unit}
                 </p>
               </div>

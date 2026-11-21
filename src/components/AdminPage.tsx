@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
-import { Header } from './Header';
+import type { ReactNode } from "react";
+import { motion } from "framer-motion";
+import { ArrowLeft, RefreshCw } from "lucide-react";
+import { Header } from "./Header";
 
 export function AdminPage({
   title,
@@ -32,25 +32,34 @@ export function AdminPage({
       </div>
       <div
         className={
-          'page-width admin-content ' + (wide ? '' : 'admin-content-narrow')
+          "page-width admin-content " + (wide ? "" : "admin-content-narrow")
         }
       >
         <div className="admin-heading">
-          <button type="button" className="ui-quiet-action" onClick={onBack}>
-            <ArrowLeft size={15} strokeWidth={1.65} aria-hidden="true" /> Voltar
-          </button>
-          <div className="flex w-full items-center justify-between gap-3">
-            <h1 className="type-module text-primary">{title}</h1>
+          <div className="admin-page-title">
+            <span className="page-eyebrow">Gestão da loja</span>
+            <h1 className="type-module">{title}</h1>
+          </div>
+          <div className="page-actions">
             {onRefresh && (
               <button
                 type="button"
-                className="ui-quiet-action"
+                className="ui-secondary"
                 disabled={refreshing}
                 onClick={onRefresh}
               >
-                {refreshing ? 'A atualizar…' : 'Atualizar'}
+                <RefreshCw
+                  size={15}
+                  aria-hidden="true"
+                  className={refreshing ? "animate-spin" : ""}
+                />
+                {refreshing ? "A atualizar…" : "Atualizar"}
               </button>
             )}
+            <button type="button" className="ui-secondary" onClick={onBack}>
+              <ArrowLeft size={15} strokeWidth={1.65} aria-hidden="true" />
+              Voltar
+            </button>
           </div>
         </div>
         {children}
