@@ -1,5 +1,7 @@
 # Referências — Micro-SaaS de confeitaria
 
+> **Leitura em 21/11/2026.** Registro histórico/pesquisa: preserva o estado e as propostas da sua data. Decisões vigentes e pendências estão no [PRD](PRD.md) e no [Roadmap](ROADMAP.md). Não usar este relato como aprovação do novo design. [Índice](README.md).
+
 **Pesquisa de 20/11/2026.** Fontes públicas, sem criar contas, ativar planos ou testar áreas autenticadas. Descrições de fornecedores não comprovam desempenho, segurança ou qualidade de uso. As decisões da última coluna são propostas para o nosso produto.
 
 | Referência | Evidência pública consultada | Aplicação proposta |

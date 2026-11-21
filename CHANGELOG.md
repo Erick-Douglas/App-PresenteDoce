@@ -1,5 +1,14 @@
 # Changelog
 
+## 21/11/2026 · Consolidação documental e passagem para design
+
+- PRD 2.0 consolida produto, escopo, papéis, módulos, regras atuais, arquitetura e etapas futuras.
+- Mapa das 22 vistas, estados transversais e briefing para criação do Figma.
+- Modelo ERS/SRS a preencher por Erick após o design; sem aprovação funcional presumida.
+- Índice de fontes, Design System e roadmap organizados; relatórios históricos preservados e identificados.
+- Código, migrações e dados não são alterados nesta entrega. O fechamento e o aceite separado ficam no Daily Log da empresa.
+
+
 ## 21/11/2026 · Personalizações independentes e checkout
 
 - + inicia outro bolo; lápis edita a linha escolhida; combinações iguais somam e diferentes ficam separadas.

@@ -1,5 +1,7 @@
 # Grupos de opções e encomendas — 21/11/2026
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 ## Correção do requisito
 
 Tópicos são **modificadores de compra**, agrupados por título, e não etiquetas/filtros. Esta especificação substitui a interpretação anterior para PD-OPT-01 a PD-OPT-06. Preserva os registros e pareceres anteriores.

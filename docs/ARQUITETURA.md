@@ -1,5 +1,7 @@
 # Arquitetura — Plataforma híbrida de confeitaria
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 **20/11/2026 · Implementação do PRD 1.1.** [Estado e limites](IMPLEMENTACAO.md) · [Roadmap](ROADMAP.md) · [Integrações futuras](INTEGRACOES.md).
 
 ## Decisão de stack

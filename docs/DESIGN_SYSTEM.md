@@ -1,121 +1,97 @@
-# Design System da Presente Doce
+# Design System — Aplicativo Presente Doce
 
-A loja e o painel usam o mesmo tema. A edição dos valores centrais afeta os componentes que usam essas cores e os papéis tipográficos.
+**Versão 2.0 · consolidada em 21/11/2026**  
+**Estado:** referência da base existente para o trabalho no Figma; nova composição visual ainda será aprovada por Erick.
 
-## Onde editar
+[Índice](README.md) · [PRD](PRD.md) · [Briefing Figma](BRIEFING-FIGMA.md) · [Mapa](MAPA-DE-TELAS.md) · [SRS](SRS.md)
 
-| Arquivo | O que controla |
-| --- | --- |
-| [Tokens e fontes](../src/design-system/tokens.css) | Paleta, fontes, pesos, escala de texto, largura, espaçamento e transparência da busca |
-| [Papéis tipográficos](../src/design-system/typography.css) | Aparência de saudação, título de página, título de seção, nome de item, rótulo e preço |
-| [Componentes compartilhados](../src/design-system/components.css) | Cabeçalho, busca, filtros em pílula, grade, cartões, campos e botões |
-| [Módulos e navegação](../src/design-system/platform.css) | Cards, métricas, campos, agenda, estados vazios e navegação de gestão |
-| [Estilos globais](../src/index.css) | Regras básicas do documento |
-| [Fontes locais e licenças](../public/fonts) | Lato 400 e 700, Great Vibes 400 e suas licenças |
+## 1. Propósito e fonte única
 
-Edite os valores `--pd-*` em `tokens.css`. As classes Tailwind de cor e peso referenciam esses valores. Use os papéis de tipografia quando criar componentes. Os controles de formulário usam 16 px no tema da Presente Doce.
+A linguagem visual combina confeitaria artesanal refinada, leitura simples e autonomia de uso pelo celular. A regra nova definida por Erick é experimentar e aprovar o design no Figma antes de retomar as alterações de interface.
 
-## Identidade
+A fonte de tokens implementados é [tokens.css](../src/design-system/tokens.css). O Figma deve mapear seus estilos/variáveis a esses conceitos e registrar mudanças propostas. Após aprovação, ajustar tokens e componentes compartilhados; cores e medidas soltas por tela tornam a manutenção inconsistente.
 
-| Papel | Presente Doce | Aplicação |
-| --- | --- | --- |
-| Marca | Bordô Absoluto `#800000` | Marca, títulos, ações primárias e contornos de foco |
-| Creme | Cream Dream `#FFF6DB` | Texto sobre o bordô e detalhes de marca |
-| Acento | Ouro Vivo `#FBCE00` | Realces e detalhes nos atalhos |
-| Superfícies | Neutro claro e branco | Fundo da vitrine e do painel, cartões e formulários |
-| Texto | Lato 400 e 700 | Vitrine, categorias, formulários, painel e checkout |
-| Saudação | Great Vibes 400 | Saudação da home |
+Este documento descreve a base do código e os critérios de revisão. Não afirma que todos os detalhes atuais tenham sido aceitos. O [histórico anterior](https://github.com/Erick-Douglas/App-PresenteDoce/blob/e79ff700e168527f28f9b5534e9de91e42e2ad3a/docs/DESIGN_SYSTEM.md) permanece no GitHub.
 
-| Classe | Uso |
-| --- | --- |
-| `type-display` | Saudação em Great Vibes |
-| `type-page` | Título principal de uma tela |
-| `type-module` | Título compacto de módulos da vitrine e da gestão |
-| `type-section` | Títulos de categorias, seções e diálogos |
-| `type-item` | Títulos de itens e subseções de formulário |
-| `type-label` | Nome curto de produto ou ação em destaque |
-| `type-price` | Preços compactos com algarismos tabulares |
+## 2. Identidade e tipografia
 
-## Vitrine e merchandising digital
+| Função                              | Base                                                               |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| Marca                               | Presente Doce; assinatura clara com presente dourado no topo bordô |
+| Bordô                               | #800000                                                            |
+| Dourado                             | #FBCE00                                                            |
+| Creme de apoio                      | #FFF6DB                                                            |
+| Leitura, campos, navegação, títulos | Lato 400 e 700                                                     |
+| Assinatura/saudação                 | Great Vibes 400, uso restrito                                      |
+| Corpo                               | 1rem; entrelinha 1,5 na base                                       |
+| Secundário/legenda                  | 0,875rem / 0,75rem                                                 |
+| Escalas fluidas                     | Display, página, módulo e seção definidos em tokens.css            |
 
-A home usa o logotipo principal, com assinatura em creme claro e presente dourado, e ícones brancos. A marca tem uma linha própria acima da saudação. O fundo bordô termina pouco antes de **Categorias**, com uma margem interna abaixo da busca translúcida.
+Usar pesos da família disponível; títulos se distinguem por hierarquia e espaçamento, não por aumentar tudo. Figma deve mostrar título de página, card, produto, valor, informação secundária e aviso em contexto.
 
-- **Ordem comercial das categorias.** Merchandising digital é a prática de decidir o que recebe visibilidade na vitrine. Na Presente Doce, Gabriela ordena manualmente os três primeiros lugares em **Editar categoria → Ordem das categorias**. Primeiro as categorias com maior volume de vendas, depois as com maior margem de contribuição, depois as novidades. Use as próximas posições para as demais categorias. A aplicação respeita a ordem das categorias. A partir de 20/11/2026, **Todos** fica no início e abre selecionado, exibindo os produtos agrupados com títulos. Uma categoria selecionada exibe diretamente os produtos. A busca inicial pesquisa o catálogo todo, até que a pessoa escolha uma categoria. [Gestão de categorias da Shopify](https://www.shopify.com/enterprise/blog/category-management)
-- **Cartões de produto.** Foto livre de ícones, nome, início da descrição em até duas linhas e preço em negrito com o símbolo da moeda configurada antes do valor. O preço mínimo de uma opção usa **A partir de**. As ações de adicionar, configurar e editar ficam abaixo da foto. O ícone compacto tem área de toque de 44 px. Os favoritos são geridos nos detalhes. [Pesquisa de listagens da Baymard](https://baymard.com/research-articles/product-listing-information)
-- **Mapa do catálogo.** **Menu → Todas as categorias** mantém a grade pública de duas colunas no celular. A administração vê quatro contagens acima da grade, total de categorias, categorias com publicados, categorias só com rascunhos e categorias sem produtos. Os grupos são calculados pelos produtos associados. O indicador de exclusões e a evolução para gráficos dependem de um histórico de eventos no catálogo. [Painéis no Carbon Design System](https://www.carbondesignsystem.com/building-blocks/data-visualization/dashboards)
+## 3. Superfícies e semânticas
 
-## Gestão e atendimento
+| Papel               | Claro   | Escuro  |
+| ------------------- | ------- | ------- |
+| Canvas              | #F7F5F3 | #151519 |
+| Superfície          | #FFFFFF | #1E1E22 |
+| Sutil               | #FAFAF9 | #242428 |
+| Preenchimento suave | #F5F5F4 | #2C2C31 |
+| Texto principal     | #1A1A1A | #F3F1ED |
+| Texto secundário    | #57534E | #AAA6AD |
+| Borda               | #E7E5E4 | #34343B |
+| Sucesso             | #2D6446 | #91D4A6 |
+| Atenção             | #855B1E | #EBC47C |
+| Destrutivo/erro     | #A13B2E | #F4A69B |
 
-- **Formulários da gestão.** Separe responsabilidades em painéis claros com contorno leve com `ui-glass-panel`. Reserve o botão preenchido para a confirmação principal e use `ui-quiet-action` ou `ui-icon-action` para ações auxiliares. Em categoria, separe nome e tópicos, permita confirmar ou cancelar na própria linha e preserve as abas de ordenação. No catálogo, abra **Nova categoria** junto ao botão e mantenha o cabeçalho com menu hambúrguer. Em produto, separe dados, tópicos, opções e publicação. Em precificação, separe receita, custos e resultado. Em Textos da loja, separe a home de **Sobre nós**.
-- **Páginas administrativas.** Gerir catálogo, Novo produto, Editar produto, Editar categoria, Precificação e Textos da loja usam páginas próprias protegidas pela sessão do app. O cabeçalho, a hierarquia dos títulos, os painéis, a largura e as ações dos formulários são compartilhados. A ação principal usa bordô preenchido. Cancelar e ações de apoio usam texto ou contorno leve. O fluxo de login usa diálogo.
-- **Contactos.** O item fica após **Sobre nós** e abre a página com WhatsApp, telefone, e-mail, Instagram e Facebook. Acrescente TikTok quando o endereço oficial for confirmado. O assistente é exclusivo da vitrine pública. **Precisa de ajuda?** aparece uma vez por sessão da aba e recolhe para o retrato após toque, clique, teclado ou rolagem. O retrato abre o compositor sem bloquear a página. O link preenche a conversa no WhatsApp e o cliente confirma o envio por lá. [Clique para conversa do WhatsApp](https://faq.whatsapp.com/5913398998672934)
-- **Atendimento dentro da loja.** Para envio sem sair da vitrine, o próximo passo é um chat web com backend, caixa de atendimento e notificação à equipe. A integração com a plataforma da Meta usa um número empresarial remetente e credenciais do servidor. Antes de ativar o canal, valide destinatário, consentimento, retenção e limites antispam. [WhatsApp Business Platform](https://developers.facebook.com/documentation/business-messaging/whatsapp/overview)
+As cores são os valores atuais, não aprovação definitiva do desenho. Tokens de fills, bordas e texto semântico acompanham cada tema. A cor da marca pode variar por loja; texto sobre a marca exige contraste verificado. O coração de favorito usa vermelho próprio #E6384B. Fotografias/logos não devem ser invertidos com filtro CSS.
 
-## Ícones, compartilhamento e instalação
+## 4. Dimensões e componentes
 
-- Use o presente dourado da marca sobre bordô opaco no favicon, nos ícones quadrados do manifesto e na imagem de compartilhamento. A área de segurança do ícone de 512 px permite os recortes de Android. O cabeçalho usa a assinatura completa. [Ativos públicos](../public)
-- Publique título, descrição e imagem no HTML inicial. O botão **Partilhar** entrega título, descrição e URL ao sistema. A prévia é renderizada pelo aplicativo que recebe o link. [Open Graph](https://ogp.me/) · [Web Share API](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share)
-- No menu público, **Instalar app** abre a confirmação nativa quando o navegador a disponibiliza. **Como instalar** explica os passos do navegador, incluindo o Safari no iPhone. O menu administrativo e o app instalado ocultam a opção. No modo independente, preserve as áreas de segurança de topo e base. A home em repouso usa topo bordô. Ao rolar, a faixa do app sobre a área de status fica translúcida. A interface externa do navegador segue o sistema. [Instalação no iPhone](https://support.apple.com/guide/iphone/open-as-web-app-iphea86e5236/ios) · [Instalação na web](https://web.dev/learn/pwa/installation-prompt)
-- A ação **Editar** usa ícone de traço e texto curto, com nome acessível por produto. Na precificação, **Calcular receita** é o botão preenchido. Guardar e limpar o rascunho são ações de apoio. Mantenha os alvos de toque em 44 px.
+Base: controle de toque 44 px, card 14 px de raio, campo 10 px, largura de página até 72rem e de formulário administrativo até 52rem; gutters/paddings fluidos. Um ícone compacto pode ocupar área de toque maior que sua parte visível.
 
-## Validar uma alteração
+Componentes do código: Header, AdminPage, Sidebar, ManagementNav, CatalogCard/Grid, CategoryEditButton, ProductEditButton, ProductChoices, OptionGroupsEditor, FloatingCart, StoreDialog, AppSelect e os blocos Panel/Field/Metrics/Empty/ActionForm. Mapear equivalentes editáveis no Figma, incluindo foco, hover, pressionado, ocupado, desativado e erro.
 
-1. Abra a home, uma categoria, os detalhes de um produto, o carrinho, o menu e a gestão no preview.
-2. Confira as fontes carregadas, a hierarquia dos títulos, o contraste e a quebra de títulos longos em tela estreita.
-3. Confira contraste da busca, rolagem dos filtros e leitura dos cartões em tela estreita.
-4. Execute os checks e publique pela `main` após validar o preview. [Publicação e reversão](DEPLOY.md)
+CSS de composição:
 
-## Evolução por loja
+- [components.css](../src/design-system/components.css): elementos comuns e vitrine.
+- [platform.css](../src/design-system/platform.css): módulos/gestão.
+- [journey.css](../src/design-system/journey.css): jornada compartilhada.
+- [modifiers.css](../src/design-system/modifiers.css): grupos e edição.
+- [appearance.css](../src/design-system/appearance.css): perfil, menu e aparência.
+- [cart.css](../src/design-system/cart.css): ficha/carrinho/checkout.
+- [typography.css](../src/design-system/typography.css): papéis de texto.
 
-O tema padrão usa propriedades CSS que podem ser sobrescritas no contêiner da loja. A Presente Doce mantém o tema no repositório. No painel, **Textos da loja** edita a saudação pública, a descrição da home, o nome na saudação administrativa e o texto de **Sobre nós**. A configuração visual por conta, o isolamento entre lojas e o plano Pro pertencem às etapas seguintes. [PRD](PRD.md#plataforma-por-assinatura-para-outros-negócios)
+O índice de importação é [src/index.css](../src/index.css). Nenhum arquivo de estilos é alterado nesta consolidação documental.
 
-Referências. [Kopi Kap no Figma](https://www.figma.com/design/kwaIAoWW1V3sIdVNXqGlLl/?node-id=17-4341) · [Listagens móveis da Baymard](https://baymard.com/mcommerce-usability/benchmark/mobile-page-types/product-list) · [Ação Ver todas na navegação móvel](https://baymard.com/research-articles/mobile-main-nav-view-all)
+## 5. Composição vigente a levar para revisão
 
-## Fluxos administrativos · 20/11/2026
+Home: marca em linha própria, saudação/busca no bordô, catálogo em neutro; Todos primeiro e selecionado; categoria individual sem repetir o título abaixo. Fotos, nome, descrição breve, preço e +. Produto configurável abre grupos; simples pode adicionar. Retorno +1 local e sacola com quantidade/total.
 
-O login usa o mesmo painel translúcido dos formulários, com rótulos visíveis, e-mail, senha com controle de visibilidade e opção **Manter sessão iniciada**. A senha não é guardada pelo formulário. O acesso é restaurado e renovado com o Supabase e a autorização administrativa é conferida no servidor. **Sair** remove o acesso deste navegador. Erros de rede oferecem nova tentativa.
+Ficha: voltar e coração separados sobre a foto, com vidro branco a 7%, borda translúcida e blur. Retorno claro, coração vermelho, aviso de guardar/remover. Sem badge Personalizável, assistente flutuante ou entrega no produto. Categorias e produtos recebem lápis apenas em gestão; categoria tem alvo 48 px/ícone 26 px, produto 44 px/ícone 19 px na base.
 
-Na fotografia de produto, exiba a prévia, o nome do ficheiro e o progresso. Limite o original a 20 MB e normalize para até 1600 px e 5 MB. Preserve o formulário após falha e ofereça erro visível. A decodificação HEIC depende do suporte do dispositivo; não prometa conversão universal.
+Checkout: cabeçalho compacto; títulos de card distinguíveis, sacola e contagem de unidades, editar/apagar no topo direito, valor sobre quantidade à direita, subtotal após os itens. Dados pessoais com título e ícone à direita. Formulários e resumo compartilham tokens.
 
-A precificação separa seleção de ficha/produto, ingredientes e resultados em painéis compartilhados. **Calcular receita** permanece como ação principal. **Guardar ficha na conta** preserva os dados entre dispositivos. **Aplicar preço ao produto** exige confirmação e confere a versão atual. O rascunho local anterior continua disponível. [Lógica e migração](PRECIFICACAO.md) · [Plataformas nativas](NATIVE.md).
+Gestão: título do módulo no cabeçalho, ações principais à direita, cancelar e excluir com hierarquia própria. Seletores em lista ancorada; seções secundárias recolhíveis; guardas de gravação/falha e versão. As posições finais serão aprovadas nos frames e definidas na SRS.
 
-## Correções de fluxo · 20/11/2026
+## 6. Navegação, perfil e tema
 
-Limpar rascunho inicia Nova ficha e remove a associação ao produto no formulário, sem gravar na conta. Guardar ficha exige rendimento positivo, preço válido e custos nomeados e completos. A mesma regra protege a gravação no banco. A fotografia aceita no estado do formulário determina a prévia e o envio; rejeitar substituição mantém a anterior e explica isso.
+Avatar à esquerda e hambúrguer à direita na base. Visitante usa menu compacto; gestão abre viewport completo, com títulos de grupo externos e módulos em pílulas. Preservar uma entrada de menu por contexto, navegação inferior/rail administrativa e prévia do cliente.
 
-A vitrine não mostra uma segunda faixa de tópicos acima dos produtos, conforme revisão de 21/11. Tópicos permanecem configuráveis e associados por ID na gestão; o nome acompanha a renomeação. Um tópico criado no editor do produto é selecionado para esse produto. As categorias continuam com rolagem própria. Em telas abaixo de 360 px, use uma coluna nos produtos e resultados; mantenha campos e painéis com largura mínima zero e quebra de texto. [Ensaios](TESTES.md).
+Claro/Escuro/Sistema são escolhas persistidas no aparelho; Sistema acompanha a preferência do ambiente. Perfil da própria conta permite foto/nome; apresentação não concede papel administrativo.
 
-## Direção recebida para o Micro-SaaS · 20/11/2026
+Área segura faz parte da página, sem pseudo-elemento fixo pintando a área da hora/Wi-Fi e sem mudança de cor por scroll. Meta solicita transparent; aparência física depende do navegador/SO. Figma deve indicar essas limitações em vez de simular capacidades nativas como entregues.
 
-Clean White & Warm Craft implementado com branco/neutros quentes e bordô/dourado do piloto. Gestly foi conferido em duas capturas públicas como referência de cards, atalhos, hierarquia e navegação, sem copiar imagens ou identidade. Os módulos usam Panel, Field, Metrics, Empty e ActionForm, tipografia Lato e tokens compartilhados. A sidebar fica disponível no desktop, e o celular tem atalhos inferiores mais menu. Prévia de cliente oculta a gestão sem trocar permissões. A aceitação visual por Erick/Gabriela continua separada dos testes. [Implementação](IMPLEMENTACAO.md). [Referências](REFERENCIAS-SAAS.md) · [Sequência](ROADMAP.md).
+## 7. Regras de UX para todos os módulos
 
-## Refinamento transversal · 21/11/2026
+- Usar o mesmo vocabulário e padrão de ação para guardar, cancelar, editar, excluir e voltar.
+- Distinguir adicionar nova personalização de editar uma linha existente.
+- Dar feedback local e acessível sem cobrir a sacola ou a confirmação.
+- Preservar formulário ao falhar/voltar; seletores, teclado e diálogos mantêm foco/scroll.
+- Diferenciar estado vazio, carregando, sem resultado, erro e sem permissão.
+- Tema escuro deve manter texto, bordas, avisos e controles legíveis em todos os módulos.
+- Validar celular/tablet/desktop; ações fixas não sobrepõem conteúdo ou teclado.
 
-Ações de confirmação ficam alinhadas à direita; cancelar precede a ação principal. Retorno e atualização ocupam o lado direito do cabeçalho de módulo. Títulos usam Lato 700 e texto de superfície, com pequeno contexto acima; bordô fica reservado à marca e à ação principal. Edição/navegação são neutras, sucesso usa --pd-color-success, atenção --pd-color-warning e exclusão/erro --pd-color-danger. Preço no card tem tinta escura e compra um botão compacto independente.
+## 8. Critério da próxima revisão
 
-Sidebar em grupos de cards discretos. Formulários usam Panel/Field/ActionForm e AppSelect para lista ancorada acessível. Conteúdo secundário pode ser recolhido; um erro de validação reabre a seção do campo. A cor de marca tem prévia e contraste validado no browser e banco. Sacola e barra de compra respeitam a navegação inferior e a área segura. [Critérios completos](REVISAO-2026-11-21.md).
-
-## Jornada e gestão · revisão de 21/11/2026
-
-Coffee orienta a composição; os tokens continuam em src/design-system/tokens.css. Composições partilhadas da jornada ficam em journey.css, importado pelo índice, e não em personalizações de cada página. Ações de compra usam a cor da loja; preço usa tinta neutra. O controlo visual pode medir 32 px, mantendo alvo de toque de 44 px. Adição, feedback e abertura da sacola são ações distintas.
-
-O retorno fica separado do favorito; a regra de confirmações à direita não agrupa navegação e favoritos. Um menu por contexto, cabeçalho comum de gestão, superfícies brancas, campos com espaçamento e títulos Lato 700. Etapas da precificação e blocos do checkout têm hierarquia própria com os mesmos tokens.
-
-Tópicos pertencem à categoria e são associados por ID ao produto. Criar a definição não atribui o tópico a todos os produtos; criar no produto seleciona-o nessa edição. Exibir os associados na ficha, sem faixa extra na vitrine. Persistir o vínculo ao guardar produto.
-
-[Critérios, ensaios e limites da revisão](CORRECOES-JORNADA-2026-11-21.md).
-
-
-## Atualização PD-OPT · 21/11/2026
-
-[Grupos, encomendas e composição atual](GRUPOS-E-ENCOMENDAS.md). modifiers.css centraliza grupos de compra/edição, cabeçalho administrativo, sacola e ordem das ações. Editar produto é a exceção de gestão sobre a foto, no canto superior direito; compra mantém + compacto abaixo da foto. Hambúrguer no topo esquerdo e nenhum Mais inferior. Guardar bordô, cancelar neutro e excluir destrutivo discreto; sacola mais estreita/alta com ícone amarelo. As opções da compra ficam em cards por grupo, nunca numa faixa de etiquetas acima do catálogo.
-
-
-## Perfil e dois temas · 21/11/2026
-
-[Composição e regras vigentes](PERFIL-E-APARENCIA.md): avatar de 40 px à esquerda, menu à direita, gestão em tela inteira e visitante em painel. Grupos com títulos externos e módulos em pílulas compactas. Tokens claros/escuros no mesmo tokens.css; appearance.css compõe perfil/menu/vidro. Claro/Escuro/Sistema em Perfil e aparência. Ícone de edição de categoria 26 px/área 48 px, produto 19 px/área 44 px, ambos com vidro. Esta decisão de Erick substitui a posição anterior do hambúrguer à esquerda.
-
-
-## Refinamento vigente · Carrinho e checkout · 21/11/2026
-
-Tokens únicos em tokens.css, composições cart.css: vidro branco a 7% nos botões da foto, retorno claro, coração vermelho com retorno de guardar/remover e +1 local na vitrine. Checkout com título central, títulos de card distinguíveis, contagem em pílula, ações no topo direito e preço/quantidade abaixo à direita. Sem assistente/badge Personalizável. Sem camada fixa, tinta no scroll ou cor imposta ao topo pelo manifesto; manter área segura por página. [Especificação e limites de navegador](CARRINHO-E-CHECKOUT.md).
+Cobertura de todas as TEL/INT/CTX, componentes reutilizáveis, links de protótipo e matriz de estados. Os ensaios da base não substituem aprovação visual de Erick ou validação operacional de Gabriela. Frame aprovado + requisito SRS + teste de aceite formam a referência de implementação. [Passagem para Figma](BRIEFING-FIGMA.md).

@@ -1,5 +1,7 @@
 # Carrinho personalizado e checkout · 21/11/2026
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 Pedido de Erick: comprar mais de um bolo do mesmo catálogo com escolhas independentes, refinar a ficha/checkout e retirar o atendimento flutuante.
 
 ## Comportamento vigente

@@ -1,5 +1,7 @@
 # Ensaios da fiscalização · 20/11/2026
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 ## Regressão rápida
 
 ```sh
@@ -65,3 +67,8 @@ Executar node tests/modifier-journey.mjs, catalog-journey.mjs, admin-workflows.m
 ## Perfil e aparência · 21/11/2026
 
 node tests/appearance-journey.mjs e node --test tests/account-avatars.test.mjs. PD_THEME=dark habilita os ensaios escuros de public-layout.mjs e modifier-journey.mjs. Esses testes preservam o padrão claro por omissão. [Escopo e limites](PERFIL-E-APARENCIA.md). Evidência em node_modules/.cache/pd-appearance-journey e pd-modifier-journey-dark. Fotos/metadados de conta real não são alterados pelos ensaios.
+
+
+## Última base funcional antes da etapa de design · 21/11/2026
+
+68 testes Node/SQL e jornadas da PR #27; cart-variants-journey.mjs em claro/escuro e com frontend oficial/banco isolado. Favoritos, dois bolos distintos, edição, soma/remoção, checkout e CRM/nascimento opcional. Escopo em [Carrinho e checkout](CARRINHO-E-CHECKOUT.md). Esses resultados pertencem à base e79ff700; a consolidação documental não reexecuta nem substitui o aceite operacional. A nova implementação será rastreada por requisito SRS e frame aprovado.

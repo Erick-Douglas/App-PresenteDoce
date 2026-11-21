@@ -1,5 +1,7 @@
 # Android e iOS
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 O mesmo projeto web tem bases Android e iOS em Capacitor 8.6.2. O conteúdo é compilado em dist e copiado para os projetos nativos; a aplicação instalada não depende de carregar o site remoto numa janela.
 
 ## Preparação executada em 20/11/2026

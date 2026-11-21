@@ -1,5 +1,7 @@
 # Correções da jornada e do catálogo · 21/11/2026
 
+> **Leitura em 21/11/2026.** Registro histórico/pesquisa: preserva o estado e as propostas da sua data. Decisões vigentes e pendências estão no [PRD](PRD.md) e no [Roadmap](ROADMAP.md). Não usar este relato como aprovação do novo design. [Índice](README.md).
+
 ## Escopo e referência
 
 Retomada dos IDs PD-REV-02/03/04/05/07/08 após a fiscalização da liderança e os relatos de Erick. React/Vite, Supabase e projeto Vercel existentes preservados. Coffee orienta composição compacta da vitrine/ficha/checkout; Gestly orienta hierarquia dos módulos. Não há nova API de endereços, cobrança ou automação WhatsApp.
