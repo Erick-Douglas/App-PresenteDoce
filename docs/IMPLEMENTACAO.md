@@ -31,11 +31,11 @@ O orçamento não reserva capacidade/estoque até a confirmação. Solicitaçõe
 
 - API de mutações em supabase/functions/store-api. A Edge Function verifica o JWT junto ao Auth e a função de gestão da loja. Mutações administrativas usam o JWT do utilizador, preservando RLS. A chave service_role existe apenas no runtime gerenciado, nunca no bundle.
 - O pedido público passa por validação Zod, limite de corpo/tempo/origem e contador distribuído no Postgres. Limites iniciais: 20 tentativas por IP/loja e 300 por loja em 10 minutos. A RPC pública de checkout só concede EXECUTE ao service_role; o visitante não contorna a API.
-- Preços, acréscimos, estoque e capacidade são conferidos no banco, com locks e idempotência. Histórico financeiro é imutável; estorno é novo lançamento. Relações compostas impedem referências entre lojas.
+- Preços, acréscimos, estoque e capacidade são conferidos no banco, com locks e idempotência. O histórico financeiro é preservado; correções/exclusões lógicas substituem lançamentos, e estorno registra devolução efetiva. Relações compostas impedem referências entre lojas.
 - Todas as 17 tabelas públicas têm RLS. Funções privilegiadas têm search_path vazio, permissões explícitas e validação da associação/plano.
 - Uploads reprocessados para WebP/JPEG, máximo final de 2 MiB; origem pode ter até 20 MiB para compressão. Storage exige pasta da loja. Caminhos legados catalog/ continuam exclusivos do piloto.
 - Configuração pública e disponibilidade são projeções intencionais, sem CRM, finanças ou receitas. Os avisos de SECURITY DEFINER dessas projeções/RPCs são documentados; não se remove autorização para silenciar o linter.
-- Autenticação continua com limites do Supabase, renovação de sessão e opção de lembrar a conta. A proteção contra senhas vazadas continua desativada no provedor e o Turnstile depende da configuração do serviço. Não foram declarados ativos.
+- Autenticação continua com limites do Supabase, renovação de sessão e opção de lembrar a conta. Erick manteve o plano gratuito: a proteção nativa de senhas vazadas exige Pro. Turnstile não foi ativado sem chaves. A configuração gratuita de Auth foi preparada e validada, mas a CLI ainda precisa de sessão administrativa. [Estado preciso](SEGURANCA.md).
 
 As tabelas privadas de administradores legados e contadores não têm política de acesso do cliente de propósito. [Aviso de RLS sem política](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), [RPC pública privilegiada](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable), [RPC autenticada](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable) e [proteção de palavras-passe](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
 
@@ -62,3 +62,7 @@ Backup privado anterior à migração em .local-backups/20261120-before-stores, 
 Recebimentos exigem encomenda confirmada: uma reserva pública temporária não pode receber sinal e depois expirar. O seed versionado contém campos de contacto vazios; o projeto operacional foi configurado privadamente. O arquivo SQL aplicado com os valores de operação fica apenas no backup local ignorado.
 
 A gestão atualiza ao abrir um módulo, ao recuperar a ligação/visibilidade e a cada minuto enquanto visível. Há Atualizar manual. Respostas de sessões anteriores são descartadas. Versão esperada é obrigatória nas alterações transacionais.
+
+## Revisão de operação · 21/11/2026
+
+[Correções e critérios PD-REV](REVISAO-2026-11-21.md) complementam esta entrega. Aplicar a migração finance_corrections_and_simple_orders antes de publicar a nova API/frontend. Campos voided_at/replaced_by preservam o histórico; os saldos e relatórios ignoram linhas substituídas. O botão Excluir financeiro faz anulação lógica. A conclusão pode partir da confirmação, mantendo estados históricos de produção/pronta.

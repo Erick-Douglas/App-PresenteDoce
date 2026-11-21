@@ -1,27 +1,39 @@
 import {
   cloneElement,
   isValidElement,
+  useEffect,
   useId,
   useRef,
   useState,
   type FormEvent,
   type ReactElement,
   type ReactNode,
-} from 'react';
-import { storeAction } from '../features/platform/api';
+} from "react";
+import { storeAction } from "../features/platform/api";
 export function Panel({
   title,
   description,
   action,
   children,
+  focusOnOpen = false,
 }: {
   title: string;
+  focusOnOpen?: boolean;
   description?: string;
   action?: ReactNode;
   children: ReactNode;
 }) {
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!focusOnOpen) return;
+    const frame = requestAnimationFrame(() => {
+      panel.current?.focus({preventScroll:true});
+      panel.current?.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusOnOpen]);
   return (
-    <section className="module-panel">
+    <section ref={panel} tabIndex={focusOnOpen ? -1 : undefined} className="module-panel scroll-mt-4">
       <div className="module-section-heading">
         <div>
           <h2 className="type-section">{title}</h2>
@@ -38,7 +50,7 @@ export function Panel({
 export function Field({
   label,
   name,
-  type = 'text',
+  type = "text",
   value,
   required = false,
   children,
@@ -54,7 +66,7 @@ export function Field({
 }) {
   const id = useId();
   const control = isValidElement(children) ? (
-    cloneElement(children as ReactElement<any>, { id, 'aria-label': label })
+    cloneElement(children as ReactElement<any>, { id, "aria-label": label })
   ) : (
     <input
       id={id}
@@ -91,12 +103,17 @@ export function Empty({
 export function Metrics({
   items,
 }: {
-  items: { label: string; value: ReactNode; hint?: string }[];
+  items: {
+    label: string;
+    value: ReactNode;
+    hint?: string;
+    tone?: "success" | "warning" | "danger";
+  }[];
 }) {
   return (
     <dl className="module-metrics">
       {items.map((i) => (
-        <div key={i.label}>
+        <div key={i.label} data-tone={i.tone}>
           <dt>{i.label}</dt>
           <dd>{i.value}</dd>
           {i.hint && <p>{i.hint}</p>}
@@ -111,8 +128,9 @@ export function ActionForm({
   build,
   onSaved,
   children,
-  submit = 'Guardar',
-  className = '',
+  submit = "Guardar",
+  className = "",
+  disabled = false,
 }: {
   token: string;
   action: string;
@@ -121,56 +139,68 @@ export function ActionForm({
   children: ReactNode;
   submit?: string;
   className?: string;
+  disabled?: boolean;
 }) {
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState(''),
-    [notice, setNotice] = useState('');
+    [error, setError] = useState(""),
+    [notice, setNotice] = useState("");
   const key = useRef(crypto.randomUUID());
   async function send(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (busy) return;
     const form = e.currentTarget;
     setBusy(true);
-    setError('');
-    setNotice('');
+    setError("");
+    setNotice("");
     try {
       await storeAction(action, build(new FormData(form), key.current), token);
       key.current = crypto.randomUUID();
       try {
         await onSaved();
-        setNotice('Guardado.');
+        setNotice("Guardado.");
       } catch {
-        setNotice('Guardado. Reabra o módulo para atualizar a lista.');
+        setNotice("Guardado. Reabra o módulo para atualizar a lista.");
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível guardar.');
+      setError(e instanceof Error ? e.message : "Não foi possível guardar.");
     } finally {
       setBusy(false);
     }
   }
   return (
     <form
+      onInvalidCapture={(e) => {
+        let parent = (e.target as HTMLElement).parentElement;
+        while (parent) {
+          if (parent instanceof HTMLDetailsElement) parent.open = true;
+          parent = parent.parentElement;
+        }
+      }}
       onSubmit={send}
       onChange={() => {
         if (!busy) {
           key.current = crypto.randomUUID();
-          setNotice('');
-          setError('');
+          setNotice("");
+          setError("");
         }
       }}
-      className={'admin-form ' + className}
+      className={"admin-form " + className}
     >
       <fieldset disabled={busy} className="admin-form">
         {children}
-        <div className="flex flex-wrap items-center gap-3">
-          <button className="ui-primary" type="submit">
-            {busy ? 'A guardar…' : submit}
-          </button>
+        <div className="form-actions">
           {notice && (
-            <p role="status" className="text-sm">
+            <p role="status" className="form-notice">
               {notice}
             </p>
           )}
+          <button
+            className="ui-primary"
+            type="submit"
+            disabled={busy || disabled}
+          >
+            {busy ? "A guardar…" : submit}
+          </button>
         </div>
       </fieldset>
       {error && (
@@ -182,19 +212,19 @@ export function ActionForm({
   );
 }
 export function text(f: FormData, k: string) {
-  return String(f.get(k) || '').trim();
+  return String(f.get(k) || "").trim();
 }
 export function number(f: FormData, k: string) {
-  const raw = text(f, k).replace(',', '.');
+  const raw = text(f, k).replace(",", ".");
   if (!raw || !/^\d+(\.\d{1,6})?$/.test(raw))
-    throw Error('Confira os valores numéricos.');
+    throw Error("Confira os valores numéricos.");
   const n = Number(raw);
-  if (!Number.isFinite(n)) throw Error('Valor inválido.');
+  if (!Number.isFinite(n)) throw Error("Valor inválido.");
   return n;
 }
 export function cents(f: FormData, k: string) {
   const v = number(f, k);
   if (Math.abs(v * 100 - Math.round(v * 100)) > 0.00001)
-    throw Error('Use duas casas decimais nos valores.');
+    throw Error("Use duas casas decimais nos valores.");
   return Math.round(v * 100);
 }

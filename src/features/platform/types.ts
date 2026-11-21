@@ -71,6 +71,9 @@ export type OrderItem = {
   configuration: Record<string, unknown>;
 };
 export type FinanceEntry = {
+  version?: number;
+  voided_at?: string | null;
+  replaced_by?: string | null;
   id: string;
   order_id: string | null;
   type: 'receipt' | 'refund' | 'expense';

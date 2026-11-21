@@ -1,3 +1,4 @@
+import { AppSelect } from "../components/AppSelect";
 import { Plus } from 'lucide-react';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { THEMED_CAKE_SIZES } from '../config/constants';
@@ -585,7 +586,7 @@ function ProductForm({
               <div className="flex items-end gap-2">
                 <label className="min-w-0 flex-1 space-y-1">
                   <span>Categoria</span>
-                  <select
+                  <AppSelect
                     aria-label="Categoria"
                     className={field}
                     value={selectedCategory?.id ?? ''}
@@ -607,7 +608,7 @@ function ProductForm({
                     {selectedCategory && (
                       <option value="@manage">Gerir categorias…</option>
                     )}
-                  </select>
+                  </AppSelect>
                 </label>
                 <button
                   type="button"
@@ -801,7 +802,7 @@ function ProductForm({
                   )}
                   <button
                     type="button"
-                    className="ui-quiet-action justify-self-start"
+                    className="ui-quiet-action justify-self-end"
                     onClick={() =>
                       setVariants(variants.filter((_, i) => i !== index))
                     }

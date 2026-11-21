@@ -1,6 +1,6 @@
 # PRD — Plataforma de confeitaria híbrida
 
-**Versão 1.1 · 20/11/2026 · Europe/Lisbon**  
+**Versão 1.2 · 21/11/2026 · Europe/Lisbon**  
 **Solicitante:** Erick · **Loja piloto:** Presente Doce · **Revisão:** liderança e Gabriela  
 **Natureza:** direção de produto fornecida por Erick, detalhada em requisitos executáveis. A operação inicial está implementada; a ativação comercial e integrações externas ficam nas dependências descritas em IMPLEMENTACAO.md.
 
@@ -160,3 +160,7 @@ Critérios comuns: proteção no servidor e no banco, acessibilidade, seis largu
 ## Decisão de Erick · 20/11/2026 · Implementação autorizada
 
 Manter React + Vite. A hipótese de migrar para Next.js fica encerrada: adicionar API segura compatível com Vercel e regras transacionais/RLS no Supabase. Gestly é a referência principal para distribuição de elementos, cartões, botões, ícones e navegação, preservando a identidade da Presente Doce. Erick autorizou executar o PRD e o backlog anterior. A referência deve ser verificada visualmente; não copiar ativos ou alegar integração sem teste. Acompanhar os IDs na Jornada de implementação integral do Daily Log.
+
+## Refinamento de aceite · 21/11/2026
+
+Os IDs PD-REV-01 a PD-REV-07 detalham o retorno de uso após a implementação inicial. [Critérios e causas](REVISAO-2026-11-21.md). O aceite exige compra acessível também no Live Mode, seletores junto ao campo, confirmação à direita, menu agrupado, financeiro corrigível sem perda de trilha, criação de encomenda com cliente novo e personalização de marca aplicada. Tópicos ficam na gestão e não numa segunda faixa pública. Manter o plano gratuito; senhas vazadas dependem de Pro e a política nativa preparada depende da conexão administrativa. [Segurança](SEGURANCA.md).

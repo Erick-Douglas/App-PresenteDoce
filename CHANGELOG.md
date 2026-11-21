@@ -1,5 +1,18 @@
 # Changelog
 
+## 21/11/2026 · Compra, gestão e refinamento visual
+
+- Sacola fixa restaurada no Live Mode e compra no produto acima da navegação inferior. Botões explícitos, unidades acrescentadas e opções/sabores validados.
+- Menu em grupos, cabeçalhos/ações à direita, ícones neutros e cores semânticas compartilhadas.
+- Faixa pública de tópicos removida; associações de gestão preservadas.
+- Financeiro com descrição livre, encomendas elegíveis, edição e exclusão auditadas, sem checkbox.
+- Encomendas com estados agrupados, pronta entrega compacta e configurações expansíveis.
+- Seletores ancorados e prévia/validação de cor da loja.
+- Headers e testes de segurança; auditoria de dependências sem achados conhecidos. Plano gratuito mantido; configuração nativa Auth preparada, pendente da sessão administrativa da CLI.
+
+[Revisão e validação](docs/REVISAO-2026-11-21.md) · [Segurança](docs/SEGURANCA.md).
+
+
 ## 20/11/2026 · Operação híbrida e módulos de gestão
 
 - React/Vite mantido; tema claro com bordô da marca, componentes compartilhados, sidebar e atalhos móveis.

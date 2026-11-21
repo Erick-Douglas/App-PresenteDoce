@@ -1,10 +1,10 @@
-import { ArrowUpRight, Check, Plus } from 'lucide-react';
-import type { Product } from '../config/types';
-import { currencySymbol } from '../features/checkout/order';
-import { LiveProductStock } from '../features/platform/LiveEditing';
-import { useStore } from '../features/platform/StoreProvider';
-import { formatCatalogPrice } from '../features/products/catalogFields';
-import { ProductEditButton } from './ProductEditButton';
+import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import type { Product } from "../config/types";
+import { currencySymbol } from "../features/checkout/order";
+import { LiveProductStock } from "../features/platform/LiveEditing";
+import { useStore } from "../features/platform/StoreProvider";
+import { formatCatalogPrice } from "../features/products/catalogFields";
+import { ProductEditButton } from "./ProductEditButton";
 
 interface CatalogCardProps {
   product: Product;
@@ -22,17 +22,13 @@ export function CatalogCard({
   onEdit,
 }: CatalogCardProps) {
   const { stock } = useStore();
-  const ready = product.saleModes?.includes('ready');
+  const ready = product.saleModes?.includes("ready");
   const available = stock
     .filter((s) => s.product_id === product.id)
     .reduce((sum, s) => sum + s.available, 0);
-  const needsOptions = product.configuravel && !inCart;
-  const CartIcon = needsOptions ? ArrowUpRight : inCart ? Check : Plus;
-  const cartAction = needsOptions
-    ? 'Personalizar '
-    : inCart
-      ? 'Retirar do carrinho '
-      : 'Adicionar ao carrinho ';
+  const needsOptions = product.configuravel || ready;
+  const CartIcon = needsOptions ? ArrowUpRight : ShoppingBag;
+  const cartAction = needsOptions ? "Personalizar " : "Adicionar ao carrinho ";
 
   return (
     <article className="ui-card group relative flex min-w-0 flex-col overflow-hidden transition-shadow hover:shadow-md">
@@ -57,10 +53,13 @@ export function CatalogCard({
       </h3>
       <div className="flex-1 px-3 sm:px-4">
         {ready && (
-          <p className="mt-2 text-xs text-primary">
+          <p
+            className="availability-tag mt-2"
+            data-status={available > 0 ? "ready" : "empty"}
+          >
             {available > 0
-              ? 'Pronta entrega · ' + available + ' un.'
-              : 'Pronta entrega esgotada'}
+              ? "Pronta entrega · " + available + " un."
+              : "Pronta entrega esgotada"}
           </p>
         )}
         <p className="mt-1 line-clamp-2 text-xs text-muted">
@@ -68,7 +67,7 @@ export function CatalogCard({
         </p>
       </div>
       <div className="flex min-h-13 items-center justify-between gap-1 px-3 sm:px-4">
-        <span className="type-price leading-tight text-primary">
+        <span className="type-price leading-tight text-on-surface">
           {product.configuravel && (
             <span className="block text-xs font-normal text-muted">
               A partir de
@@ -83,14 +82,15 @@ export function CatalogCard({
           type="button"
           onClick={() => onCart(product)}
           aria-label={cartAction + product.name}
-          className="ui-icon-action -mr-1.5"
+          className="product-buy"
           data-active={inCart}
         >
-          <CartIcon size={16} strokeWidth={1.7} aria-hidden="true" />
+          <CartIcon size={15} strokeWidth={1.7} aria-hidden="true" />
+          <span>{needsOptions ? "Escolher" : "Adicionar"}</span>
         </button>
       </div>
       {onEdit && (
-        <div className="border-t border-muted-fill px-3 sm:px-4">
+        <div className="flex justify-end border-t border-muted-fill px-3 sm:px-4">
           <ProductEditButton product={product} onEdit={onEdit} />
         </div>
       )}

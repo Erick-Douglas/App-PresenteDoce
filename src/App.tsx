@@ -213,7 +213,6 @@ export default function App() {
     showSuccessToast,
     addToCart,
     updateQuantity,
-    toggleCartItem,
     updateCartItem,
   } = useCart();
   const { favorites, toggleFavorite } = useFavorites();
@@ -454,15 +453,13 @@ export default function App() {
   );
 
   const selectOrConfigure = (product: Product, event?: React.MouseEvent) => {
-    if (
-      (product.configuravel || product.saleModes?.includes('ready')) &&
-      !cart.some((item) => item.id === product.id)
-    ) {
+    if (product.configuravel || product.saleModes?.includes('ready')) {
       event?.stopPropagation();
       handleProductClick(product);
       return;
     }
-    toggleCartItem(product, event);
+    event?.stopPropagation();
+    addToCart(product, { quantity: 1, mode: 'preorder' });
   };
 
   const commonProps = {
@@ -1021,7 +1018,6 @@ export default function App() {
             cartTotal={cartTotal}
             onNavigate={handleNavigate}
             isVisible={
-              !managing &&
               !adminView &&
               currentView !== 'cart' &&
               currentView !== 'welcome' &&

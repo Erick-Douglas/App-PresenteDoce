@@ -83,8 +83,14 @@ A precificação separa seleção de ficha/produto, ingredientes e resultados em
 
 Limpar rascunho inicia Nova ficha e remove a associação ao produto no formulário, sem gravar na conta. Guardar ficha exige rendimento positivo, preço válido e custos nomeados e completos. A mesma regra protege a gravação no banco. A fotografia aceita no estado do formulário determina a prévia e o envio; rejeitar substituição mantém a anterior e explica isso.
 
-Abaixo das categorias, mostre os tópicos da categoria selecionada com Todos os tópicos e estados acessíveis. A associação é por ID; o nome acompanha a renomeação. Um tópico criado no editor do produto é selecionado para esse produto. As categorias continuam com rolagem própria. Em telas abaixo de 360 px, use uma coluna nos produtos e resultados; mantenha campos e painéis com largura mínima zero e quebra de texto. [Ensaios](TESTES.md).
+A vitrine não mostra uma segunda faixa de tópicos acima dos produtos, conforme revisão de 21/11. Tópicos permanecem configuráveis e associados por ID na gestão; o nome acompanha a renomeação. Um tópico criado no editor do produto é selecionado para esse produto. As categorias continuam com rolagem própria. Em telas abaixo de 360 px, use uma coluna nos produtos e resultados; mantenha campos e painéis com largura mínima zero e quebra de texto. [Ensaios](TESTES.md).
 
 ## Direção recebida para o Micro-SaaS · 20/11/2026
 
 Clean White & Warm Craft implementado com branco/neutros quentes e bordô/dourado do piloto. Gestly foi conferido em duas capturas públicas como referência de cards, atalhos, hierarquia e navegação, sem copiar imagens ou identidade. Os módulos usam Panel, Field, Metrics, Empty e ActionForm, tipografia Lato e tokens compartilhados. A sidebar fica disponível no desktop, e o celular tem atalhos inferiores mais menu. Prévia de cliente oculta a gestão sem trocar permissões. A aceitação visual por Erick/Gabriela continua separada dos testes. [Implementação](IMPLEMENTACAO.md). [Referências](REFERENCIAS-SAAS.md) · [Sequência](ROADMAP.md).
+
+## Refinamento transversal · 21/11/2026
+
+Ações de confirmação ficam alinhadas à direita; cancelar precede a ação principal. Retorno e atualização ocupam o lado direito do cabeçalho de módulo. Títulos usam Lato 700 e texto de superfície, com pequeno contexto acima; bordô fica reservado à marca e à ação principal. Edição/navegação são neutras, sucesso usa --pd-color-success, atenção --pd-color-warning e exclusão/erro --pd-color-danger. Preço no card tem tinta escura e compra um botão compacto independente.
+
+Sidebar em grupos de cards discretos. Formulários usam Panel/Field/ActionForm e AppSelect para lista ancorada acessível. Conteúdo secundário pode ser recolhido; um erro de validação reabre a seção do campo. A cor de marca tem prévia e contraste validado no browser e banco. Sacola e barra de compra respeitam a navegação inferior e a área segura. [Critérios completos](REVISAO-2026-11-21.md).

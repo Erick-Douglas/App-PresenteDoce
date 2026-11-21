@@ -1,16 +1,17 @@
-import { ArrowLeft, Minus, Pencil, Plus, Trash2 } from 'lucide-react';
-import { useRef, useState, type FormEvent } from 'react';
-import { BUSINESS_INFO } from '../config/constants';
-import type { CartItem, View } from '../config/types';
+import { AppSelect } from "../components/AppSelect";
+import { ArrowLeft, Minus, Pencil, Plus, Trash2 } from "lucide-react";
+import { useRef, useState, type FormEvent } from "react";
+import { BUSINESS_INFO } from "../config/constants";
+import type { CartItem, View } from "../config/types";
 import {
   formatEuros,
   orderSubtotal,
   prepareOrder,
   whatsappLink,
-} from '../features/checkout/order';
-import { checkout, today } from '../features/platform/api';
-import { useStore } from '../features/platform/StoreProvider';
-import type { OrderPayload } from '../features/platform/types';
+} from "../features/checkout/order";
+import { checkout, today } from "../features/platform/api";
+import { useStore } from "../features/platform/StoreProvider";
+import type { OrderPayload } from "../features/platform/types";
 
 interface CartScreenProps {
   cart: CartItem[];
@@ -19,8 +20,8 @@ interface CartScreenProps {
   onNavigate: (view: View) => void;
 }
 
-const field = 'ui-field';
-const iconButton = 'ui-icon-action';
+const field = "ui-field";
+const iconButton = "ui-icon-action";
 
 export function CartScreen({
   cart,
@@ -30,68 +31,68 @@ export function CartScreen({
 }: CartScreenProps) {
   const { store, settings, reload } = useStore();
   const [busy, setBusy] = useState(false),
-    [link, setLink] = useState('');
-  const retry = useRef({ signature: '', key: crypto.randomUUID() });
-  const hasReady = cart.some((i) => i.mode === 'ready');
-  const minimum = new Date(today(store.timezone) + 'T12:00:00');
+    [link, setLink] = useState("");
+  const retry = useRef({ signature: "", key: crypto.randomUUID() });
+  const hasReady = cart.some((i) => i.mode === "ready");
+  const minimum = new Date(today(store.timezone) + "T12:00:00");
   minimum.setDate(minimum.getDate() + (hasReady ? 0 : settings.lead_days));
   const minDate = minimum.toISOString().slice(0, 10);
-  const [fulfillment, setFulfillment] = useState<'pickup' | 'delivery'>(
-    'pickup',
+  const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">(
+    "pickup",
   );
-  const [payment, setPayment] = useState<'cash' | 'mbway' | 'wise'>('mbway');
-  const [feedback, setFeedback] = useState('');
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [payment, setPayment] = useState<"cash" | "mbway" | "wise">("mbway");
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const subtotal = orderSubtotal(cart);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
     const form = new FormData(event.currentTarget);
-    const get = (name: string) => String(form.get(name) ?? '');
-    setError('');
-    setFeedback('');
-    setMessage('');
+    const get = (name: string) => String(form.get(name) ?? "");
+    setError("");
+    setFeedback("");
+    setMessage("");
 
     setBusy(true);
     try {
       prepareOrder(cart, {
-        name: get('name'),
-        phone: get('phone'),
+        name: get("name"),
+        phone: get("phone"),
         fulfillment,
         payment,
-        address: get('address'),
-        date: get('date'),
-        changeFor: get('changeFor'),
+        address: get("address"),
+        date: get("date"),
+        changeFor: get("changeFor"),
       });
       if (
         hasReady &&
-        cart.some((i) => i.mode !== 'ready') &&
+        cart.some((i) => i.mode !== "ready") &&
         settings.lead_days > 0
       )
         throw Error(
-          'Pronta entrega e encomendas com antecedência precisam de pedidos separados. Ajuste os itens do carrinho.',
+          "Pronta entrega e encomendas com antecedência precisam de pedidos separados. Ajuste os itens do carrinho.",
         );
       const payload: OrderPayload = {
         idempotency_key: retry.current.key,
-        delivery_date: get('date'),
+        delivery_date: get("date"),
         fulfillment,
         customer: {
-          name: get('name').trim(),
-          phone: get('phone').trim(),
-          email: get('email').trim(),
-          address: get('address').trim(),
+          name: get("name").trim(),
+          phone: get("phone").trim(),
+          email: get("email").trim(),
+          address: get("address").trim(),
         },
         notes:
-          'Preferência de pagamento: ' +
+          "Preferência de pagamento: " +
           payment +
-          (get('changeFor') ? ' · Troco para ' + get('changeFor') : ''),
+          (get("changeFor") ? " · Troco para " + get("changeFor") : ""),
         items: cart.map((i) => ({
           product_id: i.id,
-          variant: i.variant || i.tamanho || '',
+          variant: i.variant || i.tamanho || "",
           quantity: i.quantity,
-          mode: i.mode || 'preorder',
+          mode: i.mode || "preorder",
           configuration: Object.fromEntries(
             Object.entries({
               massa: i.massa,
@@ -100,11 +101,11 @@ export function CartScreen({
               tema: i.tema,
               selectedFlavors: i.selectedFlavors,
               observations: i.observations,
-            }).filter(([, v]) => v !== undefined && v !== ''),
+            }).filter(([, v]) => v !== undefined && v !== ""),
           ),
         })),
       };
-      const signature = JSON.stringify({ ...payload, idempotency_key: '' });
+      const signature = JSON.stringify({ ...payload, idempotency_key: "" });
       if (signature !== retry.current.signature)
         retry.current = { signature, key: crypto.randomUUID() };
       payload.idempotency_key = retry.current.key;
@@ -115,22 +116,22 @@ export function CartScreen({
       void reload().catch(() => {});
 
       const submitter = (event.nativeEvent as SubmitEvent).submitter;
-      if (submitter?.getAttribute('value') === 'copy') {
+      if (submitter?.getAttribute("value") === "copy") {
         await navigator.clipboard.writeText(nextMessage);
-        setFeedback('Mensagem copiada.');
+        setFeedback("Mensagem copiada.");
         return;
       }
-      window.open(saved.whatsapp_url, '_blank', 'noopener,noreferrer');
+      window.open(saved.whatsapp_url, "_blank", "noopener,noreferrer");
       setFeedback(
-        'Pedido #' +
+        "Pedido #" +
           saved.order.reference +
-          ' registrado. Envie a mensagem no WhatsApp e aguarde a confirmação da confeitaria.',
+          " registrado. Envie a mensagem no WhatsApp e aguarde a confirmação da confeitaria.",
       );
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível preparar o pedido.',
+          : "Não foi possível preparar o pedido.",
       );
     } finally {
       setBusy(false);
@@ -139,23 +140,23 @@ export function CartScreen({
 
   return (
     <section className="mx-auto w-full max-w-3xl px-4 pb-12 sm:px-8">
-      <header className="flex items-center gap-4 border-b border-outline py-5">
+      <header className="customer-page-heading">
         <button
           type="button"
           aria-label="Voltar ao catálogo"
-          onClick={() => onNavigate('home')}
-          className={iconButton}
+          onClick={() => onNavigate("home")}
+          className={iconButton + " order-2 ml-auto"}
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="type-page text-primary">A sua encomenda</h1>
+        <h1 className="type-module text-on-surface">A sua encomenda</h1>
       </header>
       {cart.length === 0 ? (
         <div className="space-y-4 py-10">
           <p>O carrinho está vazio.</p>
           <button
             type="button"
-            onClick={() => onNavigate('home')}
+            onClick={() => onNavigate("home")}
             className="ui-primary"
           >
             Ver catálogo
@@ -187,18 +188,18 @@ export function CartScreen({
                     {formatEuros(orderSubtotal([item]))}
                   </p>
                   <p className="text-xs text-muted">
-                    {item.mode === 'ready'
-                      ? 'Pronta entrega hoje'
-                      : 'Por encomenda'}
+                    {item.mode === "ready"
+                      ? "Pronta entrega hoje"
+                      : "Por encomenda"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     className={iconButton}
                     type="button"
-                    aria-label={'Diminuir quantidade de ' + item.name}
+                    aria-label={"Diminuir quantidade de " + item.name}
                     onClick={() => {
-                      setMessage('');
+                      setMessage("");
                       onUpdateQuantity(item.cartId, item.quantity - 1);
                     }}
                   >
@@ -208,9 +209,9 @@ export function CartScreen({
                   <button
                     className={iconButton}
                     type="button"
-                    aria-label={'Aumentar quantidade de ' + item.name}
+                    aria-label={"Aumentar quantidade de " + item.name}
                     onClick={() => {
-                      setMessage('');
+                      setMessage("");
                       onUpdateQuantity(item.cartId, item.quantity + 1);
                     }}
                   >
@@ -219,7 +220,7 @@ export function CartScreen({
                   <button
                     className={iconButton}
                     type="button"
-                    aria-label={'Editar ' + item.name}
+                    aria-label={"Editar " + item.name}
                     onClick={() => onEditItem(item)}
                   >
                     <Pencil size={16} />
@@ -227,9 +228,9 @@ export function CartScreen({
                   <button
                     className={iconButton}
                     type="button"
-                    aria-label={'Remover ' + item.name}
+                    aria-label={"Remover " + item.name}
                     onClick={() => {
-                      setMessage('');
+                      setMessage("");
                       onUpdateQuantity(item.cartId, 0);
                     }}
                   >
@@ -243,9 +244,9 @@ export function CartScreen({
             aria-busy={busy}
             onSubmit={submit}
             onChange={() => {
-              setMessage('');
-              setFeedback('');
-              setError('');
+              setMessage("");
+              setFeedback("");
+              setError("");
             }}
             className="space-y-5 border-t border-outline pt-6"
           >
@@ -285,14 +286,14 @@ export function CartScreen({
                 </label>
                 <label className="space-y-1">
                   <span>Como quer receber?</span>
-                  <select
+                  <AppSelect
                     className={field}
                     value={fulfillment}
                     onChange={(event) =>
                       setFulfillment(
-                        event.target.value === 'delivery'
-                          ? 'delivery'
-                          : 'pickup',
+                        event.target.value === "delivery"
+                          ? "delivery"
+                          : "pickup",
                       )
                     }
                   >
@@ -300,7 +301,7 @@ export function CartScreen({
                     {settings.delivery_enabled && (
                       <option value="delivery">Entrega a combinar</option>
                     )}
-                  </select>
+                  </AppSelect>
                 </label>
                 <label className="space-y-1">
                   <span>Data pretendida</span>
@@ -315,7 +316,7 @@ export function CartScreen({
                   />
                 </label>
               </div>
-              {fulfillment === 'delivery' ? (
+              {fulfillment === "delivery" ? (
                 <label className="block space-y-1">
                   <span>Morada, código postal e localidade</span>
                   <textarea
@@ -335,7 +336,7 @@ export function CartScreen({
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="space-y-1">
                   <span>Preferência de pagamento</span>
-                  <select
+                  <AppSelect
                     className={field}
                     value={payment}
                     onChange={(event) =>
@@ -345,9 +346,9 @@ export function CartScreen({
                     <option value="mbway">MB WAY</option>
                     <option value="wise">Wise</option>
                     <option value="cash">Dinheiro</option>
-                  </select>
+                  </AppSelect>
                 </label>
-                {payment === 'cash' && (
+                {payment === "cash" && (
                   <label className="space-y-1">
                     <span>Troco para (opcional)</span>
                     <input
@@ -364,24 +365,20 @@ export function CartScreen({
                   <span>Subtotal dos produtos</span>
                   <span>{formatEuros(subtotal)}</span>
                 </p>
-                {fulfillment === 'delivery' && (
+                {fulfillment === "delivery" && (
                   <p className="mt-2 text-sm text-muted">
                     {settings.delivery_fee_cents === null
-                      ? 'Taxa de entrega e total final a confirmar no WhatsApp.'
-                      : 'Taxa de entrega: ' +
+                      ? "Taxa de entrega e total final a confirmar no WhatsApp."
+                      : "Taxa de entrega: " +
                         formatEuros(settings.delivery_fee_cents / 100)}
                   </p>
                 )}
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
+              <div className="admin-actions">
                 <button type="submit" value="open" className="ui-primary">
-                  {busy ? 'A validar pedido…' : 'Continuar no WhatsApp'}
+                  {busy ? "A validar pedido…" : "Continuar no WhatsApp"}
                 </button>
-                <button
-                  type="submit"
-                  value="copy"
-                  className="ui-secondary text-primary"
-                >
+                <button type="submit" value="copy" className="ui-secondary">
                   Copiar mensagem
                 </button>
               </div>

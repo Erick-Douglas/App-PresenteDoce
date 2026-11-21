@@ -2,7 +2,7 @@
 
 Plataforma de operação e vendas para confeitaria artesanal, com vitrine, encomendas pelo WhatsApp e gestão pelo celular. A Presente Doce é a loja piloto da evolução para Micro-SaaS vertical B2B.
 
-[Loja](https://presente-doce.vercel.app/) · [Changelog](CHANGELOG.md) · [PRD](docs/PRD.md) · [Implementação](docs/IMPLEMENTACAO.md) · [Design System](docs/DESIGN_SYSTEM.md) · [Arquitetura](docs/ARQUITETURA.md) · [Testes](docs/TESTES.md)
+[Loja](https://presente-doce.vercel.app/) · [Changelog](CHANGELOG.md) · [PRD](docs/PRD.md) · [Implementação](docs/IMPLEMENTACAO.md) · [Design System](docs/DESIGN_SYSTEM.md) · [Arquitetura](docs/ARQUITETURA.md) · [Testes](docs/TESTES.md) · [Segurança](docs/SEGURANCA.md)
 
 React 19, TypeScript e Vite 6 no frontend; Vercel publica a build do GitHub. Supabase fornece Postgres, Auth, Storage e Edge Functions. A cópia local é o ambiente de desenvolvimento, sincronizado por commits com o repositório. React/Vite foi confirmado por Erick; não há migração para Next.js.
 
@@ -24,7 +24,7 @@ Pedidos públicos são registrados e validados antes de abrir o WhatsApp; aguard
 
 ## Desenvolvimento e publicação
 
-Node.js 24 e npm. Execute npm ci, npm run dev, npm run lint, npm test, npm run check:catalog e npm run build. Para navegador: npm run preview e, noutro terminal, node tests/admin-workflows.mjs e node tests/public-layout.mjs. Chrome/Playwright são necessários nos ensaios de UI; leia [TESTES](docs/TESTES.md).
+Node.js 24 e npm. Execute npm ci, npm run dev, npm run lint, npm test, npm run check:catalog e npm run build. Para navegador: npm run preview e, noutro terminal, node tests/admin-workflows.mjs, node tests/public-layout.mjs e node tests/buyer-admin-flows.mjs. Chrome/Playwright são necessários nos ensaios de UI; leia [TESTES](docs/TESTES.md).
 
 Copie .env.example para o ambiente local ignorado. O browser recebe somente URL/chave publicável do Supabase. Nunca use service_role ou secrets em VITE_* ou no Git. As migrações em supabase/migrations devem ser aplicadas em ordem a um banco de teste antes do projeto de operação. Depois publique store-api com os arquivos Deno; ela faz autenticação própria e admite o checkout público.
 
