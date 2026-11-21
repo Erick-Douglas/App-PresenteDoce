@@ -69,6 +69,7 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
                 name: text(f, "name"),
                 phone: text(f, "phone"),
                 email: text(f, "email"),
+                birth_date: text(f, "birth_date") || null,
                 address: text(f, "address"),
                 notes: text(f, "notes"),
                 ...(customer ? { archived: f.get("archived") === "on" } : {}),
@@ -96,6 +97,13 @@ export function CustomersModule({ data, token, reload }: ModuleProps) {
                 name="email"
                 type="email"
                 value={customer?.email}
+              />
+              <Field
+                label="Data de nascimento (opcional)"
+                name="birth_date"
+                type="date"
+                value={customer?.birth_date ?? ""}
+                max={new Date().toISOString().slice(0, 10)}
               />
               <Field
                 label="Morada"

@@ -27,6 +27,7 @@ export type StoreSettings = {
 };
 export type Customer = {
   id: string;
+  birth_date?: string | null;
   name: string;
   phone: string;
   email: string;
@@ -46,6 +47,7 @@ export type Order = {
   delivery_at?: string;
   fulfillment: "pickup" | "delivery";
   customer_snapshot: {
+    birth_date?: string | null;
     name: string;
     phone: string;
     email: string;
@@ -124,7 +126,13 @@ export type OrderPayload = {
   delivery_date: string;
   delivery_time?: string;
   fulfillment: "pickup" | "delivery";
-  customer: { name: string; phone: string; email: string; address: string };
+  customer: {
+    name: string;
+    phone: string;
+    email: string;
+    address: string;
+    birth_date?: string | null;
+  };
   customer_id?: string;
   kind?: "order" | "quote";
   notes?: string;

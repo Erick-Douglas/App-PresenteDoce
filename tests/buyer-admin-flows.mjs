@@ -156,11 +156,11 @@ try {
     .getByRole("heading", { name: "A sua encomenda", exact: true })
     .waitFor();
   await page.getByLabel("Nome", { exact: true }).fill("Cliente fictício");
-  await page.getByLabel("Telefone", { exact: true }).fill("+351000000000");
+  await page.getByLabel("WhatsApp", { exact: true }).fill("+351000000000");
   const day = new Date();
   day.setDate(day.getDate() + 3);
   const future = day.toISOString().slice(0, 10);
-  await page.locator("input[type=date]").fill(future);
+  await page.getByLabel("Data pretendida", { exact: true }).fill(future);
   await page
     .getByRole("button", { name: "Continuar no WhatsApp", exact: true })
     .click();

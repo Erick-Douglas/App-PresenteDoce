@@ -69,6 +69,7 @@ interface ProductDetailScreenProps {
     },
   ) => void;
   editingItem?: CartItem | null;
+  onStartAnother?: () => void;
   onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
   favorites: string[];
   onNavigate: (view: View) => void;
@@ -203,6 +204,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   onAddToCart,
   onUpdateCartItem,
   editingItem,
+  onStartAnother,
   onToggleFavorite,
   favorites,
   onNavigate,
@@ -280,6 +282,12 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
   }, [editingItem]);
 
   const isFav = favorites.includes(product.id);
+  const [favoriteNotice, setFavoriteNotice] = useState("");
+  React.useEffect(() => {
+    if (!favoriteNotice) return;
+    const timer = setTimeout(() => setFavoriteNotice(""), 2600);
+    return () => clearTimeout(timer);
+  }, [favoriteNotice]);
   const isSimples = product.simples === true;
   const orderMode = productOrderMode(product);
   const isConfiguravel = !hasGeneric && orderMode !== "simple";
@@ -465,8 +473,13 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
           aria-label="Favorito"
           aria-pressed={isFav}
           data-active={isFav}
-          onClick={(e) => onToggleFavorite(product.id, e)}
-          className="product-detail-action pointer-events-auto"
+          onClick={(e) => {
+            onToggleFavorite(product.id, e);
+            setFavoriteNotice(
+              isFav ? "Removido dos favoritos" : "Guardado nos favoritos",
+            );
+          }}
+          className="product-detail-action product-favorite-action pointer-events-auto"
         >
           <Heart
             size={16}
@@ -474,6 +487,14 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
             aria-hidden="true"
           />
         </button>
+      </div>
+
+      <div
+        role="status"
+        className="favorite-notice"
+        data-visible={!!favoriteNotice}
+      >
+        {favoriteNotice}
       </div>
 
       {/* Layout: mobile stack / desktop 2 colunas */}
@@ -492,15 +513,12 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
 
         {/* ── Formulário ── */}
         <div className="flex-1 md:overflow-y-auto md:h-screen">
-          <div className="relative -mt-12 md:mt-0 rounded-t-[32px] md:rounded-t-none overflow-hidden bg-surface shadow-[0_-12px_40px_rgba(0,0,0,0.06)] md:shadow-none pb-36">
+          <div className="relative -mt-16 md:mt-0 rounded-t-[32px] md:rounded-t-none overflow-hidden bg-surface shadow-[0_-12px_40px_rgba(0,0,0,0.06)] md:shadow-none pb-36">
             {/* Cabeçalho: nome, descrição, preço */}
-            <div className="px-6 pt-6 pb-4 bg-surface border-b border-black/[0.04]">
+            <div className="px-6 pt-4 pb-4 bg-surface border-b border-black/[0.04]">
               <div className="flex gap-2 mb-2 flex-wrap">
                 {product.isNew && (
                   <span className="module-badge">Novidade</span>
-                )}
-                {isConfiguravel && (
-                  <span className="module-badge">Personalizável</span>
                 )}
               </div>
               <div className="mb-1 flex flex-wrap items-center justify-between gap-x-3">
@@ -536,6 +554,20 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 )}
               </div>
             </div>
+
+            {editingItem && onStartAnother && (
+              <div className="product-cart-context">
+                <p>Está a editar um item do carrinho.</p>
+                <button
+                  type="button"
+                  className="ui-secondary"
+                  onClick={onStartAnother}
+                >
+                  <Plus size={16} />
+                  Adicionar outro com novas escolhas
+                </button>
+              </div>
+            )}
 
             {hasGeneric && (
               <>

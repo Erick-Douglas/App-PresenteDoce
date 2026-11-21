@@ -23,24 +23,8 @@
   .store-icon-action:hover { background: color-mix(in srgb, var(--pd-color-surface) 10%, transparent); }
   .store-icon-action:focus-visible { outline: 2px solid var(--pd-color-cream); }
 
-  .app-theme { padding-block-start: env(safe-area-inset-top, 0px); }
-
-  .app-theme::before {
-    position: fixed;
-    z-index: 110;
-    inset: 0 0 auto;
-    height: env(safe-area-inset-top, 0px);
-    background: color-mix(in srgb, var(--pd-color-brand) 60%, transparent);
-    backdrop-filter: blur(14px);
-    pointer-events: none;
-    content: '';
-  }
-
-  :root[data-brand-status="true"] .app-theme::before { background: var(--pd-color-brand); }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .app-theme::before { transition: background-color 180ms ease; }
-  }
+  /* Safe-area spacing belongs to the page; no fixed tint over the system status area. */
+  .store-masthead { padding-block-start: env(safe-area-inset-top, 0px); }
 
   .admin-page { min-height: 100dvh; }
   .admin-form > *, .admin-form label, .ui-glass-panel, .pricing-results > div { min-width: 0; }

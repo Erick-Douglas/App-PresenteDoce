@@ -180,3 +180,8 @@ Tópicos são grupos de opções de compra, com limites e adicionais gratuitos/p
 ## PD-DARK · Perfil e aparência · 21/11/2026
 
 Avatar de conta, menu à direita, gestão em viewport completo, agrupamento por títulos/pílulas e modos Claro/Escuro/Sistema. [Contrato, segurança e critérios](PERFIL-E-APARENCIA.md). Perfil preparado para clientes futuros; cadastro comercial e de clientes permanece fora desta ativação.
+
+
+## Decisão vigente · Carrinho e checkout · 21/11/2026
+
+O + inicia nova personalização, enquanto a imagem pode retomar a última configuração e o lápis edita a linha exata. Mesma combinação soma quantidade; diferente gera linha independente. Checkout compacto com contagem, subtotal no card e nome/WhatsApp/nascimento opcional. Sem assistente flutuante nem pintura dinâmica do topo. [Regras, pesquisa e testes](CARRINHO-E-CHECKOUT.md). Esta decisão substitui a retomada obrigatória como único caminho de compra.

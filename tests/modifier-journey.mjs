@@ -226,7 +226,7 @@ try {
     0,
   );
   assert.match(await bag.innerText(), /27,00/);
-  await click("Personalizar Produto modificadores QA");
+  await click("Produto modificadores QA");
   assert.equal(
     await page
       .getByRole("button", { name: /Chocolate/ })
@@ -264,7 +264,7 @@ try {
     "PASS purchase groups validate, paid choices price per unit, add returns home, reopen retains data and updates one cart row",
   );
   await fill("Nome", "Cliente opções QA");
-  await fill("Telefone", "+351000000000");
+  await fill("WhatsApp", "+351000000000");
   await fill("Horário pretendido", "16:30");
   await page
     .getByLabel("Data pretendida", { exact: true })

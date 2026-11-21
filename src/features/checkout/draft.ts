@@ -2,6 +2,7 @@ export type CheckoutDraft = {
   name: string;
   phone: string;
   email: string;
+  birthDate: string;
   street: string;
   door: string;
   postalCode: string;
@@ -20,6 +21,7 @@ export function newCheckoutDraft(): CheckoutDraft {
     name: "",
     phone: "",
     email: "",
+    birthDate: "",
     street: "",
     door: "",
     postalCode: "",

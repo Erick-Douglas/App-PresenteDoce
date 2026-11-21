@@ -10,7 +10,7 @@ import {
   Plus,
   ShoppingBag,
   Trash2,
-  UserRound,
+  ContactRound,
   Wallet,
 } from "lucide-react";
 import {
@@ -71,6 +71,7 @@ function orderPayload(
       name: draft.name.trim(),
       phone: draft.phone.trim(),
       email: draft.email.trim(),
+      ...(draft.birthDate ? { birth_date: draft.birthDate } : {}),
       address: fulfillment === "delivery" ? address : "",
     },
     notes:
@@ -202,6 +203,7 @@ export function CartScreen({
       | "name"
       | "phone"
       | "email"
+      | "birthDate"
       | "street"
       | "door"
       | "postalCode"
@@ -298,7 +300,7 @@ export function CartScreen({
   }
   return (
     <section className="page-width checkout-page">
-      <header className="customer-page-heading">
+      <header className="checkout-appbar">
         <button
           type="button"
           aria-label="Voltar ao catálogo"
@@ -307,10 +309,12 @@ export function CartScreen({
         >
           <ArrowLeft size={18} />
         </button>
-        <div>
-          <span className="page-eyebrow">Feito para si</span>
-          <h1 className="type-module text-on-surface">A sua encomenda</h1>
-        </div>
+        <h1 className="type-module">A sua encomenda</h1>
+        <ShoppingBag
+          size={21}
+          aria-hidden="true"
+          className="checkout-appbar-bag"
+        />
       </header>
       {!cart.length ? (
         <div className="module-panel">
@@ -333,14 +337,24 @@ export function CartScreen({
         <form onSubmit={submit} aria-busy={busy} className="checkout-layout">
           <fieldset disabled={busy} className="checkout-fields">
             <section className="checkout-card">
-              <h2 className="checkout-title">
-                <ShoppingBag size={18} />
-                Os seus produtos{" "}
-                <small>{cart.reduce((n, i) => n + i.quantity, 0)} itens</small>
+              <h2 className="checkout-title checkout-products-title">
+                <span className="checkout-title-icon">
+                  <ShoppingBag size={20} aria-hidden="true" />
+                </span>
+                <span>Os seus produtos</span>
+                <span className="checkout-item-count">
+                  {cart.reduce((n, i) => n + i.quantity, 0)}{" "}
+                  {cart.reduce((n, i) => n + i.quantity, 0) === 1
+                    ? "item"
+                    : "itens"}
+                </span>
               </h2>
               <ul className="checkout-items">
-                {cart.map((item) => (
-                  <li key={item.cartId}>
+                {cart.map((item, index) => (
+                  <li
+                    key={item.cartId}
+                    aria-label={"Item " + (index + 1) + " · " + item.name}
+                  >
                     {item.image && (
                       <img src={item.image} alt="" className="checkout-thumb" />
                     )}
@@ -353,6 +367,7 @@ export function CartScreen({
                           item.recheio1,
                           item.recheio2 !== item.recheio1 ? item.recheio2 : "",
                           item.selectedFlavors?.join(", "),
+                          item.tema,
                         ]
                           .filter(Boolean)
                           .join(" · ")}
@@ -365,17 +380,40 @@ export function CartScreen({
                           {g.title}: {g.options.map((o) => o.label).join(", ")}
                         </p>
                       ))}
-                      <span className="text-xs text-muted">
-                        {item.mode === "ready"
-                          ? "Pronta entrega hoje"
-                          : "Por encomenda"}
-                      </span>
-                      <p className="type-price mt-1">
-                        {formatEuros(orderSubtotal([item]))}
-                      </p>
+                      {item.observations && (
+                        <p className="checkout-item-observation">
+                          {item.observations}
+                        </p>
+                      )}
                     </div>
                     <div className="checkout-item-actions">
-                      <div className="quantity-control">
+                      <div className="checkout-line-tools">
+                        <button
+                          type="button"
+                          className="ui-icon-action"
+                          aria-label={"Editar " + item.name}
+                          onClick={() => onEditItem(item)}
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="ui-icon-action"
+                          data-destructive="true"
+                          aria-label={"Remover " + item.name}
+                          onClick={() => onUpdateQuantity(item.cartId, 0)}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                      <p className="checkout-line-total">
+                        {formatEuros(orderSubtotal([item]))}
+                      </p>
+                      <div
+                        className="quantity-control"
+                        role="group"
+                        aria-label={"Quantidade de " + item.name}
+                      >
                         <button
                           type="button"
                           aria-label={"Diminuir " + item.name}
@@ -398,34 +436,21 @@ export function CartScreen({
                           <Plus size={14} />
                         </button>
                       </div>
-                      <div className="flex justify-end gap-1">
-                        <button
-                          type="button"
-                          className="ui-icon-action"
-                          aria-label={"Editar " + item.name}
-                          onClick={() => onEditItem(item)}
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          type="button"
-                          className="ui-icon-action"
-                          data-destructive="true"
-                          aria-label={"Remover " + item.name}
-                          onClick={() => onUpdateQuantity(item.cartId, 0)}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
                     </div>
                   </li>
                 ))}
               </ul>
+              <div className="checkout-products-subtotal">
+                <span>Subtotal dos produtos</span>
+                <strong>{formatEuros(subtotal)}</strong>
+              </div>
             </section>
             <section className="checkout-card">
               <h2 className="checkout-title">
-                <UserRound size={18} />
-                Os seus dados
+                <span>Os seus dados</span>
+                <span className="checkout-title-icon checkout-title-icon-end">
+                  <ContactRound size={20} aria-hidden="true" />
+                </span>
               </h2>
               <div className="module-form-grid">
                 {input("name", "Nome", {
@@ -433,11 +458,16 @@ export function CartScreen({
                   maxLength: 100,
                   autoComplete: "name",
                 })}
-                {input("phone", "Telefone", {
+                {input("phone", "WhatsApp", {
                   required: true,
                   type: "tel",
                   maxLength: 30,
                   autoComplete: "tel",
+                })}
+                {input("birthDate", "Data de nascimento (opcional)", {
+                  type: "date",
+                  max: currentDay,
+                  autoComplete: "bday",
                 })}
                 {input("email", "E-mail (opcional)", {
                   type: "email",

@@ -114,3 +114,8 @@ Tópicos pertencem à categoria e são associados por ID ao produto. Criar a def
 ## Perfil e dois temas · 21/11/2026
 
 [Composição e regras vigentes](PERFIL-E-APARENCIA.md): avatar de 40 px à esquerda, menu à direita, gestão em tela inteira e visitante em painel. Grupos com títulos externos e módulos em pílulas compactas. Tokens claros/escuros no mesmo tokens.css; appearance.css compõe perfil/menu/vidro. Claro/Escuro/Sistema em Perfil e aparência. Ícone de edição de categoria 26 px/área 48 px, produto 19 px/área 44 px, ambos com vidro. Esta decisão de Erick substitui a posição anterior do hambúrguer à esquerda.
+
+
+## Refinamento vigente · Carrinho e checkout · 21/11/2026
+
+Tokens únicos em tokens.css, composições cart.css: vidro branco a 7% nos botões da foto, retorno claro, coração vermelho com retorno de guardar/remover e +1 local na vitrine. Checkout com título central, títulos de card distinguíveis, contagem em pílula, ações no topo direito e preço/quantidade abaixo à direita. Sem assistente/badge Personalizável. Sem camada fixa, tinta no scroll ou cor imposta ao topo pelo manifesto; manter área segura por página. [Especificação e limites de navegador](CARRINHO-E-CHECKOUT.md).
