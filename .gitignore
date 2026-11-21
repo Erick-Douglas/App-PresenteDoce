@@ -12,3 +12,5 @@ coverage/
 *.keystore
 *.p12
 *.mobileprovision
+
+.local-backups/

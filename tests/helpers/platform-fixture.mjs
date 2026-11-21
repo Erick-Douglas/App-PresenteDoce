@@ -1,0 +1,4 @@
+export const fixtureStore={id:'11111111-1111-4111-a111-111111111111',slug:'presente-doce',name:'Presente Doce',logo_url:'/logo.png',primary_color:'#800000',currency:'EUR',timezone:'Europe/Lisbon',visible:true};
+export const fixtureSettings={whatsapp:'+351000000000',email:'fixture@example.test',address:'Morada de teste',hours:'Por marcação',lead_days:1,daily_capacity:8,deposit_percent:50,delivery_fee_cents:null,delivery_enabled:true,cake_masses:[{label:'Chocolate',extra_cents:0}],cake_fillings:[{label:'Brigadeiro',extra_cents:0}],gallery:[]};
+export const publicConfig={store:fixtureStore,settings:fixtureSettings};
+export const emptySnapshot={store:fixtureStore,settings:{settings:fixtureSettings,version:1},entitlement:{status:'internal',expires_at:null},orders:[],items:[],customers:[],finance:[],stock:[],blocks:[],ingredients:[]};

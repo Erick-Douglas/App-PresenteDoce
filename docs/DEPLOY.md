@@ -47,3 +47,9 @@ Aplique as quatro migrações de 20/11 em ordem antes de publicar esta versão. 
 Confira restauração e renovação do login, opção sem persistência, recuperação com sessão guardada e saída. Valide fotografia válida, erro e nova tentativa, gravação da ficha e confirmação do preço com dados fictícios. Os dados da planilha não fazem parte da build.
 
 Para reverter o frontend, use o deploy anterior. Preserve a tabela e as fichas já guardadas; o frontend anterior apenas não mostra o recurso. Não reverta as permissões ou os formatos de imagem sem conferir os caminhos guardados, porque fotografias JPEG passam a ser válidas. [Fichas e migração](PRECIFICACAO.md) · [Builds nativas](NATIVE.md).
+
+## Plataforma por loja · 20/11/2026
+
+Use todas as migrações versionadas, incluindo fundação de lojas, operações, precisão de fichas e limite de upload. Publique store-api a partir de supabase/functions/store-api, com deno.json e autenticação própria (verify_jwt=false porque também atende checkout público). O runtime injeta SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY; nunca copie essas credenciais para o frontend. A gestão usa store_members e entitlements. O legado catalog_admins não concede novas associações.
+
+Confirme as rotas /lojas/:slug e /criar-loja no Vercel. Mantenha VITE_ENABLE_ONBOARDING=false e bloqueio no banco (presente_doce_private.platform_config.onboarding_enabled=false) até a etapa comercial. Stripe e WhatsApp Business não estão ativos. Reverter o frontend não desfaz migração ou pedidos; preserve dados novos. [Operação e recuperação](IMPLEMENTACAO.md) · [Conexões futuras](INTEGRACOES.md).

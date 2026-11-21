@@ -30,3 +30,7 @@ Não copiar marca, textos comerciais, fotografias nem telas completas. Examinar 
 - Assinatura mensal da plataforma, recebimento de sinal e pagamento do consumidor são modelos diferentes.
 
 [PRD](PRD.md) · [Arquitetura e segurança](ARQUITETURA.md) · [Roadmap](ROADMAP.md).
+
+## Conferência visual na implementação · 20/11/2026
+
+Duas capturas públicas do Gestly foram abertas e inspecionadas: cabeçalho compacto, filtros/atalhos em pílula, cards claros de métricas, navegação inferior e cálculo com resumo separado dos campos. A implementação usa essa organização como referência e preserva a marca bordô/dourado da Presente Doce. Não reutiliza fotografias, código ou identidade do concorrente. As capturas ficaram apenas no cache local de pesquisa.

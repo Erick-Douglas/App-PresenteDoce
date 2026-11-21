@@ -1,8 +1,8 @@
 # PRD — Plataforma de confeitaria híbrida
 
-**Versão 1.0 · 20/11/2026 · Europe/Lisbon**  
+**Versão 1.1 · 20/11/2026 · Europe/Lisbon**  
 **Solicitante:** Erick · **Loja piloto:** Presente Doce · **Revisão:** liderança e Gabriela  
-**Natureza:** direção de produto fornecida por Erick, detalhada em requisitos executáveis. Os módulos futuros abaixo não estão implementados por este documento.
+**Natureza:** direção de produto fornecida por Erick, detalhada em requisitos executáveis. A operação inicial está implementada; a ativação comercial e integrações externas ficam nas dependências descritas em IMPLEMENTACAO.md.
 
 Substitui a versão 0.5. O histórico da versão anterior permanece no GitHub. [Base funcional conferida](https://github.com/Erick-Douglas/App-PresenteDoce/tree/63e5c4420449fd8bd9a0eed6b843e30bfee33506) · [Arquitetura](ARQUITETURA.md) · [Pesquisa das referências](REFERENCIAS-SAAS.md) · [Backlog](ROADMAP.md)
 
@@ -18,16 +18,18 @@ O checkout do consumidor e a assinatura do lojista são fluxos distintos. Encome
 
 | Componente | Confirmado hoje | Destino |
 | --- | --- | --- |
-| Interface | React 19, TypeScript, Vite 6, Tailwind; tokens de tema | React reaproveitado; Next.js App Router como opção a confirmar com a liderança |
-| Hospedagem e histórico | Vercel; GitHub Erick-Douglas/App-PresenteDoce | Manter projeto/histórico; migrar o runtime com preview e reversão |
-| Dados e identidade | Supabase dedicado; loja única; catálogo, categorias/tópicos, textos e fichas | Isolamento por store_id, membros, pedidos e demais módulos |
-| Edição contextual | Edição de produto/categoria a partir da vitrine, além dos módulos de gestão | Completar Live Mode, estoque do dia e pré-visualização |
+| Interface | React 19, TypeScript, Vite 6, Tailwind; tokens de tema | React/Vite mantido por decisão de Erick; API Edge segura |
+| Hospedagem e histórico | Vercel; GitHub Erick-Douglas/App-PresenteDoce | Mesmo projeto/histórico; publicar por commit, preview e reversão |
+| Dados e identidade | Supabase dedicado; store_id/RLS, membros, catálogo, pedidos, clientes, agenda e finanças | Isolamento por store_id, membros, pedidos e demais módulos |
+| Edição contextual | Edição de produto/categoria a partir da vitrine, além dos módulos de gestão | Edição contextual, estoque no card e prévia implementados |
 | Precificação | Fichas ligadas ao catálogo e validação; importação antiga pendente | Ingredientes, sub-receitas, fichas versionadas, compras e produção |
-| Encomenda | Carrinho em memória e mensagem WhatsApp; não persiste pedido | Pedido validado no servidor e reserva antes dos módulos operacionais |
-| Agenda, CRM e financeiro | Não implementados | Construir em torno do mesmo registro de pedido |
+| Encomenda | Carrinho em memória; pedido persistente validado e mensagem WhatsApp | Pedido validado no servidor e reserva antes dos módulos operacionais |
+| Agenda, CRM e financeiro | Implementados em torno do mesmo pedido | Aceite da operadora e escala comercial |
 | Nativo | Bases Capacitor Android/iOS; sem distribuição assinada | Preservar reutilização; testar API, autenticação e aparelhos antes das lojas |
 
-O projeto atual não usa Next.js. Esse framework é uma opção de destino a confirmar, e não uma dependência já instalada. As funcionalidades não exigem por si só trocar Vite; uma API segura pode ser adicionada antes de decidir a migração. Os testes e correções anteriores continuam sendo a base de regressão. [Ensaios atuais](TESTES.md) · [Precificação](PRECIFICACAO.md) · [Nativo](NATIVE.md).
+O projeto atual não usa Next.js. Erick confirmou React/Vite para esta evolução. A API segura foi adicionada em Supabase Edge Functions, preservando compatibilidade com Capacitor. Os testes e correções anteriores continuam sendo a base de regressão. [Ensaios atuais](TESTES.md) · [Precificação](PRECIFICACAO.md) · [Nativo](NATIVE.md).
+
+[Estado implementado, testes e limites](IMPLEMENTACAO.md) · [Stripe e automação na próxima etapa](INTEGRACOES.md).
 
 ## 3. Perfis e permissões
 
@@ -115,7 +117,7 @@ Marca, logótipo, cor de destaque, moeda, fuso horário, contatos, horários, re
 
 PD-GAB-06 permanece prioridade operacional. Manter fórmulas aprovadas e correções de ficha/rascunho. Modelar ingredientes, embalagens, despesas atribuídas, sub-receitas e rendimento com revisões; qualquer extensão de perda, trabalho ou impostos deve ser nomeada e validada com Gabriela.
 
-A planilha conferida tem 26 abas, 62 ingredientes e 21 fichas. Há dados incompletos e dois totais manuais divergentes. Preparar importação com origem, conferência e repetição sem duplicados. Não alterar fórmulas nem importar entradas inconsistentes automaticamente. [Mapeamento](PRECIFICACAO.md).
+A importação de dados comerciais exige conferência privada de origem, vínculos, unidades e valores. Apresentar prévia e permitir repetição sem duplicações, preservando os dados originais.
 
 **Aceite:** casos reais representativos coincidem ao cêntimo; uma sub-receita não pode conter ciclo; alterações de custo atualizam estimativas, não preços de venda aprovados nem pedidos antigos sem confirmação.
 
@@ -154,3 +156,7 @@ Etapa imediata é uma sequência de entregas pequenas: concluir validação oper
 Medir tempo para cadastrar produto/produzir orçamento, pedidos confirmados por semana, erros de cadastro, reservas recusadas por falta de capacidade e saldo pendente. Levantar a linha de base; não inventar metas de conversão ou faturamento.
 
 Critérios comuns: proteção no servidor e no banco, acessibilidade, seis larguras de tela, testes de concorrência e regressão, migração ensaiada, backup/restauração conferidos e evidências por ID. Execução do agente e aceite de Erick/liderança permanecem estados separados.
+
+## Decisão de Erick · 20/11/2026 · Implementação autorizada
+
+Manter React + Vite. A hipótese de migrar para Next.js fica encerrada: adicionar API segura compatível com Vercel e regras transacionais/RLS no Supabase. Gestly é a referência principal para distribuição de elementos, cartões, botões, ícones e navegação, preservando a identidade da Presente Doce. Erick autorizou executar o PRD e o backlog anterior. A referência deve ser verificada visualmente; não copiar ativos ou alegar integração sem teste. Acompanhar os IDs na Jornada de implementação integral do Daily Log.

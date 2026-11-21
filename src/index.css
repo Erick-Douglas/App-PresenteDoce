@@ -2,6 +2,7 @@
 @import "./design-system/tokens.css";
 @import "./design-system/typography.css";
 @import "./design-system/components.css";
+@import "./design-system/platform.css";
 
 @layer base {
   html, body, #root {

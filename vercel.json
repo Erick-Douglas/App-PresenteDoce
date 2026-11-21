@@ -1,6 +1,6 @@
 {
   "installCommand": "npm ci",
-  "buildCommand": "npm run lint && npm test && npm run check:catalog && npm run build",
+  "buildCommand": "npm run lint && npm run check:server && npm test && npm run check:catalog && npm run build",
   "headers": [
     {
       "source": "/(.*)",
@@ -53,6 +53,14 @@
     },
     {
       "source": "/precificacao",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/lojas/:slug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/criar-loja",
       "destination": "/index.html"
     }
   ]

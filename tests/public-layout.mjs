@@ -27,6 +27,8 @@ try{
   await page.goto(base);await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('dialog',{name:'Menu',exact:true}).getByRole('button',{name:'Entrar',exact:true}).click();
   await page.getByLabel('E-mail',{exact:true}).waitFor();await check(width+' login');
  }
+ await page.goto(base+'/lojas/nao-existe-pd-qa');await page.getByRole('heading',{name:'Não foi possível abrir a loja',exact:true}).waitFor();assert.equal(await page.getByRole('article').count(),0);checks.push('unknown store refuses pilot fallback');
+ await page.goto(base+'/criar-loja');await page.getByRole('heading',{name:'Sua loja, em breve',exact:true}).waitFor();assert.equal(await page.locator('input[type=email]').count(),0);checks.push('commercial signup disabled by default');
  fs.writeFileSync('node_modules/.cache/pd-review/public-layout.json',JSON.stringify({environment:'public catalog read only; no login or checkout submission',checks},null,2));
- console.log('PASS '+checks.length+' public product, cart and login layouts at 320–1920 px');
+ console.log('PASS '+checks.length+' public layouts, unknown store and commercial gate checks');
 }finally{await browser.close();}
