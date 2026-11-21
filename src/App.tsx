@@ -1,3 +1,4 @@
+import { hasPurchaseOptions } from "./features/products/options";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import React, {
@@ -438,24 +439,31 @@ export default function App() {
     (product: Product) => {
       setPreviousView(currentView);
       setSelectedProduct(product);
-      setEditingCartItem(null);
+      setEditingCartItem(
+        [...cart].reverse().find((item) => item.id === product.id) ?? null,
+      );
       handleNavigate("product-details");
     },
-    [currentView, handleNavigate],
+    [currentView, handleNavigate, cart],
   );
 
   const handleEditCartItem = useCallback(
     (item: CartItem) => {
       setPreviousView(currentView);
-      setSelectedProduct(item);
+      setSelectedProduct(
+        products.find((p) => p.id === item.id) ?? {
+          ...item,
+          price: item.basePrice ?? item.price,
+        },
+      );
       setEditingCartItem(item);
       handleNavigate("product-details");
     },
-    [currentView, handleNavigate],
+    [currentView, handleNavigate, products],
   );
 
   const selectOrConfigure = (product: Product, event?: React.MouseEvent) => {
-    if (product.configuravel || product.saleModes?.includes("ready")) {
+    if (hasPurchaseOptions(product)) {
       event?.stopPropagation();
       handleProductClick(product);
       return;
@@ -1018,6 +1026,7 @@ export default function App() {
           )}
 
           <FloatingCart
+            added={showSuccessToast}
             cart={cart}
             cartTotal={cartTotal}
             onNavigate={handleNavigate}
@@ -1044,25 +1053,7 @@ export default function App() {
             />
           )}
 
-          <AnimatePresence>
-            {showSuccessToast && (
-              <motion.div
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: -20 }}
-                exit={{ opacity: 0, y: 100 }}
-                className="fixed bottom-20 left-1/2 -translate-x-1/2 w-full max-w-screen-xl px-6 z-[100] flex justify-center pointer-events-none"
-              >
-                <div className="bg-primary text-on-primary px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-surface/10 backdrop-blur-md">
-                  <div className="w-6 h-6 bg-gold rounded-full flex items-center justify-center text-primary">
-                    <Plus size={14} />
-                  </div>
-                  <span className="font-bold text-xs tracking-wide">
-                    Adicionado ao carrinho
-                  </span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <AnimatePresence></AnimatePresence>
         </div>
       </div>
     </LiveEditingProvider>

@@ -1,8 +1,22 @@
-import type { ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, RefreshCw } from "lucide-react";
-import { Header } from "./Header";
-
+import { ArrowLeft, Menu, RefreshCw } from "lucide-react";
+type Heading = { title: string; onBack?: () => void };
+const Context = createContext<((value: Heading | null) => void) | null>(null);
+export function useAdminHeading(title: string | undefined, onBack: () => void) {
+  const set = useContext(Context);
+  useEffect(() => {
+    if (!set || !title) return;
+    set({ title, onBack });
+    return () => set(null);
+  }, [set, title, onBack]);
+}
 export function AdminPage({
   title,
   wide,
@@ -20,36 +34,43 @@ export function AdminPage({
   onRefresh?: () => void;
   refreshing?: boolean;
 }) {
+  const [override, setOverride] = useState<Heading | null>(null);
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="admin-page"
-    >
-      <div className="store-masthead">
-        <Header onOpenMenu={onMenu} showShare={false} />
-      </div>
-      <div
-        className={
-          "page-width admin-content " + (wide ? "" : "admin-content-narrow")
-        }
+    <Context.Provider value={setOverride}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="admin-page"
       >
-        <div className="admin-heading">
-          <button
-            type="button"
-            className="ui-icon-action page-back"
-            onClick={onBack}
-            aria-label="Voltar"
-          >
-            <ArrowLeft size={18} aria-hidden="true" />
-          </button>
-          <div className="admin-page-title">
-            <span className="page-eyebrow">Gestão da loja</span>
-            <h1 className="type-module">{title}</h1>
+        <header className="store-masthead module-masthead">
+          <div className="page-width">
+            <button
+              type="button"
+              aria-label="Abrir menu"
+              className="store-icon-action"
+              onClick={onMenu}
+            >
+              <Menu size={21} strokeWidth={1.6} />
+            </button>
+            <h1 className="type-module">{override?.title ?? title}</h1>
+            <button
+              type="button"
+              aria-label="Voltar"
+              className="store-icon-action"
+              onClick={override?.onBack ?? onBack}
+            >
+              <ArrowLeft size={21} />
+            </button>
           </div>
-          <div className="page-actions">
-            {onRefresh && (
+        </header>
+        <div
+          className={
+            "page-width admin-content " + (wide ? "" : "admin-content-narrow")
+          }
+        >
+          {onRefresh && !override && (
+            <div className="module-refresh">
               <button
                 type="button"
                 className="ui-secondary"
@@ -58,16 +79,15 @@ export function AdminPage({
               >
                 <RefreshCw
                   size={15}
-                  aria-hidden="true"
                   className={refreshing ? "animate-spin" : ""}
                 />
                 {refreshing ? "A atualizar…" : "Atualizar"}
               </button>
-            )}
-          </div>
+            </div>
+          )}
+          {children}
         </div>
-        {children}
-      </div>
-    </motion.div>
+      </motion.div>
+    </Context.Provider>
   );
 }

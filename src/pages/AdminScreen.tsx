@@ -1,6 +1,20 @@
+import { useAdminHeading } from "../components/AdminPage";
+import { OptionGroupsEditor } from "../components/OptionGroupsEditor";
+import {
+  legacyGroups,
+  validateGroups,
+  type OptionGroup,
+} from "../features/products/options";
+import { useStore } from "../features/platform/StoreProvider";
 import { AppSelect } from "../components/AppSelect";
 import { Plus } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { THEMED_CAKE_SIZES } from "../config/constants";
 import type { Product, ProductOrderMode } from "../config/types";
 import { currencySymbol, formatEuros } from "../features/checkout/order";
@@ -151,7 +165,17 @@ function ProductForm({
   onDeleted: (id: string) => void;
   onCancel: () => void;
 }) {
+  const { settings } = useStore();
   const data = row?.details;
+  const [groupMode, setGroupMode] = useState<"category" | "product">(
+    data?.optionGroupsMode ??
+      (data && productOrderMode(data) !== "simple" ? "product" : "category"),
+  );
+  const [customGroups, setCustomGroups] = useState<OptionGroup[]>(
+    () =>
+      data?.optionGroups ??
+      (data ? legacyGroups({ ...data, id: row!.id }, settings) : []),
+  );
   const initialCategory = data
     ? categories.find((item) => item.name === data.category)
     : (categories.find(
@@ -163,8 +187,11 @@ function ProductForm({
   const version = baseline?.version ?? null;
   const [categoryId, setCategoryId] = useState(initialCategory?.id ?? "");
   const [managingCategory, setManagingCategory] = useState(false);
-  const [newTopic, setNewTopic] = useState<string | null>(null);
-  const [topicError, setTopicError] = useState("");
+  const leaveCategory = useCallback(() => setManagingCategory(false), []);
+  useAdminHeading(
+    managingCategory ? "Editar categoria" : undefined,
+    leaveCategory,
+  );
   const [categoryDraft, setCategoryDraft] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState("");
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -225,6 +252,10 @@ function ProductForm({
   const errorRef = useRef<HTMLParagraphElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const selectedCategory = categories.find((item) => item.id === categoryId);
+  const activeGroups =
+    groupMode === "category"
+      ? (selectedCategory?.option_groups ?? [])
+      : customGroups;
   const mode = data
     ? productOrderMode(data)
     : (selectedCategory?.order_mode ?? "simple");
@@ -257,47 +288,6 @@ function ProductForm({
     if (error)
       errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [error]);
-
-  async function addProductTopic() {
-    if (!selectedCategory || busy || newTopic === null) return;
-    const name = newTopic.trim().replace(/\s+/g, " ");
-    if (!name || name.length > 80) {
-      setTopicError("Indique um tópico com até 80 caracteres.");
-      return;
-    }
-    const existing = selectedCategory.topics.find(
-      (t) => topicKey(t.name) === topicKey(name),
-    );
-    if (existing) {
-      setTopicDrafts((d) => ({
-        ...d,
-        [categoryId]: [...new Set([...(d[categoryId] ?? []), existing.id])],
-      }));
-      setNewTopic(null);
-      setTopicError("");
-      return;
-    }
-    setBusy(true);
-    setTopicError("");
-    try {
-      const next = {
-        ...selectedCategory,
-        topics: [...selectedCategory.topics, { id: crypto.randomUUID(), name }],
-      };
-      await saveCatalogCategory(next, token);
-      await applyManagedCategory({
-        previous: selectedCategory,
-        saved: { ...next, revision: next.revision + 1 },
-      });
-      setNewTopic(null);
-    } catch (e) {
-      setTopicError(
-        e instanceof Error ? e.message : "Não foi possível criar o tópico.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function addCategory() {
     if (busy || creatingCategory) return;
@@ -385,7 +375,15 @@ function ProductForm({
           updated.details.category === expectedCategory &&
           JSON.stringify([...(updated.details.topicIds ?? [])].sort()) ===
             JSON.stringify([...expectedTopics].sort()) &&
-          productContent(updated.details) === productContent(previous)
+          productContent(updated.details) ===
+            productContent(
+              previous.optionGroupsMode === "category" && change.saved
+                ? {
+                    ...previous,
+                    optionGroups: change.saved.option_groups ?? [],
+                  }
+                : previous,
+            )
         ) {
           setBaseline(updated);
         }
@@ -427,12 +425,6 @@ function ProductForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || creatingCategory) return;
-    if (newTopic !== null) {
-      setTopicError(
-        "Confirme ou cancele o novo tópico antes de guardar o produto.",
-      );
-      return;
-    }
     if (categoryDraft !== null) {
       setCategoryError(
         "Crie a categoria ou cancele antes de guardar o produto.",
@@ -453,57 +445,24 @@ function ProductForm({
       if (!name || !description)
         throw new Error("Preencha o nome e a descrição.");
       if (!selectedCategory) throw new Error("Escolha uma categoria.");
-      const configurable = !!optionFieldsForCategory;
-      const options = configurable
-        ? variants.map((option) => {
-            const label = option.label.trim();
-            if (!label) throw new Error("Indique o nome de cada opção.");
-            const maxFlavors =
-              isThemedCake || option.maxFlavors === ""
-                ? undefined
-                : Number(option.maxFlavors);
-            if (
-              maxFlavors != null &&
-              (!Number.isInteger(maxFlavors) ||
-                maxFlavors < 1 ||
-                maxFlavors > 100)
-            ) {
-              throw new Error("O limite de sabores deve estar entre 1 e 100.");
-            }
-            return {
-              label,
-              price: priceFrom(option.price),
-              ...(maxFlavors == null ? {} : { maxFlavors }),
-            };
-          })
-        : [];
-      if (
-        new Set(options.map((option) => option.label.toLowerCase())).size !==
-        options.length
-      ) {
-        throw new Error("Dê um nome diferente a cada opção.");
-      }
-      if (published && configurable && !options.length)
-        throw new Error("Adicione pelo menos uma opção antes de publicar.");
-      const productPrice = options.length
-        ? Math.min(...options.map((option) => option.price))
-        : priceFrom(configurable ? "0" : price);
+      validateGroups(activeGroups);
+      const productPrice = priceFrom(price);
       if (published && productPrice <= 0)
-        throw new Error("Os preços publicados devem ser superiores a zero.");
-      const flavors =
-        configurable && !isThemedCake
-          ? parseList(flavorDrafts.get(mode) ?? "")
-          : [];
-      if (
-        chosenTopics.length > 20 ||
-        flavors.length > 50 ||
-        flavors.some((value) => value.length > 80)
-      ) {
-        throw new Error(
-          "Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres por sabor.",
-        );
-      }
-
+        throw Error("O preço base deve ser superior a zero.");
+      const sizeGroup = activeGroups.find((g) => g.legacyKey === "variant");
+      const options = sizeGroup?.options.map((o) => ({
+        label: o.label,
+        price: Math.round(productPrice * 100 + o.extraCents) / 100,
+        ...(data?.variants?.find((v) => v.label === o.label)?.maxFlavors
+          ? {
+              maxFlavors: data.variants.find((v) => v.label === o.label)!
+                .maxFlavors,
+            }
+          : {}),
+      }));
+      const flavorsGroup = activeGroups.find((g) => g.legacyKey === "flavors");
+      const flavors = flavorsGroup?.options.map((o) => o.label);
+      const configurable = activeGroups.length > 0;
       const file = selectedImage;
       let nextImage = image;
       if (file instanceof File && file.size) {
@@ -524,14 +483,19 @@ function ProductForm({
         price: productPrice,
         image: nextImage,
         saleModes,
-        capacityUnits: Number(form.get("capacityUnits")),
+        capacityUnits:
+          settings.preorder_only !== false
+            ? (data?.capacityUnits ?? 1)
+            : Number(form.get("capacityUnits")),
+        optionGroups: activeGroups,
+        optionGroupsMode: groupMode,
         orderMode: mode,
         topicIds: chosenTopics.map((topic) => topic.id),
         tags: chosenTopics.map((topic) => topic.name),
         configuravel: configurable,
         simples: !configurable,
-        variants: options.length ? options : undefined,
-        flavors: flavors.length ? flavors : undefined,
+        variants: options?.length ? options : undefined,
+        flavors: flavors?.length ? flavors : undefined,
       };
       setSaveStage("A guardar produto…");
       const saved = await saveProduct(
@@ -564,6 +528,7 @@ function ProductForm({
             </p>
           )}
           <section
+            hidden={settings.preorder_only !== false}
             className="ui-glass-panel space-y-3"
             aria-label="Disponibilidade do produto"
           >
@@ -624,6 +589,7 @@ function ProductForm({
             <label className="block space-y-1">
               <span>Descrição</span>
               <textarea
+                aria-label="Descrição"
                 name="description"
                 rows={2}
                 required
@@ -673,14 +639,12 @@ function ProductForm({
                   <Plus size={16} strokeWidth={1.65} aria-hidden="true" />
                 </button>
               </div>
-              {!optionFieldsForCategory && (
-                <PriceInput
-                  label="Preço"
-                  value={price}
-                  onChange={setPrice}
-                  required
-                />
-              )}
+              <PriceInput
+                label="Preço base"
+                value={price}
+                onChange={setPrice}
+                required
+              />
             </div>
             {categoryDraft !== null && (
               <div className="space-y-2 rounded-lg border border-outline bg-surface/70 p-3">
@@ -730,228 +694,74 @@ function ProductForm({
             )}
           </section>
           {selectedCategory && (
-            <section
-              aria-label="Tópicos do produto"
-              className="ui-glass-panel space-y-2"
-            >
-              <div className="flex flex-wrap items-center gap-x-3">
-                <h2 className="type-item text-primary">
-                  Tópicos de {selectedCategory.name}
-                </h2>
-                <button
-                  type="button"
-                  className="ui-quiet-action"
-                  onClick={() => setManagingCategory(true)}
-                >
-                  Gerir tópicos
-                </button>
-                <button
-                  type="button"
-                  className="ui-quiet-action ml-auto"
-                  disabled={
-                    newTopic !== null || selectedCategory.topics.length >= 100
-                  }
-                  onClick={() => {
-                    setNewTopic("");
-                    setTopicError("");
+            <section className="ui-glass-panel space-y-4">
+              <h2 className="type-item">Tópicos e opções do produto</h2>
+              <label className="flex min-h-11 items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={groupMode === "category"}
+                  onChange={(e) => {
+                    if (e.target.checked) setGroupMode("category");
+                    else {
+                      if (!customGroups.length)
+                        setCustomGroups(
+                          structuredClone(selectedCategory.option_groups ?? []),
+                        );
+                      setGroupMode("product");
+                    }
                   }}
-                >
-                  <Plus size={14} />
-                  Adicionar tópico ao produto
-                </button>
-              </div>
-              <p className="text-xs text-muted">
-                Selecione os tópicos que descrevem este produto. Criar um tópico
-                nesta edição também o associa ao produto ao guardar.
-              </p>
-              {newTopic !== null && (
-                <div className="module-inset space-y-2">
-                  <label className="module-field">
-                    <span>Novo tópico do produto</span>
-                    <input
-                      className="ui-field"
-                      maxLength={80}
-                      value={newTopic}
-                      onChange={(e) => setNewTopic(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          void addProductTopic();
-                        }
-                      }}
-                    />
-                  </label>
+                />
+                Usar os grupos da categoria
+              </label>
+              {groupMode === "category" ? (
+                <>
+                  <p className="text-xs text-muted">
+                    Alterações guardadas na categoria atualizam estes grupos no
+                    produto. Para personalizar só este produto, desmarque a
+                    opção acima.
+                  </p>
+                  <div className="space-y-2">
+                    {activeGroups.length ? (
+                      activeGroups.map((g) => (
+                        <div className="module-inset" key={g.id}>
+                          <h3 className="type-item">{g.title}</h3>
+                          <p className="text-xs text-muted">
+                            {g.options
+                              .map(
+                                (o) =>
+                                  o.label +
+                                  (o.extraCents
+                                    ? " (+" +
+                                      formatEuros(o.extraCents / 100) +
+                                      ")"
+                                    : ""),
+                              )
+                              .join(" · ")}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted">
+                        A categoria ainda não tem grupos de escolha.
+                      </p>
+                    )}
+                  </div>
                   <div className="form-actions">
                     <button
                       type="button"
-                      className="ui-quiet-action"
-                      onClick={() => setNewTopic(null)}
-                    >
-                      Cancelar tópico
-                    </button>
-                    <button
-                      type="button"
                       className="ui-secondary"
-                      onClick={() => void addProductTopic()}
+                      onClick={() => setManagingCategory(true)}
                     >
-                      Confirmar e selecionar tópico
+                      Editar grupos da categoria
                     </button>
                   </div>
-                </div>
-              )}
-              {topicError && (
-                <p role="alert" className="text-primary text-sm">
-                  {topicError}
-                </p>
-              )}
-              <p className="text-xs text-muted">
-                {chosenTopics.length} tópico(s) selecionado(s). O vínculo fica
-                guardado ao guardar o produto.
-              </p>
-              {selectedCategory.topics.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {selectedCategory.topics.map((topic) => (
-                    <label
-                      key={topic.id}
-                      className={
-                        chip +
-                        " inline-flex min-h-10 items-center gap-2 has-checked:bg-primary/5"
-                      }
-                    >
-                      <input
-                        type="checkbox"
-                        className="accent-primary"
-                        checked={!!topicDrafts[categoryId]?.includes(topic.id)}
-                        onChange={(event) => {
-                          const checked = event.target.checked;
-                          setTopicDrafts((current) => {
-                            const ids = current[categoryId] ?? [];
-                            return {
-                              ...current,
-                              [categoryId]: checked
-                                ? [...ids, topic.id]
-                                : ids.filter((id) => id !== topic.id),
-                            };
-                          });
-                        }}
-                      />
-                      {topic.name}
-                    </label>
-                  ))}
-                </div>
+                </>
               ) : (
-                <p className="text-sm text-muted">
-                  Esta categoria ainda não tem tópicos.
-                </p>
-              )}
-            </section>
-          )}
-          {optionFieldsForCategory && (
-            <section className="ui-glass-panel space-y-3">
-              <h2 className="type-item text-primary">
-                {optionFieldsForCategory.title}
-              </h2>
-              <p className="text-sm text-muted">
-                O cliente escolhe uma opção ao encomendar. Indique o preço total
-                de cada opção.
-              </p>
-              <p className="text-sm text-muted">
-                {lowestPrice === null ? (
-                  "O card mostra o preço da opção mais barata."
-                ) : (
-                  <>
-                    No card{" "}
-                    <strong>A partir de {formatEuros(lowestPrice)}</strong>
-                  </>
-                )}
-              </p>
-              {variants.map((option, index) => (
-                <div
-                  key={index}
-                  className="grid gap-2 border-t border-outline pt-3 sm:grid-cols-2"
-                >
-                  <label>
-                    <span>{optionFieldsForCategory.label}</span>
-                    <input
-                      className={field}
-                      maxLength={80}
-                      placeholder={optionFieldsForCategory.example}
-                      value={option.label}
-                      onChange={(event) =>
-                        updateVariant(index, { label: event.target.value })
-                      }
-                      required
-                    />
-                  </label>
-                  <PriceInput
-                    label="Preço da opção"
-                    value={option.price}
-                    onChange={(value) => updateVariant(index, { price: value })}
-                    required
-                  />
-                  {!isThemedCake && (
-                    <label>
-                      <span className="text-sm">
-                        Máximo de sabores à escolha (opcional)
-                      </span>
-                      <input
-                        className={field}
-                        inputMode="numeric"
-                        maxLength={3}
-                        placeholder="Sem limite"
-                        value={option.maxFlavors}
-                        onChange={(event) =>
-                          updateVariant(index, {
-                            maxFlavors: event.target.value,
-                          })
-                        }
-                      />
-                    </label>
-                  )}
-                  <button
-                    type="button"
-                    className="ui-quiet-action justify-self-end"
-                    onClick={() =>
-                      setVariants(variants.filter((_, i) => i !== index))
-                    }
-                  >
-                    Remover opção
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                className={secondary}
-                disabled={variants.length >= 20}
-                onClick={() =>
-                  setVariants([
-                    ...variants,
-                    { label: "", price: "", maxFlavors: "" },
-                  ])
-                }
-              >
-                {optionFieldsForCategory.add}
-              </button>
-              {!isThemedCake && (
-                <label className="block space-y-1">
-                  <span>
-                    {mode === "salgados"
-                      ? "Tipos de salgado (um por linha)"
-                      : "Sabores da caixa (um por linha)"}
-                  </span>
-                  <textarea
-                    maxLength={4050}
-                    rows={2}
-                    className={field}
-                    value={flavorDrafts.get(mode) ?? ""}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      setFlavorDrafts((current) =>
-                        new Map(current).set(mode, value),
-                      );
-                    }}
-                  />
-                </label>
+                <OptionGroupsEditor
+                  value={customGroups}
+                  onChange={setCustomGroups}
+                  prefix="produto"
+                />
               )}
             </section>
           )}
@@ -1017,16 +827,12 @@ function ProductForm({
             <button className={primary} type="submit">
               {busy ? saveStage || "A guardar…" : "Guardar produto"}
             </button>
-            <button
-              className="ui-quiet-action"
-              type="button"
-              onClick={onCancel}
-            >
+            <button className="ui-secondary" type="button" onClick={onCancel}>
               Cancelar edição
             </button>
             {row && !confirmDelete && (
               <button
-                className="ui-quiet-action sm:ml-auto"
+                className="ui-danger"
                 type="button"
                 onClick={() => setConfirmDelete(true)}
               >
@@ -1055,7 +861,7 @@ function ProductForm({
                 >
                   Cancelar exclusão
                 </button>
-                <button type="button" className={primary} onClick={remove}>
+                <button type="button" className="ui-danger" onClick={remove}>
                   Confirmar exclusão
                 </button>
               </div>
@@ -1065,7 +871,6 @@ function ProductForm({
       </form>
       {managingCategory && selectedCategory && (
         <section className="space-y-4">
-          <h2 className="type-item text-primary">Editar categoria</h2>
           <CategoryEditor
             category={selectedCategory}
             categories={categories}

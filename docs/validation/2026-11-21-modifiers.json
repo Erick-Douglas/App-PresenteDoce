@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-21",
+  "ids": [
+    "PD-OPT-01",
+    "PD-OPT-02",
+    "PD-OPT-03",
+    "PD-OPT-04",
+    "PD-OPT-05",
+    "PD-OPT-06"
+  ],
+  "baseline": "9cb99b63be34cdaae617f675e2dea5b88764251a",
+  "unitTests": {
+    "passed": 65,
+    "failed": 0
+  },
+  "browser": [
+    "modifier-journey",
+    "catalog-journey",
+    "admin-workflows",
+    "buyer-admin-flows",
+    "checkout-journey",
+    "pricing-journey",
+    "public-layout",
+    "review-captures"
+  ],
+  "widths": [
+    320,
+    390,
+    768,
+    1024,
+    1440,
+    1920
+  ],
+  "scope": "Real browser, gateway, Edge handler and isolated PostgreSQL; provider/Auth identity simulated. No real orders/messages/test uploads.",
+  "migrationVersions": [
+    "20261121132314",
+    "20261121132356"
+  ],
+  "edgeVersion": 6,
+  "native": "Android/iOS web assets synchronized; no signed build or physical device test",
+  "leaderAcceptance": "pending",
+  "session": "open"
+}

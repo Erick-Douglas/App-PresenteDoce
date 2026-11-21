@@ -55,3 +55,8 @@ Para os controles remotos sem escrita, execute node scripts/check-security.mjs. 
 
 Executar também node tests/catalog-journey.mjs, node tests/checkout-journey.mjs, node tests/pricing-journey.mjs e node tests/review-captures.mjs com preview local ativo. As três jornadas usam banco isolado, gateway/handler reais e identidade simulada. Capturas em node_modules/.cache ficam fora do Git. [Cobertura, resultados e limites](CORRECOES-JORNADA-2026-11-21.md).
 
+
+
+## Suíte vigente de modificadores · 21/11/2026
+
+Executar node tests/modifier-journey.mjs, catalog-journey.mjs, admin-workflows.mjs, buyer-admin-flows.mjs, checkout-journey.mjs, pricing-journey.mjs e public-layout.mjs com preview ativo. Os antigos cenários de tópicos/etiquetas em admin-workflows e catalog-journey foram substituídos por grupos de compra e PostgreSQL isolado, não por respostas de gravação fictícias. Auth/provedor continuam simulados. A pronta entrega é exercitada como regressão SQL futura; a interface atual fica desativada. [Escopo e limites](GRUPOS-E-ENCOMENDAS.md). Capturas ignoradas em node_modules/.cache/pd-modifier-journey, pd-catalog-journey e pd-admin-journey. Não somar contagens antigas de vistas como se fossem resultados desta entrega.

@@ -61,3 +61,8 @@ A migração 20261121013240_finance_corrections_and_simple_orders.sql e store-ap
 A configuração Auth é parcial em supabase/config.jsonc e exige CLI 3.1+ autenticada. Conferir supabase config diff --remote=gpwcuuqsvnsqudghkylb antes de push; aplicar somente se o diff corresponde à política descrita em SEGURANCA.md. A presença do arquivo no Git não ativa as configurações hospedadas. Nunca fazer config pull com segredos para depois publicar o arquivo sem sanitização.
 
 O gateway api/store.ts depende das mesmas variáveis públicas já presentes em Production e Preview: VITE_CATALOG_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY. Validar POST sem sessão (401) e corpo excessivo (413) na função publicada; não registrar corpo, JWT ou dados de clientes. Não requer credencial privilegiada nova.
+
+
+## Implantação de grupos e entrega agendada
+
+Aplicar as migrações 20261121132314 e 20261121132356, publicar store-api v6 e o frontend. Só depois ativar na loja piloto preorder_only=true, min_notice_hours=48 e lead_days=2, incrementando a versão de store_settings. Não alterar preço, stock ou modalidades guardadas dos produtos. Uma reversão a checkout sem hora exige rever primeiro essa política. [Especificação](GRUPOS-E-ENCOMENDAS.md).

@@ -42,6 +42,9 @@ const query = (sql) =>
 try {
   const out = "node_modules/.cache/pd-pricing-journey";
   fs.mkdirSync(out, { recursive: true });
+  await query(
+    `update public.catalog_products set details=details||'{"configuravel":true,"optionGroupsMode":"product","optionGroups":[{"id":"dddddddd-dddd-4ddd-addd-dddddddddddd","title":"Acabamento","min":0,"max":1,"options":[{"id":"eeeeeeee-eeee-4eee-aeee-eeeeeeeeeeee","label":"Fruta","extraCents":120}]}]}'::jsonb where id='bc-1'`,
+  );
   await page.goto(origin);
   await page
     .getByRole("heading", { name: "Seja bem-vindo!", exact: true })
@@ -132,6 +135,12 @@ try {
       await query("select details from public.catalog_products where id='bc-1'")
     )[0].details.price,
     15,
+  );
+  assert.equal(
+    (
+      await query("select details from public.catalog_products where id='bc-1'")
+    )[0].details.optionGroups[0].options[0].extraCents,
+    120,
   );
   console.log(
     "PASS pricing calculation 2.00/0.50, persisted recipe and explicit product price confirmation",

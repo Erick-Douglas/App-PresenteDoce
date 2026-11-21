@@ -1,28 +1,30 @@
-import type { CartItem } from '../../config/types.ts';
+import { selectedSummary } from "../products/options.ts";
+import type { CartItem } from "../../config/types.ts";
 
 export interface CheckoutDetails {
   name: string;
   phone: string;
-  fulfillment: 'pickup' | 'delivery';
+  fulfillment: "pickup" | "delivery";
   address: string;
-  payment: 'cash' | 'mbway' | 'wise';
+  payment: "cash" | "mbway" | "wise";
   date: string;
+  time?: string;
   changeFor: string;
 }
 
-const paymentNames = { cash: 'Dinheiro', mbway: 'MB WAY', wise: 'Wise' };
-let euros = new Intl.NumberFormat('pt-PT', {
-  style: 'currency',
-  currency: 'EUR',
+const paymentNames = { cash: "Dinheiro", mbway: "MB WAY", wise: "Wise" };
+let euros = new Intl.NumberFormat("pt-PT", {
+  style: "currency",
+  currency: "EUR",
 });
 export let currencySymbol = euros
   .formatToParts(0)
-  .find((part) => part.type === 'currency')?.value;
+  .find((part) => part.type === "currency")?.value;
 export function setCurrency(currency: string) {
-  euros = new Intl.NumberFormat('pt-PT', { style: 'currency', currency });
+  euros = new Intl.NumberFormat("pt-PT", { style: "currency", currency });
   currencySymbol = euros
     .formatToParts(0)
-    .find((part) => part.type === 'currency')?.value;
+    .find((part) => part.type === "currency")?.value;
 }
 
 export function formatEuros(value: number) {
@@ -39,86 +41,91 @@ export function orderSubtotal(cart: CartItem[]) {
 }
 
 export function prepareOrder(cart: CartItem[], details: CheckoutDetails) {
-  if (!cart.length) throw new Error('Adicione um produto antes de continuar.');
+  if (!cart.length) throw new Error("Adicione um produto antes de continuar.");
   const name = details.name.trim();
   const phone = details.phone.trim();
-  const digits = phone.replace(/\D/g, '');
+  const digits = phone.replace(/\D/g, "");
   if (
     !name ||
     !/^\+?[\d\s().-]+$/.test(phone) ||
     digits.length < 9 ||
     digits.length > 15
   ) {
-    throw new Error('Indique o seu nome e um telefone válido.');
+    throw new Error("Indique o seu nome e um telefone válido.");
   }
-  if (details.fulfillment === 'delivery' && !details.address.trim()) {
-    throw new Error('Indique a morada de entrega.');
+  if (details.fulfillment === "delivery" && !details.address.trim()) {
+    throw new Error("Indique a morada de entrega.");
   }
 
   const subtotal = orderSubtotal(cart);
-  const changeFor = details.changeFor.trim().replace(',', '.');
+  const changeFor = details.changeFor.trim().replace(",", ".");
   if (
-    details.payment === 'cash' &&
+    details.payment === "cash" &&
     changeFor &&
     (!/^\d+(\.\d{1,2})?$/.test(changeFor) || Number(changeFor) < subtotal)
   ) {
-    throw new Error('O valor para troco deve cobrir pelo menos o subtotal.');
+    throw new Error("O valor para troco deve cobrir pelo menos o subtotal.");
   }
 
   const itemLines = cart.map((item) => {
     const options = [
+      ...selectedSummary(item.optionGroups ?? [], item.selections ?? {}).map(
+        (g) => g.title + ": " + g.options.map((o) => o.label).join(", "),
+      ),
       item.variant,
       item.tamanho,
-      item.massa && 'Massa: ' + item.massa,
-      item.recheio1 && 'Recheio: ' + item.recheio1,
+      item.massa && "Massa: " + item.massa,
+      item.recheio1 && "Recheio: " + item.recheio1,
       item.recheio2 &&
         item.recheio2 !== item.recheio1 &&
-        'Segundo recheio: ' + item.recheio2,
-      item.selectedSauce && 'Molho: ' + item.selectedSauce,
-      item.adicionais?.length && 'Adicionais: ' + item.adicionais.join(', '),
+        "Segundo recheio: " + item.recheio2,
+      item.selectedSauce && "Molho: " + item.selectedSauce,
+      item.adicionais?.length && "Adicionais: " + item.adicionais.join(", "),
       item.selectedFlavors?.length &&
-        'Opções: ' + item.selectedFlavors.join(', '),
-      item.tema && 'Tema: ' + item.tema,
-      item.observations && 'Observações: ' + item.observations,
+        "Opções: " + item.selectedFlavors.join(", "),
+      item.tema && "Tema: " + item.tema,
+      item.observations && "Observações: " + item.observations,
     ].filter(Boolean);
     return [
-      '• ' +
+      "• " +
         item.quantity +
-        ' × ' +
+        " × " +
         item.name +
-        ' — ' +
+        " — " +
         formatEuros(orderSubtotal([item])),
-      ...options.map((option) => '  ' + option),
-    ].join('\n');
+      ...options.map((option) => "  " + option),
+    ].join("\n");
   });
 
   return [
-    'Olá! Gostaria de confirmar esta encomenda com a Presente Doce.',
-    name + ' · ' + phone,
-    itemLines.join('\n\n'),
+    "Olá! Gostaria de confirmar esta encomenda com a Presente Doce.",
+    name + " · " + phone,
+    itemLines.join("\n\n"),
     details.date &&
-      'Data pretendida: ' + details.date.split('-').reverse().join('/'),
-    details.fulfillment === 'delivery'
-      ? 'Entrega em: ' +
+      "Data pretendida: " +
+        details.date.split("-").reverse().join("/") +
+        (details.time ? " às " + details.time : ""),
+    details.fulfillment === "delivery"
+      ? "Entrega em: " +
         details.address.trim() +
-        '\nTaxa e total com entrega a confirmar.'
-      : 'Recolha no local, em horário a confirmar.',
-    'Preferência de pagamento: ' +
+        "\nTaxa e total com entrega a confirmar."
+      : "Recolha no local, em horário a confirmar.",
+    "Preferência de pagamento: " +
       paymentNames[details.payment] +
-      (details.payment === 'cash' && changeFor
-        ? ' (troco para ' + formatEuros(Number(changeFor)) + ')'
-        : ''),
-    'Subtotal dos produtos: ' + formatEuros(subtotal),
+      (details.payment === "cash" && changeFor
+        ? " (troco para " + formatEuros(Number(changeFor)) + ")"
+        : ""),
+    "Subtotal dos produtos: " + formatEuros(subtotal),
   ]
     .filter(Boolean)
-    .join('\n\n');
+    .join("\n\n");
 }
 
 export function whatsappLink(number: string, message: string) {
   return (
-    'https://wa.me/' +
-    number.replace(/\D/g, '') +
-    '?text=' +
+    "https://wa.me/" +
+    number.replace(/\D/g, "") +
+    "?text=" +
     encodeURIComponent(message)
   );
 }

@@ -108,13 +108,15 @@ try {
     "Financeiro",
     "Clientes",
     "Ingredientes",
-    "Pronta entrega",
     "Textos da loja",
     "Configurações da loja",
   ]) {
     await menu(label);
     await page.getByRole("heading", { name: label, exact: true }).waitFor();
-    await page.locator(".module-panel,.ui-glass-panel").first().waitFor();
+    await page
+      .locator(".module-panel:visible,.ui-glass-panel:visible")
+      .first()
+      .waitFor();
     await page.waitForTimeout(800);
     await page.waitForTimeout(800);
     await page.evaluate(() => document.fonts.ready);

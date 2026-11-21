@@ -1,0 +1,272 @@
+/* Shared purchase modifiers and administration composition. */
+@layer components {
+  .module-masthead > .page-width {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 5rem;
+    color: var(--pd-color-on-strong);
+  }
+  .module-masthead h1 {
+    text-align: center;
+    font-size: clamp(1.125rem, 4vw, 1.5rem);
+    line-height: 1.25;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+  .module-refresh {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+  .category-editor-tabs {
+    margin-inline: 0;
+    padding-inline: 0;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+  .category-editor-tabs .category-pill {
+    flex: none;
+    white-space: nowrap;
+  }
+  .option-groups-editor {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+  .option-group-editor {
+    border: 1px solid var(--pd-color-border);
+    background: var(--pd-color-subtle);
+    border-radius: var(--pd-card-radius);
+    padding: 1rem;
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+  .option-group-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.5rem;
+  }
+  .option-group-heading > .module-field {
+    flex: 1;
+    min-width: 10rem;
+  }
+  .step-number {
+    display: grid;
+    place-items: center;
+    flex: none;
+    background: var(--pd-color-surface);
+    border: 1px solid var(--pd-color-border);
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    align-self: center;
+  }
+  .option-group-rules {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+  }
+  .option-group-rules > label:first-child {
+    grid-column: 1/-1;
+  }
+  .option-editor-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .option-editor-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7.5rem auto;
+    gap: 0.5rem;
+    align-items: end;
+    padding: 0.75rem;
+    background: var(--pd-color-surface);
+    border: 1px solid var(--pd-color-border);
+    border-radius: 0.75rem;
+  }
+  .option-editor-row > .ui-icon-action {
+    margin-bottom: 0;
+  }
+  .option-extra {
+    max-width: 9rem;
+  }
+  .purchase-option-groups {
+    display: grid;
+    gap: 0.875rem;
+    padding: 1rem;
+  }
+  .purchase-option-group {
+    min-width: 0;
+    border: 1px solid var(--pd-color-border);
+    border-radius: var(--pd-card-radius);
+    padding: 1rem;
+    background: var(--pd-color-surface);
+    box-shadow: 0 3px 14px #27130e05;
+  }
+  .purchase-option-group > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .purchase-option-group .type-section {
+    font-size: 1rem;
+  }
+  .purchase-option-list {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .purchase-option-list .ui-choice {
+    gap: 0.7rem;
+    padding: 0.65rem;
+    min-height: 2.75rem;
+  }
+  .purchase-option-list .ui-choice[aria-pressed="true"] {
+    border-color: color-mix(in srgb, var(--pd-color-brand) 35%, white);
+    background: color-mix(in srgb, var(--pd-color-brand) 4%, white);
+  }
+  .choice-indicator {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+    border: 1px solid var(--pd-color-border-strong);
+    border-radius: 0.3rem;
+    font-size: 0.8rem;
+    color: var(--pd-color-brand);
+  }
+  .choice-indicator.is-radio {
+    border-radius: 50%;
+  }
+  .ui-choice[aria-pressed="true"] .choice-indicator {
+    border-color: var(--pd-color-brand);
+  }
+  .cart-summary {
+    max-width: 18rem;
+    min-height: 3.625rem;
+    padding: 0.75rem 0.875rem;
+    gap: 0.65rem;
+    border-radius: 1rem;
+  }
+  .cart-bag-icon {
+    color: var(--pd-color-accent);
+    flex: none;
+  }
+  .cart-quantity {
+    display: grid;
+    place-items: center;
+    min-width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 50%;
+    background: #ffffff20;
+    font-size: 0.7rem;
+  }
+  .catalog-edit-overlay {
+    position: absolute;
+    z-index: 5;
+    right: 0.5rem;
+    top: 0.5rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    background: #fffffff0;
+    border: 1px solid #ffffffb3;
+    color: var(--pd-color-muted);
+    box-shadow: 0 3px 10px #21140a18;
+    backdrop-filter: blur(10px);
+  }
+  .catalog-edit-overlay:hover {
+    background: var(--pd-color-surface);
+    color: var(--pd-color-brand);
+  }
+  .catalog-live-row:empty {
+    display: none;
+  }
+  .ui-danger {
+    background: #fbeeea;
+    border: 1px solid #edd4cb;
+    color: var(--pd-color-danger);
+    border-radius: var(--pd-field-radius);
+    min-height: var(--pd-control-height);
+    padding: 0.5rem 0.75rem;
+    font-size: var(--pd-size-small);
+  }
+  .admin-actions > .ui-danger {
+    order: -1;
+    margin-right: auto;
+  }
+  .admin-actions > .ui-secondary {
+    order: 5;
+    background: var(--pd-color-muted-fill);
+  }
+  .admin-actions > .ui-primary {
+    order: 10;
+  }
+  .sidebar-group button:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+  @media (max-width: 480px) {
+    .option-editor-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .option-editor-row > .module-field:first-child {
+      grid-column: 1/-1;
+    }
+    .option-extra {
+      max-width: none;
+    }
+    .option-group-heading > div:last-child {
+      margin-left: auto;
+    }
+    .purchase-option-group > header {
+      align-items: start;
+      flex-wrap: wrap;
+    }
+  }
+  @media (max-width: 359px) {
+    .cart-summary {
+      max-width: 17rem;
+    }
+    .option-group-editor {
+      padding: 0.75rem;
+    }
+    .option-group-rules {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .option-group-rules > label:first-child {
+      grid-column: auto;
+    }
+  }
+}
+@layer components {
+  @media (max-width: 480px) {
+    .admin-actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    }
+    .admin-actions > .ui-danger {
+      grid-column: 1/-1;
+      justify-self: start;
+    }
+    .admin-actions > .ui-secondary {
+      grid-column: 1;
+    }
+    .admin-actions > .ui-primary {
+      grid-column: 2;
+    }
+    .admin-actions > button {
+      justify-content: center;
+      text-align: center;
+    }
+  }
+}

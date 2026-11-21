@@ -24,13 +24,13 @@ export function LiveEditingProvider({
 }
 export function LiveProductStock({ product }: { product: Product }) {
   const live = useContext(Context),
-    { stock } = useStore(),
+    { stock, settings } = useStore(),
     [open, setOpen] = useState(false),
     [row, setRow] = useState<CatalogRow | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [option, setOption] = useState(product.variants?.[0]?.label || "");
-  if (!live) return null;
+  if (!live || settings.preorder_only !== false) return null;
   async function load() {
     setOpen(true);
     setError("");

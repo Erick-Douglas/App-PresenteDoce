@@ -1,236 +1,146 @@
-import React, { useCallback, useState } from 'react';
-import { CartItem, Product } from '../../config/types';
-import { orderSubtotal } from '../checkout/order';
-
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { CartItem, Product } from "../../config/types";
+import type { Selections } from "../products/options";
+import { orderSubtotal } from "../checkout/order";
+export type CartOptions = {
+  sauce?: string;
+  observations?: string;
+  quantity?: number;
+  massa?: string;
+  recheio1?: string;
+  recheio2?: string;
+  adicionais?: string[];
+  tamanho?: string;
+  tema?: string;
+  mode?: "ready" | "preorder";
+  variant?: string;
+  selectedFlavors?: string[];
+  selections?: Selections;
+  basePrice?: number;
+};
+function itemFrom(product: Product, o: CartOptions): CartItem {
+  const options = {
+    ...o,
+    mode: o.mode ?? product.saleModes?.[0] ?? "preorder",
+    adicionais: o.adicionais ?? [],
+    selectedFlavors: o.selectedFlavors ?? [],
+    selections: o.selections ?? {},
+  };
+  const normalizedSelections = Object.fromEntries(
+    Object.entries(options.selections)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, ids]) => [key, [...ids].sort()]),
+  );
+  const cartId = JSON.stringify([
+    product.id,
+    options.mode,
+    product.price,
+    options.sauce,
+    options.tamanho,
+    options.massa,
+    options.recheio1,
+    options.recheio2,
+    options.adicionais,
+    options.variant,
+    options.selectedFlavors,
+    normalizedSelections,
+    options.observations,
+    options.tema,
+  ]);
+  return {
+    ...product,
+    ...options,
+    cartId,
+    quantity: o.quantity ?? 1,
+    selectedSauce: o.sauce,
+    basePrice: o.basePrice ?? product.price,
+  };
+}
 export function useCart() {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-
-  const cartTotal = orderSubtotal(cart);
-
+  const [cart, setCart] = useState<CartItem[]>([]),
+    [showSuccessToast, setFeedback] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const flash = useCallback(() => {
+    clearTimeout(timer.current);
+    setFeedback(true);
+    timer.current = setTimeout(() => setFeedback(false), 1600);
+  }, []);
+  useEffect(() => () => clearTimeout(timer.current), []);
   const addToCart = useCallback(
-    (
-      product: Product,
-      options: {
-        sauce?: string;
-        observations?: string;
-        quantity?: number;
-        massa?: string;
-        recheio1?: string;
-        recheio2?: string;
-        adicionais?: string[];
-        tamanho?: string;
-        tema?: string;
-        mode?: 'ready' | 'preorder';
-        variant?: string;
-        selectedFlavors?: string[];
-      } = {},
-    ) => {
-      const {
-        sauce,
-        observations,
-        quantity = 1,
-        massa,
-        recheio1,
-        recheio2,
-        adicionais = [],
-        tamanho,
-        tema,
-        mode = product.saleModes?.[0] || 'preorder',
-        variant,
-        selectedFlavors = [],
-      } = options;
-      const cartId = JSON.stringify([
-        product.id,
-        mode,
-        product.price,
-        sauce,
-        tamanho,
-        massa,
-        recheio1,
-        recheio2,
-        adicionais,
-        variant,
-        selectedFlavors,
-        observations,
-        tema,
-      ]);
-
-      setCart((prev) => {
-        const existing = prev.find((i) => i.cartId === cartId);
-        if (existing) {
-          return prev.map((i) =>
-            i.cartId === cartId ? { ...i, quantity: i.quantity + quantity } : i,
-          );
-        }
-        return [
-          ...prev,
-          {
-            ...product,
-            cartId,
-            quantity,
-            mode,
-            selectedSauce: sauce,
-            observations,
-            massa,
-            recheio1,
-            recheio2,
-            adicionais,
-            tamanho,
-            tema,
-            variant,
-            selectedFlavors,
-          },
-        ];
+    (product: Product, options: CartOptions = {}) => {
+      const next = itemFrom(product, options);
+      setCart((items) => {
+        const found = items.find((i) => i.cartId === next.cartId);
+        return found
+          ? items.map((i) =>
+              i === found ? { ...i, quantity: i.quantity + next.quantity } : i,
+            )
+          : [...items, next];
       });
-
-      setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 3000);
+      flash();
     },
-    [],
+    [flash],
   );
-
-  const removeFromCart = useCallback((cartId: string) => {
-    setCart((prev) => {
-      const item = prev.find((i) => i.cartId === cartId);
-      if (item && item.quantity > 1)
-        return prev.map((i) =>
-          i.cartId === cartId ? { ...i, quantity: i.quantity - 1 } : i,
-        );
-      return prev.filter((i) => i.cartId !== cartId);
-    });
-  }, []);
-
   const updateCartItem = useCallback(
-    (
-      oldCartId: string,
-      product: Product,
-      options: {
-        sauce?: string;
-        observations?: string;
-        quantity?: number;
-        massa?: string;
-        recheio1?: string;
-        recheio2?: string;
-        adicionais?: string[];
-        tamanho?: string;
-        tema?: string;
-        mode?: 'ready' | 'preorder';
-        variant?: string;
-        selectedFlavors?: string[];
-      } = {},
-    ) => {
-      const {
-        sauce,
-        observations,
-        quantity = 1,
-        massa,
-        recheio1,
-        recheio2,
-        adicionais = [],
-        tamanho,
-        tema,
-        mode = product.saleModes?.[0] || 'preorder',
-        variant,
-        selectedFlavors = [],
-      } = options;
-      const newCartId = JSON.stringify([
-        product.id,
-        mode,
-        product.price,
-        sauce,
-        tamanho,
-        massa,
-        recheio1,
-        recheio2,
-        adicionais,
-        variant,
-        selectedFlavors,
-        observations,
-        tema,
-      ]);
-
-      setCart((prev) => {
-        const index = prev.findIndex((i) => i.cartId === oldCartId);
-        if (index === -1) return prev; // old item not found
-
-        const newItem = {
-          ...product,
-          cartId: newCartId,
-          quantity,
-          mode,
-          selectedSauce: sauce,
-          observations,
-          massa,
-          recheio1,
-          recheio2,
-          adicionais,
-          tamanho,
-          tema,
-          variant,
-          selectedFlavors,
-        };
-        const other = prev.findIndex(
-          (item, i) => i !== index && item.cartId === newCartId,
+    (oldId: string, product: Product, options: CartOptions = {}) => {
+      const next = itemFrom(product, options);
+      setCart((items) => {
+        if (!items.some((i) => i.cartId === oldId)) return items;
+        const other = items.find(
+          (i) => i.cartId !== oldId && i.cartId === next.cartId,
         );
-        if (other === -1)
-          return prev.map((item, i) => (i === index ? newItem : item));
-        return prev
-          .map((item, i) =>
-            i === other
-              ? { ...item, quantity: item.quantity + quantity }
-              : item,
-          )
-          .filter((_, i) => i !== index);
+        return other
+          ? items
+              .filter((i) => i.cartId !== oldId)
+              .map((i) =>
+                i === other
+                  ? { ...i, quantity: i.quantity + next.quantity }
+                  : i,
+              )
+          : items.map((i) => (i.cartId === oldId ? next : i));
       });
-
-      setShowSuccessToast(true);
-      setTimeout(() => setShowSuccessToast(false), 3000);
+      flash();
     },
+    [flash],
+  );
+  const updateQuantity = useCallback(
+    (id: string, quantity: number) =>
+      setCart((items) =>
+        quantity <= 0
+          ? items.filter((i) => i.cartId !== id)
+          : items.map((i) => (i.cartId === id ? { ...i, quantity } : i)),
+      ),
     [],
   );
-
-  const updateQuantity = useCallback((cartId: string, qty: number) => {
-    if (qty <= 0) setCart((prev) => prev.filter((i) => i.cartId !== cartId));
-    else
-      setCart((prev) =>
-        prev.map((i) => (i.cartId === cartId ? { ...i, quantity: qty } : i)),
-      );
-  }, []);
-
+  const removeFromCart = useCallback(
+    (id: string) =>
+      setCart((items) =>
+        items.flatMap((i) =>
+          i.cartId !== id
+            ? [i]
+            : i.quantity > 1
+              ? [{ ...i, quantity: i.quantity - 1 }]
+              : [],
+        ),
+      ),
+    [],
+  );
   const toggleCartItem = useCallback(
-    (product: Product, e?: React.MouseEvent) => {
-      if (e) e.stopPropagation();
-      setCart((prev) => {
-        const inCart = prev.some((i) => i.id === product.id);
-        return inCart
-          ? prev.filter((i) => i.id !== product.id)
-          : [
-              ...prev,
-              {
-                ...product,
-                cartId: product.id,
-                mode: product.saleModes?.[0] || 'preorder',
-                quantity: 1,
-                adicionais: [],
-              },
-            ];
-      });
+    (p: Product, e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      addToCart(p);
     },
-    [],
+    [addToCart],
   );
-
-  const clearCart = useCallback(() => setCart([]), []);
-
   return {
     cart,
-    cartTotal,
+    cartTotal: orderSubtotal(cart),
     showSuccessToast,
     addToCart,
-    removeFromCart,
-    updateQuantity,
-    toggleCartItem,
-    clearCart,
     updateCartItem,
+    updateQuantity,
+    removeFromCart,
+    toggleCartItem,
+    clearCart: useCallback(() => setCart([]), []),
   };
 }

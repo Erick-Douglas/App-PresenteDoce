@@ -43,6 +43,7 @@ export interface CategoryRow {
   cover: string | null;
   order_mode: ProductOrderMode;
   topics: CatalogTopic[];
+  option_groups?: import("./options").OptionGroup[];
 }
 
 export interface AdminCategoryRow extends CategoryRow {
@@ -50,7 +51,7 @@ export interface AdminCategoryRow extends CategoryRow {
   topics: CatalogTopic[];
 }
 
-const categoryColumns = "id,name,cover,order_mode,topics";
+const categoryColumns = "id,name,cover,order_mode,topics,option_groups";
 const categoryConflict =
   "O catálogo mudou entretanto. Reabra a categoria para obter a versão atual.";
 
@@ -354,19 +355,22 @@ export function saveCatalogCategory(
   products?: OrderChange,
   categories?: OrderChange,
 ) {
-  return request<void>(
-    "/rest/v1/rpc/save_catalog_category",
+  return request<AdminCategoryRow>(
+    "/rest/v1/rpc/save_catalog_configuration",
     {
       method: "POST",
       body: JSON.stringify({
-        p_id: category.id,
-        p_revision: category.revision,
-        p_name: category.name,
-        p_topics: category.topics,
-        p_product_ids: products?.next,
-        p_expected_product_ids: products?.current,
-        p_category_ids: categories?.next,
-        p_expected_category_ids: categories?.current,
+        p_payload: {
+          p_id: category.id,
+          p_option_groups: category.option_groups,
+          p_revision: category.revision,
+          p_name: category.name,
+          p_topics: category.topics,
+          p_product_ids: products?.next,
+          p_expected_product_ids: products?.current,
+          p_category_ids: categories?.next,
+          p_expected_category_ids: categories?.current,
+        },
       }),
     },
     token,

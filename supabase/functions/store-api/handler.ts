@@ -21,6 +21,7 @@ const customer = z
   .strict();
 const configuration = z
   .object({
+    selections:z.record(uuid,z.array(uuid).max(30)).refine(v=>Object.keys(v).length<=10).optional(),
     massa: text(80).optional(),
     recheio1: text(80).optional(),
     recheio2: text(80).optional(),
@@ -33,6 +34,7 @@ const order = z
   .object({
     idempotency_key: uuid,
     delivery_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    delivery_time:z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(),
     fulfillment: z.enum(["pickup", "delivery"]),
     customer,
     customer_id: uuid.optional(),
@@ -61,6 +63,7 @@ const variant = z
     maxFlavors: z.number().int().min(1).max(100).optional(),
   })
   .strict();
+const optionGroup=z.object({id:uuid,title:text(80).min(1),min:z.number().int().min(0).max(30),max:z.number().int().min(1).max(30),options:z.array(z.object({id:uuid,label:text(80).min(1),extraCents:z.number().int().min(0).max(9999999)}).strict()).min(1).max(30),legacyKey:z.enum(['variant','massa','recheios','flavors']).optional(),maxByOption:z.record(uuid,z.number().int().min(0).max(30)).optional()}).strict();
 const product = z
   .object({
     name: text(100).min(1),
@@ -70,6 +73,8 @@ const product = z
     image: text(600),
     tags: z.array(text(80)).max(20).optional(),
     topicIds: z.array(uuid).max(20).optional(),
+    optionGroups:z.array(optionGroup).max(10).optional(),
+    optionGroupsMode:z.enum(["category","product"]).optional(),
     orderMode: z.enum(["simple", "cake", "brigadeiros", "salgados"]).optional(),
     configuravel: z.boolean().optional(),
     simples: z.boolean().optional(),
@@ -103,6 +108,8 @@ const settings = z
     address: text(500),
     hours: text(300),
     lead_days: z.number().int().min(0).max(99),
+    preorder_only:z.boolean().optional(),
+    min_notice_hours:z.number().int().min(0).max(8760).optional(),
     daily_capacity: z.number().int().min(0).max(9999),
     deposit_percent: z.number().int().min(0).max(100),
     delivery_fee_cents: z.number().int().min(0).max(999999).nullable(),
@@ -461,15 +468,18 @@ export async function handleRequest(
           " — " +
           fmt(item.quantity * item.unit_cents) +
           "\n" +
-          Object.entries(item.configuration || {})
-            .map(([k, v]) => k + ": " + (Array.isArray(v) ? v.join(", ") : v))
-            .join(" · "),
+          [
+            ...(item.configuration?.option_labels||[]).map((g:any)=>g.title+": "+g.options.map((o:any)=>o.label+(o.extraCents?" (+"+fmt(o.extraCents)+")":"")).join(", ")),
+            ...Object.entries(item.configuration || {})
+            .filter(([k])=>!["selections","option_labels"].includes(k))
+            .map(([k, v]) => (k==="observations"?"Observações":k) + ": " + (Array.isArray(v) ? v.join(", ") : v))
+          ].filter(Boolean).join(" · "),
       );
       const message = [
         "*" + config.store.name + "*",
         "Solicitação #" + saved.reference,
         ...lines,
-        "Data: " + payload.delivery_date,
+        "Data: " + payload.delivery_date+(payload.delivery_time?" às "+payload.delivery_time:""),
         "Receção: " +
           (payload.fulfillment === "pickup" ? "Recolha" : "Entrega"),
         "Cliente: " + payload.customer.name,

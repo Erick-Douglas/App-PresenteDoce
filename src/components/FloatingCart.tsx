@@ -1,49 +1,56 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, ChevronRight } from "lucide-react";
-import { View, CartItem } from "../config/types";
+import type { View, CartItem } from "../config/types";
 import { formatEuros } from "../features/checkout/order";
-
-interface FloatingCartProps {
-  cart: CartItem[];
-  cartTotal: number;
-  onNavigate: (view: View) => void;
-  isVisible: boolean;
-}
-
 export function FloatingCart({
   cart,
   cartTotal,
   onNavigate,
   isVisible,
-}: FloatingCartProps) {
-  if (cart.length === 0) return null;
-
+  added = false,
+}: {
+  cart: CartItem[];
+  cartTotal: number;
+  onNavigate: (view: View) => void;
+  isVisible: boolean;
+  added?: boolean;
+}) {
+  if (!cart.length) return null;
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
+          initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
+          exit={{ y: 24, opacity: 0 }}
           className="floating-cart"
         >
-          <button
+          <motion.button
             type="button"
-            onClick={() => onNavigate("cart")}
             className="cart-summary"
+            onClick={() => onNavigate("cart")}
+            animate={added ? { scale: [1, 1.025, 1] } : { scale: 1 }}
+            transition={{ duration: 0.35 }}
           >
             <span className="flex items-center gap-2">
-              <ShoppingBag size={17} strokeWidth={1.65} aria-hidden="true" />
+              <ShoppingBag
+                size={22}
+                strokeWidth={1.7}
+                className="cart-bag-icon"
+              />
               <span>Ver carrinho</span>
-              <span className="rounded-full bg-surface/15 px-1.5 text-xs tabular-nums">
-                {cart.reduce((s, i) => s + i.quantity, 0)}
+              <span className="cart-quantity">
+                {cart.reduce((n, i) => n + i.quantity, 0)}
               </span>
             </span>
             <span className="flex items-center gap-2 whitespace-nowrap">
               <span className="type-price">{formatEuros(cartTotal)}</span>
-              <ChevronRight size={15} aria-hidden="true" />
+              <ChevronRight size={16} />
             </span>
-          </button>
+            <span className="sr-only" role="status">
+              {added ? "Carrinho atualizado" : ""}
+            </span>
+          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>

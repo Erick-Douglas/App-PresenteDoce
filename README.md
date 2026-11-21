@@ -8,9 +8,11 @@ React 19, TypeScript e Vite 6 no frontend; Vercel publica a build do GitHub. Sup
 
 ## Operação
 
-Entre pelo menu com a conta habitual. A vitrine ganha edição de produtos/categorias e disponibilidade/estoque no próprio card. Pré-visualizar como cliente oculta a gestão sem encerrar a sessão. Pelo menu e atalhos, acesse Visão geral, Encomendas, Agenda e produção, Financeiro, Clientes, Catálogo, Precificação, Pronta entrega, Ingredientes e Configurações.
+Entre pelo menu com a conta habitual. A vitrine ganha edição de produtos e categorias. A operação atual é somente por encomenda, com 48 horas de antecedência e data/hora no checkout. Pronta entrega fica em standby, com dados preservados. Pré-visualizar como cliente oculta a gestão sem encerrar a sessão. Pelo menu e atalhos, acesse Visão geral, Encomendas, Agenda e produção, Financeiro, Clientes, Catálogo, Precificação, Pronta entrega, Ingredientes e Configurações.
 
 Pedidos públicos são registrados e validados antes de abrir o WhatsApp; aguardam confirmação da loja. Orçamento não reserva até ser confirmado. Pagamento é registro separado. Taxa de entrega não definida aparece como valor a combinar.
+
+Grupos de escolha são geridos na categoria ou personalizados por produto, com opções gratuitas/pagas e limites. [Funcionamento e critérios atuais](docs/GRUPOS-E-ENCOMENDAS.md).
 
 ## Rotas
 

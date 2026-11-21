@@ -8,6 +8,7 @@ export type CheckoutDraft = {
   city: string;
   complement: string;
   date: string;
+  time: string;
   changeFor: string;
   fulfillment: "pickup" | "delivery";
   payment: "cash" | "mbway" | "wise";
@@ -25,6 +26,7 @@ export function newCheckoutDraft(): CheckoutDraft {
     city: "",
     complement: "",
     date: "",
+    time: "",
     changeFor: "",
     fulfillment: "pickup",
     payment: "mbway",

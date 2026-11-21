@@ -1,14 +1,7 @@
+import { OptionGroupsEditor } from "../components/OptionGroupsEditor";
+import { validateGroups } from "../features/products/options";
 import { AppSelect } from "../components/AppSelect";
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  ListPlus,
-  Pencil,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import {
   deleteCatalogCategory,
@@ -16,7 +9,6 @@ import {
   saveProduct,
   type AdminCategoryRow,
   type CatalogRow,
-  type CatalogTopic,
 } from "../features/products/catalogApi";
 import { moveCatalogItem } from "../features/products/catalogFields";
 
@@ -104,8 +96,10 @@ export function CategoryEditor({
 }) {
   const [associate, setAssociate] = useState("");
   const [name, setName] = useState(category.name);
-  const [topics, setTopics] = useState(category.topics);
-  const [topicEditor, setTopicEditor] = useState<CatalogTopic | null>(null);
+  const topics = category.topics;
+  const [optionGroups, setOptionGroups] = useState(
+    category.option_groups ?? [],
+  );
   const [section, setSection] = useState<"details" | "products" | "categories">(
     "details",
   );
@@ -124,45 +118,19 @@ export function CategoryEditor({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  function confirmTopic() {
-    if (!topicEditor) return;
-    const label = normalize(topicEditor.name);
-    if (
-      !label ||
-      label.length > 80 ||
-      topics.some(
-        (topic) =>
-          topic.id !== topicEditor.id &&
-          topic.name.toLowerCase() === label.toLowerCase(),
-      )
-    ) {
-      setError(
-        "Indique um nome diferente para o tópico, com até 80 caracteres.",
-      );
-      return;
-    }
-    const saved = { id: topicEditor.id || crypto.randomUUID(), name: label };
-    setTopics((current) =>
-      topicEditor.id
-        ? current.map((topic) => (topic.id === saved.id ? saved : topic))
-        : [...current, saved],
-    );
-    setTopicEditor(null);
-    setError("");
-  }
-
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    if (topicEditor) {
-      setSection("details");
-      setError("Confirme ou cancele o tópico em edição.");
-      return;
-    }
     setBusy(true);
     setError("");
     try {
-      const updated = { ...category, name: categoryNameFrom(name), topics };
+      validateGroups(optionGroups);
+      const updated = {
+        ...category,
+        name: categoryNameFrom(name),
+        topics,
+        option_groups: optionGroups,
+      };
       const changes = (before: { id: string }[], after: { id: string }[]) =>
         before.some((item, index) => item.id !== after[index]?.id)
           ? {
@@ -170,7 +138,7 @@ export function CategoryEditor({
               next: after.map((item) => item.id),
             }
           : undefined;
-      await saveCatalogCategory(
+      const savedCategory = await saveCatalogCategory(
         updated,
         token,
         changes(originalProducts, productOrder),
@@ -178,7 +146,7 @@ export function CategoryEditor({
       );
       onChanged({
         previous: category,
-        saved: { ...updated, revision: category.revision + 1 },
+        saved: savedCategory,
       });
     } catch (cause) {
       setError(
@@ -219,56 +187,13 @@ export function CategoryEditor({
     ["products", "Ordem dos produtos"],
     ["categories", "Ordem das categorias"],
   ] as const;
-  const topicForm = topicEditor && (
-    <div className="flex items-end gap-1 rounded-lg bg-surface/70 p-2">
-      <label className="min-w-0 flex-1 space-y-1 text-sm">
-        <span>Nome do tópico</span>
-        <input
-          className={catalogField}
-          maxLength={80}
-          value={topicEditor.name}
-          onChange={(event) =>
-            setTopicEditor({ ...topicEditor, name: event.target.value })
-          }
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.nativeEvent.isComposing) {
-              event.preventDefault();
-              confirmTopic();
-            }
-          }}
-        />
-      </label>
-      <button
-        type="button"
-        className={actionIcon}
-        aria-label="Confirmar tópico"
-        title="Confirmar tópico"
-        onClick={confirmTopic}
-      >
-        <Check size={15} aria-hidden="true" />
-      </button>
-      <button
-        type="button"
-        className={actionIcon}
-        aria-label="Cancelar tópico"
-        title="Cancelar tópico"
-        onClick={() => {
-          setTopicEditor(null);
-          setError("");
-        }}
-      >
-        <X size={15} aria-hidden="true" />
-      </button>
-    </div>
-  );
-
   return (
     <form onSubmit={save} className="space-y-4">
       <fieldset disabled={busy} className="admin-form">
         <div
           role="group"
           aria-label="Opções da categoria"
-          className="flex flex-wrap gap-2"
+          className="category-rail category-editor-tabs"
         >
           {tabs.map(([id, title]) => (
             <button
@@ -276,10 +201,7 @@ export function CategoryEditor({
               type="button"
               aria-pressed={section === id}
               onClick={() => setSection(id)}
-              className={
-                catalogSecondary +
-                " aria-pressed:border-primary/20 aria-pressed:bg-primary/5"
-              }
+              className="category-pill"
             >
               {title}
             </button>
@@ -301,84 +223,12 @@ export function CategoryEditor({
                 />
               </label>
             </div>
-            <section aria-label="Tópicos da categoria" className={panel}>
-              <div className="flex flex-wrap items-center justify-between gap-x-3">
-                <h2 className="type-item text-primary">Tópicos da categoria</h2>
-                <button
-                  type="button"
-                  disabled={!!topicEditor || topics.length >= 100}
-                  onClick={() => {
-                    setError("");
-                    setTopicEditor({ id: "", name: "" });
-                  }}
-                  className="ui-quiet-action"
-                >
-                  <Plus size={16} aria-hidden="true" /> Adicionar tópico
-                </button>
-              </div>
-              {!topics.length && !topicEditor && (
-                <div className="flex items-start gap-3 rounded-lg border border-dashed border-outline-strong p-3">
-                  <ListPlus
-                    size={19}
-                    strokeWidth={1.5}
-                    className="mt-0.5 shrink-0 text-primary"
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <p className="type-label">Ainda não há tópicos</p>
-                    <p className="mt-1 text-sm text-muted">
-                      Crie tópicos para reutilizar nos produtos desta categoria,
-                      como sabores ou acabamentos.
-                    </p>
-                  </div>
-                </div>
-              )}
-              <ul className="divide-y divide-muted-fill">
-                {topics.map((topic) => (
-                  <li key={topic.id}>
-                    {topicEditor?.id === topic.id ? (
-                      topicForm
-                    ) : (
-                      <div className="flex min-h-12 items-center gap-1">
-                        <span className="min-w-0 flex-1 break-words text-sm">
-                          {topic.name}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={!!topicEditor}
-                          className={actionIcon}
-                          aria-label={"Editar tópico " + topic.name}
-                          onClick={() => {
-                            setError("");
-                            setTopicEditor(topic);
-                          }}
-                        >
-                          <Pencil size={16} aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          className={actionIcon}
-                          aria-label={"Excluir tópico " + topic.name}
-                          onClick={() =>
-                            setTopics((current) =>
-                              current.filter((item) => item.id !== topic.id),
-                            )
-                          }
-                        >
-                          <Trash2 size={16} aria-hidden="true" />
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-              {topicEditor?.id === "" && topicForm}
-              <p className="text-xs text-muted">
-                Confirmar tópico prepara esta lista. Clique em Guardar
-                alterações para gravar a categoria. Depois, selecione os tópicos
-                no produto desejado e guarde o produto.
-              </p>
-            </section>
+            <div className={panel}>
+              <OptionGroupsEditor
+                value={optionGroups}
+                onChange={setOptionGroups}
+              />
+            </div>
           </>
         )}
         {section === "products" && (
@@ -546,7 +396,7 @@ export function CategoryEditor({
               >
                 Cancelar exclusão
               </button>
-              <button type="button" className={catalogPrimary} onClick={remove}>
+              <button type="button" className="ui-danger" onClick={remove}>
                 Confirmar exclusão
               </button>
             </div>
@@ -561,13 +411,13 @@ export function CategoryEditor({
           <button type="submit" className={catalogPrimary}>
             {busy ? "A guardar…" : "Guardar alterações"}
           </button>
-          <button type="button" className="ui-quiet-action" onClick={onBack}>
+          <button type="button" className="ui-secondary" onClick={onBack}>
             Cancelar edição
           </button>
           {!deleting && (
             <button
               type="button"
-              className="ui-quiet-action sm:ml-auto"
+              className="ui-danger"
               onClick={() => setDeleting(true)}
             >
               Excluir categoria

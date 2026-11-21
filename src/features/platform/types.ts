@@ -15,6 +15,8 @@ export type StoreSettings = {
   address: string;
   hours: string;
   lead_days: number;
+  preorder_only?: boolean;
+  min_notice_hours?: number;
   daily_capacity: number;
   deposit_percent: number;
   delivery_fee_cents: number | null;
@@ -37,10 +39,12 @@ export type Order = {
   id: string;
   reference: number;
   customer_id: string;
-  kind: 'order' | 'quote';
+  kind: "order" | "quote";
   status: string;
   delivery_date: string;
-  fulfillment: 'pickup' | 'delivery';
+  delivery_time?: string;
+  delivery_at?: string;
+  fulfillment: "pickup" | "delivery";
   customer_snapshot: {
     name: string;
     phone: string;
@@ -64,7 +68,7 @@ export type OrderItem = {
   product_id: string;
   option_key: string;
   quantity: number;
-  mode: 'ready' | 'preorder';
+  mode: "ready" | "preorder";
   unit_cents: number;
   unit_cost_cents: number | null;
   snapshot: { name: string };
@@ -76,7 +80,7 @@ export type FinanceEntry = {
   replaced_by?: string | null;
   id: string;
   order_id: string | null;
-  type: 'receipt' | 'refund' | 'expense';
+  type: "receipt" | "refund" | "expense";
   amount_cents: number;
   description: string;
   method: string;
@@ -86,7 +90,7 @@ export type Ingredient = {
   id: string;
   name: string;
   brand: string;
-  unit: 'g' | 'ml' | 'un';
+  unit: "g" | "ml" | "un";
   pack_quantity: number;
   pack_price_cents: number;
   stock_quantity: number;
@@ -118,16 +122,17 @@ export type Snapshot = {
 export type OrderPayload = {
   idempotency_key: string;
   delivery_date: string;
-  fulfillment: 'pickup' | 'delivery';
+  delivery_time?: string;
+  fulfillment: "pickup" | "delivery";
   customer: { name: string; phone: string; email: string; address: string };
   customer_id?: string;
-  kind?: 'order' | 'quote';
+  kind?: "order" | "quote";
   notes?: string;
   items: {
     product_id: string;
     variant: string;
     quantity: number;
-    mode: 'ready' | 'preorder';
+    mode: "ready" | "preorder";
     configuration: Record<string, unknown>;
   }[];
 };

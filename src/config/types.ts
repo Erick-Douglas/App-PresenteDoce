@@ -1,4 +1,5 @@
-export type ProductOrderMode = 'simple' | 'cake' | 'brigadeiros' | 'salgados';
+import type { OptionGroup, Selections } from "../features/products/options";
+export type ProductOrderMode = "simple" | "cake" | "brigadeiros" | "salgados";
 
 export interface Product {
   id: string;
@@ -9,6 +10,8 @@ export interface Product {
   image: string;
   tags?: string[];
   topicIds?: string[];
+  optionGroups?: OptionGroup[];
+  optionGroupsMode?: "category" | "product";
   orderMode?: ProductOrderMode;
   rating?: number;
   reviewsCount?: number;
@@ -17,38 +20,39 @@ export interface Product {
   configuravel?: boolean; // Produto com personalização obrigatória (Bolos Temáticos)
   simples?: boolean; // Produto sem nenhuma customização (Bolos Caseiros)
   variants?: { label: string; price: number; maxFlavors?: number }[]; // Ex: Caixa com 6 (5€)
-  saleModes?: ('ready' | 'preorder')[];
+  saleModes?: ("ready" | "preorder")[];
   capacityUnits?: number;
   flavors?: string[]; // Sabores disponíveis
 }
 
 export type View =
-  | 'welcome'
-  | 'home'
-  | 'product-list'
-  | 'product-details'
-  | 'cart'
-  | 'saved'
-  | 'categories-list'
-  | 'settings'
-  | 'contact'
-  | 'catalog-admin'
-  | 'product-editor'
-  | 'category-editor'
-  | 'pricing'
-  | 'store-texts'
-  | 'dashboard'
-  | 'orders'
-  | 'agenda'
-  | 'finance'
-  | 'customers'
-  | 'inventory'
-  | 'ingredients'
-  | 'store-settings';
+  | "welcome"
+  | "home"
+  | "product-list"
+  | "product-details"
+  | "cart"
+  | "saved"
+  | "categories-list"
+  | "settings"
+  | "contact"
+  | "catalog-admin"
+  | "product-editor"
+  | "category-editor"
+  | "pricing"
+  | "store-texts"
+  | "dashboard"
+  | "orders"
+  | "agenda"
+  | "finance"
+  | "customers"
+  | "inventory"
+  | "ingredients"
+  | "store-settings";
 
 export interface CartItem extends Product {
-  mode?: 'ready' | 'preorder';
+  mode?: "ready" | "preorder";
   cartId: string;
+  basePrice?: number;
   quantity: number;
   selectedSauce?: string;
   observations?: string;
@@ -58,7 +62,8 @@ export interface CartItem extends Product {
   adicionais?: string[];
   tamanho?: string; // Para Bolos Temáticos
   tema?: string; // Descrição do tema do bolo
-  selectedFlavors?: string[]; // Sabores escolhidos
+  selectedFlavors?: string[];
+  selections?: Selections; // Sabores escolhidos
   variant?: string; // Variante escolhida (Ex: Caixa com 6)
 }
 export interface CatalogCategory {

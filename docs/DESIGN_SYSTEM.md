@@ -104,3 +104,8 @@ O retorno fica separado do favorito; a regra de confirmações à direita não a
 Tópicos pertencem à categoria e são associados por ID ao produto. Criar a definição não atribui o tópico a todos os produtos; criar no produto seleciona-o nessa edição. Exibir os associados na ficha, sem faixa extra na vitrine. Persistir o vínculo ao guardar produto.
 
 [Critérios, ensaios e limites da revisão](CORRECOES-JORNADA-2026-11-21.md).
+
+
+## Atualização PD-OPT · 21/11/2026
+
+[Grupos, encomendas e composição atual](GRUPOS-E-ENCOMENDAS.md). modifiers.css centraliza grupos de compra/edição, cabeçalho administrativo, sacola e ordem das ações. Editar produto é a exceção de gestão sobre a foto, no canto superior direito; compra mantém + compacto abaixo da foto. Hambúrguer no topo esquerdo e nenhum Mais inferior. Guardar bordô, cancelar neutro e excluir destrutivo discreto; sacola mais estreita/alta com ícone amarelo. As opções da compra ficam em cards por grupo, nunca numa faixa de etiquetas acima do catálogo.

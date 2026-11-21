@@ -36,3 +36,11 @@ Também foram reforçados: versão obrigatória nas alterações transacionais, 
 
 Tópicos com criação/seleção direta e indicação do vínculo; ficha exibe os associados. Checkout preservado ao editar itens, endereço em campos próprios, agenda/capacidade agregada e cópia sem reserva. Compra/sacola compactas, navegação sem menu duplicado, retorno separado do favorito e módulos com hierarquia comum. Precificação em etapas. Índices para relações por loja. Testes integrados de persistência e compra. Limites/pendências em docs/CORRECOES-JORNADA-2026-11-21.md.
 
+
+
+## 21/11/2026 · Grupos de escolha e encomendas
+
+- Tópicos passam a grupos de compra com opções incluídas ou pagas, limites e herança de categoria/edição por produto. Preço recalculado no banco, rótulos históricos e compatibilidade dos produtos anteriores.
+- Produto recupera escolhas/observações/quantidade da sacola e permite atualizar a mesma linha. Ficha sem disponibilidade/agendamento; checkout com data/hora, morada/recolha e mínimo de 48 horas. Pronta entrega preservada em standby.
+- Menu no topo, ícones + consistentes, sacola compacta com ícone amarelo, feedback integrado, edição sobre a foto, títulos superiores e ações de edição padronizadas.
+- Testes e detalhes em [Grupos e encomendas](docs/GRUPOS-E-ENCOMENDAS.md). Mantidas pendências de aceite visual, Auth nativo/CAPTCHA, receitas comerciais e teste físico.

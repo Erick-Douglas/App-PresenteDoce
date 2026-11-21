@@ -69,8 +69,8 @@ const choose = async (label, value) => {
 };
 const hit = async (locator) => {
   await locator.scrollIntoViewIfNeeded();
-  assert.ok(
-    await locator.evaluate((el) => {
+  await page.waitForFunction(
+    (el) => {
       const r = el.getBoundingClientRect(),
         top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
       return (
@@ -79,8 +79,9 @@ const hit = async (locator) => {
         !!top &&
         (el === top || el.contains(top))
       );
-    }),
-    "action is visible and reachable",
+    },
+    await locator.elementHandle(),
+    { timeout: 5000 },
   );
 };
 const value = async (sql) =>
@@ -129,7 +130,7 @@ try {
   );
   const add = page
     .locator(".product-purchase-bar")
-    .getByRole("button", { name: /^Adicionar/ });
+    .getByRole("button", { name: /^(Adicionar|Atualizar no carrinho)/ });
   assert.equal(await add.isDisabled(), true);
   await page
     .getByRole("button", {
@@ -194,7 +195,7 @@ try {
   await page.getByRole("button", { name: cake.name, exact: true }).click();
   const adminAdd = page
     .locator(".product-purchase-bar")
-    .getByRole("button", { name: /^Adicionar/ });
+    .getByRole("button", { name: /^(Adicionar|Atualizar no carrinho)/ });
   await hit(adminAdd);
   await page.getByRole("button", { name: "Voltar", exact: true }).click();
   pass(
@@ -360,52 +361,20 @@ try {
     "product options: box quantity and maximum flavor choices remain valid before checkout",
   );
 
-  await platform.query(async () => {
-    const { scope } = await import("./helpers/database.mjs");
-    await scope(platform.db);
-    await platform.db.exec(
-      `update public.catalog_products set details=details||'{"saleModes":["ready"]}'::jsonb where id='bc-1'`,
-    );
-    await platform.db.query(
-      "select public.adjust_stock('bc-1','',1,'Fixture',$1)",
-      [crypto.randomUUID()],
-    );
-  });
-  await page.goto(origin);
-  await page.getByRole("heading", { name: "Olá, Gabriela!" }).waitFor();
-  await page.getByRole("button", { name: simple.name, exact: true }).click();
-  const readyAdd = page.locator(".product-purchase-bar button.ui-primary");
-  assert.equal(await readyAdd.isEnabled(), true);
-  await hit(readyAdd);
-  await readyAdd.click();
-  await page.getByRole("button", { name: /^Ver carrinho/ }).click();
-  await page
-    .getByLabel("Nome", { exact: true })
-    .fill("Pronta entrega fictícia");
-  await page.getByLabel("Telefone", { exact: true }).fill("+351000000000");
-  await page
-    .getByRole("button", { name: "Continuar no WhatsApp", exact: true })
-    .click();
-  await page.getByRole("status").filter({ hasText: "Pedido #" }).waitFor();
+  await page.getByRole("button", { name: "Voltar", exact: true }).click();
+  await menu("Configurações da loja");
   assert.equal(
-    (
-      await value(
-        "select available from public.product_stock where product_id='bc-1'",
-      )
-    )[0].available,
-    0,
-  );
-  await page
-    .getByRole("button", { name: "Voltar ao catálogo", exact: true })
-    .click();
-  await page.getByRole("button", { name: simple.name, exact: true }).click();
-  assert.equal(
-    await page.locator(".product-purchase-bar button.ui-primary").isDisabled(),
-    true,
+    await page
+      .getByLabel("Antecedência mínima (dias, pelo menos 48 horas)", {
+        exact: true,
+      })
+      .getAttribute("min"),
+    "2",
   );
   pass(
-    "ready stock: same-day checkout reserves the last unit and disables a subsequent purchase",
+    "preorder policy: configuration preserves the minimum two-day notice; ready-stock logic remains covered in SQL regression",
   );
+  await menu("Início");
   await page.getByRole("button", { name: "Voltar", exact: true }).click();
   await page
     .getByRole("button", { name: /^(Abrir menu|Mais|Mais opções)$/ })
