@@ -46,6 +46,6 @@ Duas lojas descartáveis no projeto hospedado validaram a API real e concorrênc
 
 Execute também node tests/buyer-admin-flows.mjs com o preview aberto. A identidade do Auth é fictícia; o código da Edge Function e as regras PostgreSQL são reais, aplicadas em PGlite isolado. Todos os pedidos Supabase são interceptados. Testa toque na sacola/barra de compra em seis larguras, configuração de bolo, checkout idempotente, caixa/sabores, última unidade, cliente novo/encomenda, movimentos corrigidos/excluídos e alteração de marca. Evidência em node_modules/.cache/pd-review/buyer-admin-evidence.json. Não substitui a validação da autenticação no provedor.
 
-refinement-db.test.mjs verifica correção, exclusão lógica, rollback, idempotência, versão, saldo, isolamento e contraste. A conferência hospedada das novas regras usa transação integral com rollback, sem deixar fixtures. 53 testes de regras/contratos aprovados nesta revisão. [Estado de segurança](SEGURANCA.md).
+refinement-db.test.mjs verifica correção, exclusão lógica, rollback, idempotência, versão, saldo, isolamento e contraste. A conferência hospedada das novas regras usa transação integral com rollback, sem deixar fixtures. 54 testes de regras/contratos aprovados nesta revisão. [Estado de segurança](SEGURANCA.md).
 
 Para os controles remotos sem escrita, execute node scripts/check-security.mjs. Defina PD_SITE_URL para incluir a rejeição de corpo excessivo no gateway publicado. O limite no handler Edge é coberto isoladamente; a resposta direta do relay não foi declarada corrigida.

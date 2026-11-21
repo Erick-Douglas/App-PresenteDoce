@@ -1,4 +1,4 @@
-import { handleGateway } from "../server/storeGateway";
+import { handleGateway } from "../server/storeGateway.js";
 export const maxDuration = 30;
 export function POST(request: Request) {
   return handleGateway(request, {
