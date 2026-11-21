@@ -1,5 +1,7 @@
 # Pesquisa de produto e segurança
 
+> **Leitura em 21/11/2026.** Registro histórico/pesquisa: preserva o estado e as propostas da sua data. Decisões vigentes e pendências estão no [PRD](PRD.md) e no [Roadmap](ROADMAP.md). Não usar este relato como aprovação do novo design. [Índice](README.md).
+
 **Presente Doce · 11/11/2026**
 
 ## Pergunta e escopo

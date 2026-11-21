@@ -1,5 +1,7 @@
 # Próxima etapa: assinaturas e automação
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 Decisão de Erick em 20/11/2026: Stripe para Portugal/Europa. Conta, produtos/preços e cobrança ficam para a próxima etapa. Não existe provedor WhatsApp Business API ou n8n conectado.
 
 ## Stripe

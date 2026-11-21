@@ -1,5 +1,7 @@
 # Deploy e reversão
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 ## Ambientes
 
 - **GitHub.** `Erick-Douglas/App-PresenteDoce`. Pull requests geram previews, e o merge em `main` inicia o deploy de produção no projeto vinculado.
@@ -66,3 +68,8 @@ O gateway api/store.ts depende das mesmas variáveis públicas já presentes em 
 ## Implantação de grupos e entrega agendada
 
 Aplicar as migrações 20261121132314 e 20261121132356, publicar store-api v6 e o frontend. Só depois ativar na loja piloto preorder_only=true, min_notice_hours=48 e lead_days=2, incrementando a versão de store_settings. Não alterar preço, stock ou modalidades guardadas dos produtos. Uma reversão a checkout sem hora exige rever primeiro essa política. [Especificação](GRUPOS-E-ENCOMENDAS.md).
+
+
+## Referência vigente para a retomada · 21/11/2026
+
+Base funcional PR #27/main e79ff700e168527f28f9b5534e9de91e42e2ad3a, produção dpl_3ExJx8YJaGD3SDeFbDddUS69xgLz. Autorização atual por store_members e direito de loja; a antiga lista catalog_admins é legado. Migrações até 20261121173213_checkout_customer_birth_date e Edge store-api v7. Não repetir comandos de migração históricos sem verificar o estado remoto. A consolidação documental de encerramento altera somente Markdown; referências de produção deste parágrafo correspondem à última entrega funcional, não ao hash futuro dos documentos.

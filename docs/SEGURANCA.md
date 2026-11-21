@@ -1,5 +1,7 @@
 # Segurança e estado da configuração
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 Revisão de 21/11/2026. Nenhuma proteção elimina todo o risco. Os testes abaixo distinguem código aplicado, serviço hospedado e configuração ainda dependente de acesso.
 
 | Camada | Estado verificado |

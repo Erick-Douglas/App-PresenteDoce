@@ -1,5 +1,7 @@
 # Implementação da plataforma · 20/11/2026
 
+> **Leitura em 21/11/2026.** Registro histórico/pesquisa: preserva o estado e as propostas da sua data. Decisões vigentes e pendências estão no [PRD](PRD.md) e no [Roadmap](ROADMAP.md). Não usar este relato como aprovação do novo design. [Índice](README.md).
+
 Esta entrega mantém React 19 + Vite 6, GitHub, Vercel e o projeto Supabase existente. A loja piloto continua no domínio oficial. O código local é a cópia de desenvolvimento; o GitHub recebe a versão revisada e a Vercel publica a build desse commit. Não são duas lojas.
 
 ## Funcionalidades implementadas

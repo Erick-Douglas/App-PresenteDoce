@@ -6,6 +6,10 @@ Plataforma de operação e vendas para confeitaria artesanal, com vitrine, encom
 
 React 19, TypeScript e Vite 6 no frontend; Vercel publica a build do GitHub. Supabase fornece Postgres, Auth, Storage e Edge Functions. A cópia local é o ambiente de desenvolvimento, sincronizado por commits com o repositório. React/Vite foi confirmado por Erick; não há migração para Next.js.
 
+## Etapa vigente · 21/11/2026
+
+Erick vai definir todas as páginas no Figma e escrever a especificação funcional antes da retomada do desenvolvimento. A base publicada serve ao levantamento; o novo desenho ainda requer aprovação. Comece pelo [índice dos documentos](docs/README.md), [briefing Figma](docs/BRIEFING-FIGMA.md), [mapa de telas](docs/MAPA-DE-TELAS.md) e [modelo ERS/SRS](docs/SRS.md).
+
 ## Operação
 
 Entre pelo menu com a conta habitual. A vitrine ganha edição de produtos e categorias. A operação atual é somente por encomenda, com 48 horas de antecedência e data/hora no checkout. Pronta entrega fica em standby, com dados preservados. Pré-visualizar como cliente oculta a gestão sem encerrar a sessão. Pelo menu e atalhos, acesse Visão geral, Encomendas, Agenda e produção, Financeiro, Clientes, Catálogo, Precificação, Pronta entrega, Ingredientes e Configurações.

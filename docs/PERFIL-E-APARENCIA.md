@@ -1,5 +1,7 @@
 # Perfil, navegação e modo escuro · 21/11/2026
 
+> **Leitura em 21/11/2026.** Referência técnica da base existente. O [PRD](PRD.md) consolida o escopo atual; o novo design e comportamento serão definidos no [Figma](BRIEFING-FIGMA.md) e na [ERS/SRS](SRS.md), com aprovação. Procedimentos históricos abaixo não são instrução para reaplicar migrações ou ativar integrações. [Índice](README.md).
+
 ## Decisões aprovadas por Erick
 
 - Avatar circular de 40 px à esquerda do cabeçalho, menu à direita. Ícone UserRound quando não há foto ou sessão. A fotografia pertence à conta, não à marca da loja.

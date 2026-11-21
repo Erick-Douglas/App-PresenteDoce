@@ -1,62 +1,51 @@
-# Roadmap — Plataforma híbrida
+# Roadmap e pendências — Presente Doce
 
-**20/11/2026 · Execução do PRD 1.1.** Operação inicial implementada e testada. Stripe foi escolhida para Portugal/Europa; Erick pediu ativação na próxima etapa, ainda sem conta/preços. [Entrega e limites](IMPLEMENTACAO.md). Aceite da liderança e uso físico por Gabriela permanecem separados da execução.
+**Revisão de 21/11/2026 · Decisão de Erick: definir design e comportamento antes de retomar o desenvolvimento.**  
+[PRD](PRD.md) · [Briefing Figma](BRIEFING-FIGMA.md) · [Mapa](MAPA-DE-TELAS.md) · [SRS](SRS.md)
 
-## Etapa imediata — Uso próprio
+## 1. Próxima sequência
 
-| ID | Entrega verificável | Dependência/gate |
-| --- | --- | --- |
-| PD-GAB-06 | Validar fichas e fórmulas reais com Gabriela e preparar a importação conferida da planilha | Corrigir os dados incompletos antes de importar; preservar os cálculos e o catálogo |
-| PD-ADM-01 / PD-UI-01 | Aceitar as correções web com o líder e conferir fotografia, teclado e navegação no aparelho de uso | Não confundir ensaio com mocks e autenticação real |
-| PD-SAS-01 | Protótipo do tema branco/quente e componentes comuns | Preservar identidade e obter retorno de uso antes de revisar todas as páginas |
-| PD-SAS-02 | Live Mode completo e Pré-visualizar como cliente | Permissões no servidor; rascunhos fora da prévia |
-| PD-SAS-03 | Menu unificado e navegação dos módulos prontos | Evitar atalhos que simulem funções ainda ausentes |
-| PD-SAS-10A | React/Vite confirmado por Erick; API Edge, sem migração de framework | Preview com regressão, retorno de auth e plano de reversão; resolver cliente Capacitor |
-| PD-SAS-10B | stores/membros/store_id, políticas, RPCs, Storage e backfill da Presente Doce | Ensaio com duas lojas e relações compostas antes de abrir qualquer outra loja |
-| PD-SAS-04 | Modalidades e movimentos/reservas de estoque por item/opção | Contexto por loja e mutações atômicas |
-| PD-SAS-05 | Pedidos/orçamentos persistentes com preço validado e idempotência | Base para agenda, CRM e financeiro |
-| PD-SAS-06 | Agenda/capacidade e resumo de produção; demanda de ingredientes depois de fichas conferidas | Datas, fuso e reservas transacionais definidos |
-| PD-SAS-07 | Sinal configurável, saldo, recebimentos, despesas e resultado estimado | Pedido e custo histórico; sem dupla contagem de pagamentos/custos |
-| PD-SAS-08 / 09 | CRM e configurações de operação/marca | Isolamento por loja e projeção pública mínima |
+| ID            | Entrega                                                | Responsável                                  | Estado / critério                                                                    |
+| ------------- | ------------------------------------------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------ |
+| PD-DES-01     | Levantamento de telas/estados e arquivo Figma editável | Próximo agente de design, a ativar por Erick | Pendente; cobrir TEL/INT/CTX e ligar frames à matriz                                 |
+| PD-DES-02     | Design aprovado de todas as páginas                    | Erick, com revisão operacional de Gabriela   | Pendente; componentes, variantes e fluxos, versão/data/links de aprovação            |
+| PD-SPEC-01    | ERS/SRS de comportamento e interação                   | Erick                                        | Pendente; cada ação, dados, permissão, erro e aceite ligados a frames                |
+| PD-DEV-RET-01 | Cruzamento PRD + Figma aprovado + SRS                  | Agente executor, na retomada                 | Aguardar novo comando; checklist por requisito, divergências e impactos              |
+| PD-DEV-RET-02 | Implementação e validação da nova versão               | Executor, depois da definição do lote        | Testes completos de compra/gestão, preview, validação de Erick/Gabriela e publicação |
 
-- [ ] Aceite operacional das correções anteriores.
-- [x] Tema, Live Mode com prévia e gestão contextual; aceite visual separado.
-- [x] Decisão de framework e fundação por loja ensaiadas.
-- [x] Pedido, estoque e capacidade concorrentes verificados.
-- [x] Agenda/produção, financeiro e CRM implementados e ensaiados em navegador móvel. Operação física pendente.
-- [ ] Importação de dados reais conferida e repetível.
+Esses IDs organizam a etapa nova; não substituem os IDs históricos de execução/correção. O app publicado permanece disponível. Não fazer novas mudanças funcionais apenas para cumprir uma proposta de Figma ainda em revisão.
 
-Este encadeamento detalha a Etapa 1 fornecida por Erick. Não presume que ela inteira caiba numa única build. Recursos atuais continuam acessíveis enquanto novos módulos são integrados.
+## 2. Validações operacionais mantidas
 
-## Etapa comercial — Multi-loja e assinaturas
+| Referência                        | O que permanece aberto                                                                   | Próxima ação / responsável                                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| PD-GAB-06 / PD-REV-08             | Comparação da precificação real ao cêntimo, qualidade dos dados e importação da planilha | Gabriela e Erick definem amostra privada; executor documenta diferenças, prévia/importação repetível após conferir |
+| PD-ADM-01 / PD-GAB-02 a 05        | Aceite no aparelho e retorno operacional de cadastro/fotos/sessão/catálogo               | Gabriela usa os fluxos reais; registrar divergências com tela, ação, resultado esperado e observado                |
+| PD-REV-02 / 03 / PD-OPT / PD-CART | Design e jornada ainda sem aceite final global                                           | Incorporar na revisão Figma/SRS, preservar testes e IDs anteriores                                                 |
+| PD-REV-01                         | Auth nativo/CAPTCHA/configuração remota; dependências de acesso/plano                    | Erick disponibiliza o acesso necessário quando retomado; executor verifica diff e aplica somente escopo aprovado   |
 
-- [x] PD-SAS-10: duas lojas fictícias, banco/RPC/Storage e fronteiras de sessão ensaiados; rota sem loja não retorna o piloto.
-- [x] PD-SAS-11: onboarding em três passos e direitos de uso implementados. Cadastro comercial desativado até a próxima etapa.
-- [ ] Gateway escolhido para a região, ambiente de teste, webhook verificado, eventos duplicados e fora de ordem.
-- [ ] Regras de carência, suspensão, reativação e preservação de dados exercitadas.
-- [x] Marca por loja e URL por slug. Domínio próprio fica em entrega posterior.
-- [ ] Backups restaurados em ensaio, privacidade, suporte e exportação definidos antes de vender o plano.
+Implementações e ensaios anteriores continuam registrados; uma caixa de execução concluída não equivale a aceite operacional. A nova UI não elimina a necessidade de conferir fórmulas, dados e permissões.
 
-Não ativar cobrança, conectar credenciais novas nem contratar ferramentas com base apenas no PRD. A implementação usa as autorizações vigentes por alvo e os acessos necessários.
+## 3. Base existente, sem nova ativação
 
-## Etapa futura — IA, WhatsApp e distribuição nativa
+Na base e79ff700: vitrine/edição contextual, grupos grátis/pagos, carrinho por configuração, checkout/WhatsApp, encomendas, agenda/produção, financeiro, CRM, fichas/ingredientes, configurações, perfil/temas e fundação por loja. Pronta entrega está preservada em standby. Há 68 testes da base e jornadas documentadas, com limites em [TESTES](TESTES.md).
 
-- [ ] PD-SAS-12: contratos versionados e ações com identidade verificada da operadora.
-- [ ] Relatório matinal da loja, sinais e produção sem duplicidade de mensagens.
-- [ ] Fluxos de áudio/texto com validação e confirmação proporcional à ação.
-- [ ] Provedor/canal e tratamento de dados definidos antes de ativar automação.
-- [ ] Android/iOS compilados, assinados e testados; distribuição sujeita às lojas.
+A cobertura de arquitetura e código não autoriza declarar todos os módulos aceitos, ativar cadastro de terceiros ou vender assinaturas.
 
-## Continuidade do backlog anterior
+## 4. Etapas posteriores
 
-PD-GAB-03: galeria por categoria implementada em Configurações. PD-GAB-04: opções de massa/recheio e acréscimos gerenciáveis. PD-GAB-05: criar produto na categoria e transferir produto existente. PD-GAB-06: ingredientes/sub-receitas, recálculo e demanda implementados; dados antigos da planilha aguardam conferência privada dos dados comerciais, sem importação presumida. Conservar os IDs e o parecer separado da liderança.
+| Referência              | Frente                                               | Dependência                                                                    |
+| ----------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| PD-SAS-10               | Liberação multi-loja                                 | Isolamento/relações/API/Storage revisados, recuperação e operação de terceiros |
+| PD-SAS-11               | Stripe Portugal/Europa e assinaturas                 | Conta, preços/regras, checkout/portal/webhooks e testes; nada cobrado agora    |
+| PD-SAS-12               | WhatsApp Business/IA/n8n                             | Provedor/canal, identidade, regras, tratamento de dados, custos e autorização  |
+| Contas de clientes      | Perfil, moradas, histórico e favoritos sincronizados | SRS, cadastro e acesso exclusivo aos próprios dados                            |
+| Pronta entrega          | Estoque e venda imediata                             | Nova definição operacional antes de sair do standby                            |
+| Distribuição nativa     | Android/iOS                                          | Build assinada, aparelho, permissões e publicação nas lojas                    |
+| Pagamento de encomendas | Gateway para o consumidor                            | Escopo separado da assinatura; decisão e validação próprias                    |
 
-## Definição de pronto por entrega
+[Integrações](INTEGRACOES.md) · [Segurança](SEGURANCA.md) · [Nativo](NATIVE.md)
 
-Briefing e critério por ID; implementação no repositório; migração em teste quando aplicável; testes automatizados e de fluxo com escopo explícito; preview; revisão; publicação autorizada; versão e reversão; retorno no Daily Log. A caixa de execução e o parecer Aceito são registros diferentes.
+## 5. Regra de retomada
 
-[PRD](PRD.md) · [Arquitetura](ARQUITETURA.md) · [Referências](REFERENCIAS-SAAS.md).
-
-## Decisão de Erick · 20/11/2026 · Implementação autorizada
-
-Manter React + Vite. A hipótese de migrar para Next.js fica encerrada: adicionar API segura compatível com Vercel e regras transacionais/RLS no Supabase. Gestly é a referência principal para distribuição de elementos, cartões, botões, ícones e navegação, preservando a identidade da Presente Doce. Erick autorizou executar o PRD e o backlog anterior. A referência deve ser verificada visualmente; não copiar ativos ou alegar integração sem teste. Acompanhar os IDs na Jornada de implementação integral do Daily Log.
+Ler Contexto Geral vigente e o fechamento da empresa. Abrir nova entrada no Daily Log, manter IDs retomados e conferir a versão remota/local antes de editar. Usar somente frames e requisitos aprovados no lote; registrar perguntas abertas, sem preencher o parecer da liderança. A versão anterior deste roadmap permanece no histórico do GitHub.

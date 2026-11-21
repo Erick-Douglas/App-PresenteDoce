@@ -1,187 +1,191 @@
-# PRD — Plataforma de confeitaria híbrida
+# PRD — Presente Doce e evolução da plataforma
 
-**Versão 1.2 · 21/11/2026 · Europe/Lisbon**  
-**Solicitante:** Erick · **Loja piloto:** Presente Doce · **Revisão:** liderança e Gabriela  
-**Natureza:** direção de produto fornecida por Erick, detalhada em requisitos executáveis. A operação inicial está implementada; a ativação comercial e integrações externas ficam nas dependências descritas em IMPLEMENTACAO.md.
+**Versão 2.0 · 21/11/2026 · Europe/Lisbon**  
+**Direção do produto:** Erick. **Operação e validação:** Gabriela. **Execução técnica:** agente do app.  
+**Estado:** base publicada; revisão visual e de comportamento pendente de aprovação. A próxima etapa definida por Erick é desenhar o app no Figma e escrever a especificação funcional antes de retomar a implementação.
 
-Substitui a versão 0.5. O histórico da versão anterior permanece no GitHub. [Base funcional conferida](https://github.com/Erick-Douglas/App-PresenteDoce/tree/63e5c4420449fd8bd9a0eed6b843e30bfee33506) · [Arquitetura](ARQUITETURA.md) · [Pesquisa das referências](REFERENCIAS-SAAS.md) · [Backlog](ROADMAP.md)
+[Índice dos documentos](README.md) · [Mapa de telas](MAPA-DE-TELAS.md) · [Briefing Figma](BRIEFING-FIGMA.md) · [Modelo ERS/SRS](SRS.md) · [Design System](DESIGN_SYSTEM.md) · [Roadmap](ROADMAP.md)
 
-## 1. Produto e resultado esperado
+## 1. O que é o produto
 
-Micro-SaaS vertical B2B de operação e vendas para confeitarias e pastelarias artesanais. Cada loja vende por encomenda agendada e/ou pronta entrega, com marca própria, gestão pelo celular e assinatura mensal/anual. A Presente Doce valida primeiro a operação real; o nome comercial da plataforma e os preços dos planos ainda serão definidos.
+A Presente Doce é uma confeitaria artesanal em Portugal. O app é a sua loja online de encomendas e o seu sistema de gestão: apresenta produtos, permite personalizar um pedido, organiza entrega/recolha e encaminha o atendimento para o WhatsApp. A mesma aplicação oferece ferramentas internas para catálogo, fichas técnicas, preços, encomendas, produção, clientes e financeiro.
 
-O diferencial proposto é a gestão na mesma vitrine vista pelo cliente: Live Mode com edição contextual e opção de pré-visualização. Agenda, produção, precificação, financeiro e clientes são módulos da mesma aplicação. Não haverá uma segunda loja ou um portal administrativo independente.
+Para o cliente, a descrição é **loja online de confeitaria artesanal por encomenda**. Tecnicamente, a versão atual é um **web app de comércio direto de uma loja, com checkout assistido por WhatsApp**, instalável como PWA nos navegadores compatíveis. Cada loja é uma vendedora; não há um marketplace reunindo vendedores na mesma sacola.
 
-O checkout do consumidor e a assinatura do lojista são fluxos distintos. Encomendas continuam a ser concluídas no WhatsApp na transição. Cobrança online de encomendas não entra automaticamente junto da cobrança da assinatura.
+A evolução pretendida é um **Micro-SaaS vertical B2B**, com assinatura para outros pequenos negócios de alimentação. A Presente Doce é a loja piloto. A infraestrutura já tem contexto por loja e controles de isolamento; isso ainda não representa lançamento comercial, cobrança ativa ou operação validada para terceiros.
 
-## 2. Estado real e diferença para o briefing técnico
+React/Vite permanece por decisão de Erick. As bases Capacitor permitem continuar para aplicativos Android/iOS. Compilar, assinar, testar em aparelhos e publicar nas lojas são etapas próprias.
 
-| Componente | Confirmado hoje | Destino |
-| --- | --- | --- |
-| Interface | React 19, TypeScript, Vite 6, Tailwind; tokens de tema | React/Vite mantido por decisão de Erick; API Edge segura |
-| Hospedagem e histórico | Vercel; GitHub Erick-Douglas/App-PresenteDoce | Mesmo projeto/histórico; publicar por commit, preview e reversão |
-| Dados e identidade | Supabase dedicado; store_id/RLS, membros, catálogo, pedidos, clientes, agenda e finanças | Isolamento por store_id, membros, pedidos e demais módulos |
-| Edição contextual | Edição de produto/categoria a partir da vitrine, além dos módulos de gestão | Edição contextual, estoque no card e prévia implementados |
-| Precificação | Fichas ligadas ao catálogo e validação; importação antiga pendente | Ingredientes, sub-receitas, fichas versionadas, compras e produção |
-| Encomenda | Carrinho em memória; pedido persistente validado e mensagem WhatsApp | Pedido validado no servidor e reserva antes dos módulos operacionais |
-| Agenda, CRM e financeiro | Implementados em torno do mesmo pedido | Aceite da operadora e escala comercial |
-| Nativo | Bases Capacitor Android/iOS; sem distribuição assinada | Preservar reutilização; testar API, autenticação e aparelhos antes das lojas |
+## 2. Por que existe
 
-O projeto atual não usa Next.js. Erick confirmou React/Vite para esta evolução. A API segura foi adicionada em Supabase Edge Functions, preservando compatibilidade com Capacitor. Os testes e correções anteriores continuam sendo a base de regressão. [Ensaios atuais](TESTES.md) · [Precificação](PRECIFICACAO.md) · [Nativo](NATIVE.md).
+Gabriela concentra atendimento, catálogo, precificação e operação. Erick atua em tecnologia e soluções. O produto deve reduzir tarefas repetitivas e a dependência da presença de Erick, dar autonomia à operadora pelo celular e ajudar a manter constância nas encomendas.
 
-[Estado implementado, testes e limites](IMPLEMENTACAO.md) · [Stripe e automação na próxima etapa](INTEGRACOES.md).
+O posicionamento da confeitaria combina apresentação refinada, ingredientes de qualidade e atendimento acessível a clientes pequenos e médios. Encomendas para empresas são uma oportunidade comercial, não uma obrigação de destacar essa mensagem na home.
 
-## 3. Perfis e permissões
+Resultados a medir após estabelecer a linha de base: tempo para cadastrar produto e preparar orçamento; erros de personalização/preenchimento; pedidos confirmados; sinais pendentes; tempo dedicado à gestão. Não atribuir aumento de vendas ou redução de trabalho a funcionalidades sem medição.
 
-Visitante consulta o catálogo publicado e prepara uma encomenda sem cadastro obrigatório. Conta de cliente com histórico próprio é posterior. Dados de um cliente da loja A não ficam automaticamente disponíveis à loja B.
+## 3. Etapa atual e fontes de verdade
 
-Dona da loja gerencia catálogo, pedidos, capacidade, pagamentos registrados e marca. O modelo admite membros com funções owner, manager e staff; a lista de ações de cada função será conferida antes de liberar equipes. O acesso atual da Presente Doce será migrado preservando a conta da confeitaria.
+| Artefato                 | Responsabilidade                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------- |
+| Este PRD                 | Propósito, público, escopo, módulos, regras e critérios de produto                                |
+| Figma aprovado por Erick | Aparência, composição, componentes e estados visuais, com versão e links por frame                |
+| ERS/SRS aprovada         | Comportamento de cada interação, validações, permissões, persistência, erros e critérios de teste |
+| Código e migrações       | Implementação existente; base para levantamento, não aprovação automática de UX                   |
+| Daily Log da empresa     | Execução, versão, evidência, pendências e parecer por ID                                          |
+| Relatórios datados       | Evidência da entrega em questão; não requisitos automaticamente vigentes                          |
 
-Administrador da plataforma é um papel separado do dono de uma loja. A conta administradora da Presente Doce não recebe acesso global às futuras assinantes. Mudanças de associação e função não podem ser feitas pelo próprio usuário sem autorização apropriada.
+O arquivo Figma de trabalho ainda será criado pelo próximo agente. [SRS.md](SRS.md) é somente um modelo a preencher por Erick, sem aprovação funcional final. Uma decisão nova e explícita de Erick atualiza os documentos afetados. Se o Figma aprovado, a SRS e o PRD divergirem, registrar a divergência e resolvê-la com Erick antes de implementar a parte afetada.
 
-## 4. UX/UI e Live Mode
+A última base funcional conferida é [main e79ff700](https://github.com/Erick-Douglas/App-PresenteDoce/commit/e79ff700e168527f28f9b5534e9de91e42e2ad3a), [PR #27](https://github.com/Erick-Douglas/App-PresenteDoce/pull/27). Ela foi publicada e ensaiada; Erick informou que ainda há pontos a resolver. **Publicado, testado, aprovado visualmente e aceito operacionalmente são estados diferentes.**
 
-### PD-SAS-01 — Clean White & Warm Craft
+## 4. Pessoas, acesso e limites
 
-Predomínio de branco e neutros quentes, fotografias como foco, espaço entre seções, tipografia legível e ações compactas. Manter o bordô, o dourado e a marca da Presente Doce como identidade da loja piloto. Lato continua na leitura; a fonte decorativa fica restrita à assinatura/saudação. A nova direção não autoriza trocar a marca por identidade de concorrentes.
+| Perfil                 | Necessidade e acesso                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Visitante/comprador    | Navegar, pesquisar, escolher opções, guardar favoritos, usar carrinho e checkout; ver apenas dados públicos   |
+| Operadora da loja      | Mesma vitrine com edição contextual e acesso aos módulos internos, conforme associação e papel verificados    |
+| Dono da loja           | Gestão autorizada da sua loja; o termo superadmin usado no briefing não concede acesso global às outras lojas |
+| Cliente com conta      | Evolução futura para perfil, moradas e histórico próprios; cadastro de clientes não foi aberto nesta etapa    |
+| Operador da plataforma | Papel futuro de suporte/comercial, a especificar e proteger; não disponível por inferência de metadados       |
 
-Os tokens de cor, tipografia, espaçamento, raio, foco e estados são a fonte única. Definir componentes comuns para cartões, formulários, estados vazios e mensagens de erro. Configuração de marca futura usa valores validados e contraste adequado, sem CSS arbitrário.
+Login usa Supabase Auth. A autorização depende da associação em store_members, do contexto da loja e dos direitos verificados no servidor/banco. Avatar, nome e outros metadados editáveis de perfil servem à apresentação. Pré-visualizar como cliente oculta controles sem alterar a autorização real.
 
-**Aceite:** vitrine, login, editor, precificação e um módulo operacional usam os mesmos componentes em 320, 390, 768, 1024, 1440 e 1920 px; imagens livres de controles sobrepostos; teclado e foco utilizáveis. Validar protótipo com Gabriela/Erick antes da revisão visual completa.
+## 5. Decisões operacionais vigentes
 
-### PD-SAS-02 — Edição na vitrine e pré-visualização
+| ID de referência         | Regra                                                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PD-OPT / encomenda       | Somente produtos por encomenda, com antecedência mínima de 48 horas reais. Data e hora são escolhidas no checkout, no fuso da loja                     |
+| PD-OPT / standby         | Pronta entrega/estoque por disponibilidade permanece preservada e desativada na jornada atual                                                          |
+| PD-OPT / grupos          | Tópicos são grupos de escolha com título, opções, mínimo/máximo, obrigatoriedade e acréscimo zero ou positivo; não são uma faixa de etiquetas públicas |
+| PD-CART / linhas         | O mesmo produto com escolhas/observações diferentes gera linhas independentes; configurações iguais somam quantidade                                   |
+| PD-CART / novo ou editar | + inicia outra personalização; lápis do carrinho edita a linha exata. A ficha retomada oferece adicionar outro com novas escolhas                      |
+| PD-CART / atendimento    | Assistente flutuante retirada. Contactos e o encaminhamento para WhatsApp continuam                                                                    |
+| PD-DARK / apresentação   | Avatar à esquerda, menu à direita; Claro/Escuro/Sistema. Desenho final de todas as páginas será validado no Figma                                      |
+| PD-GAB-01 / categorias   | Todos no início e selecionado inicialmente. Categoria individual mostra produtos; Todos agrupa pelos títulos                                           |
+| Checkout                 | Recolha ou entrega, conforme configuração. Taxa de entrega desconhecida é a combinar; não presumir gratuidade                                          |
+| Pagamentos               | MB WAY, Wise e dinheiro são preferências de atendimento. Não há cobrança de encomenda por gateway nesta etapa                                          |
+| Comercial                | Stripe para Portugal/Europa fica para depois: conta, valores, checkout, portal e webhooks ainda pendentes                                              |
+| Automação                | Não existe provedor de WhatsApp Business API/n8n conectado. Abrir conversa não comprova envio nem confirmação do pedido                                |
 
-Visitante vê apenas compra e atendimento. Membro autorizado tem editar produto/categoria, adicionar item no contexto, mudar disponibilidade e ajustar estoque. Manter editor completo quando a tarefa exigir várias informações; ele pertence à mesma aplicação.
+As definições anteriores de operação híbrida ativa, assistente flutuante, barra artificial no topo e tópicos como etiquetas foram substituídas. Permanecem no histórico e não devem orientar o novo desenho.
 
-Pré-visualizar como cliente oculta controles e mostra somente o catálogo publicado, inclusive para o administrador. Um indicador discreto permite voltar à gestão. É uma simulação visual, não logout nem alteração de papel. As permissões continuam sendo verificadas no servidor.
+## 6. Jornada do comprador
 
-**Aceite:** voltar da prévia preserva navegação/carrinho, rascunhos não aparecem na prévia, edição não é acionada por visitante e mutação sem permissão é recusada pela API.
+### 6.1 Descobrir e escolher
 
-### PD-SAS-03 — Navegação unificada
+A home apresenta marca, saudação, pesquisa e categorias com rolagem. A categoria Todos lista grupos de produtos por categoria. Busca e categorias devem funcionar em conjunto sem ocultar o caminho de retorno. Catálogo sem produtos, pesquisa sem resultado e falha de leitura exigem estados distintos.
 
-Sidebar recolhível em mobile e desktop, com Vitrine, Agenda & Produção, Financeiro, Clientes e Configurações. Catálogo e Precificação continuam acessíveis na gestão, como destinos ou subseções coerentes. Preservar Sobre nós, Contactos e entrada pelo menu para o visitante.
+Cada card apresenta foto, nome, descrição curta, preço ou preço inicial e +. O produto com opções abre a ficha; o simples pode entrar diretamente na sacola. Fotografias ficam livres de controles promocionais redundantes. Edição aparece apenas para a gestão autorizada. A ordem editorial das categorias pode priorizar vendas, margem e novidades; não há classificação automática comprovada por análise comercial.
 
-Não disponibilizar botões que aparentem executar módulos ainda inexistentes. No planejamento eles são futuros; quando houver interface inicial, apresentar estado claro e preservar acesso às funções prontas.
+### 6.2 Personalizar
 
-**Aceite:** um login, uma loja e um estado de navegação; menu utilizável por teclado e toque; nenhum dado privado carregado só para ocultar por CSS.
+A ficha contém foto, título, descrição, preço, grupos, observações, quantidade e ação de adicionar/atualizar. Entrega e recolha pertencem ao checkout. Categorias fornecem grupos padrão e cada produto pode herdar ou ter definição própria. A escolha precisa respeitar limites e IDs válidos.
 
-## 5. Operação híbrida
+Na base atual, o + da vitrine inicia outra configuração; clicar no título/imagem pode retomar a última configuração do produto. Adicionar outro com novas escolhas preserva a linha anterior e limpa o formulário. A SRS final deve confirmar essa distinção, inclusive como tratar várias linhas do mesmo produto.
 
-### PD-SAS-04 — Pronta entrega e encomenda
+O preço resulta da base/opção e dos adicionais, multiplicado pela quantidade. O servidor recalcula o valor canônico e conserva as escolhas no snapshot. Não confiar no total calculado pelo navegador.
 
-Uma publicação pode aceitar pronta entrega, encomenda ou ambas. São modalidades de venda, distintas de publicado/rascunho e de produto simples/configurável. A modalidade é escolhida por item, com estoque por produto/opção quando aplicável.
+### 6.3 Guardar e revisar
 
-Pronta entrega apresenta quantidade disponível e janela de recolha/entrega. Encomenda apresenta antecedência e datas elegíveis. O servidor verifica tudo novamente na reserva. Alteração de estoque exige motivo e movimento de auditoria; nunca permitir saldo negativo.
+O favorito alterna guardar/remover com retorno acessível. A preferência atual é local ao navegador e à loja; sincronização entre aparelhos exige conta/escopo futuro.
 
-**Aceite:** com uma unidade restante e duas compras concorrentes, apenas uma reserva é aceita; abandonar/expirar reserva devolve disponibilidade uma vez. Alternar modalidade não apaga os preços, as opções ou a ficha do produto.
+A sacola fixa permite continuar a navegar e abrir o checkout. Cada linha distingue suas escolhas, quantidade e preço. Editar uma linha não altera outra. A volta da ficha conserva preenchimento e contexto da compra. Escolhas idênticas podem reunir quantidade; a regra deve ficar explícita na SRS.
 
-### PD-SAS-05 — Pedido persistente e orçamento
+### 6.4 Checkout e atendimento
 
-Base única para pedido manual da confeiteira e solicitação da vitrine. Guardar cliente, itens/opções, modalidade, data, preços e custos históricos relevantes, entrega e estado. O servidor consulta os valores atuais e devolve o resumo validado; o navegador não determina o total final.
+Blocos: produtos e subtotal; dados do cliente; entrega/recolha e horário; preferência de pagamento; resumo e encaminhamento. Dados atuais: nome e WhatsApp obrigatórios; e-mail e nascimento opcionais. Morada estruturada quando houver entrega, sem integração Google exigida. Nascimento fica no CRM privado e não é acrescentado à mensagem do WhatsApp.
 
-Estados iniciais propostos: rascunho, aguardando confirmação, confirmado, em produção, pronto, concluído e cancelado. Pagamento tem estado separado. Orçamento tem validade e só ocupa capacidade conforme política explicitamente configurada.
+Validar data/hora com 48 horas reais, bloqueios e capacidade. Preservar o rascunho ao editar itens ou em caso de erro. O rascunho/carrinho atuais ficam na memória da aplicação; persistência após fechar/recarregar precisa ser especificada e não pode ser presumida.
 
-Na transição, registrar a solicitação e depois abrir o WhatsApp com referência do pedido. Abrir a conversa não confirma encomenda nem pagamento. Reenvio do mesmo pedido não duplica registro ou reserva.
+Copiar mensagem não cria pedido. Continuar no WhatsApp valida e registra uma solicitação com repetição segura e reserva temporária de 30 minutos; confirmação final da loja é separada. Se a janela externa não abrir, apresentar o caminho alternativo e preservar os dados. Não limpar a sacola por supor que a mensagem foi enviada.
 
-**Aceite:** alterar preço no navegador é rejeitado/recalculado; duplo clique gera um pedido; produto indisponível devolve orientação; pedidos antigos mantêm o preço acordado após editar o catálogo.
+## 7. Gestão e módulos
 
-### PD-SAS-06 — Agenda & Produção
+A edição contextual é um diferencial: a operadora vê a mesma loja com controles extras. Tarefas prolongadas usam páginas de módulo, com cabeçalho e navegação comuns. O menu agrupa vitrine, negócio, produtos/produção, loja e conta. O Figma deve cobrir todos os módulos, formulários e estados do [mapa](MAPA-DE-TELAS.md).
 
-Calendário com datas bloqueadas, antecedência mínima, capacidade e pedidos. Diferenciar data de produção e de entrega quando necessário. Iniciar com capacidade configurada em unidades por grupo de produção, por exemplo bolos/dia, sem inferir capacidade a partir de faturamento.
+| Módulo                    | Comportamento e dados essenciais                                                            | Critério de produto                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Vitrine em gestão         | Editar produto/categoria; criar; alternar prévia                                            | Contexto preservado; controles internos não aparecem ao visitante                                                  |
+| Catálogo                  | Produtos por categoria, publicados/rascunhos, pesquisa, ordenação e transferência           | Renomear/ordenar mantém relações; exclusão de categoria com itens exige destino válido                             |
+| Produto                   | Foto, nome, descrição, categoria, preço, estado, opções próprias/herdadas, vínculo de ficha | Erro não perde dados; cancelar seletor de imagem não fecha editor; versão evita sobrescrita concorrente            |
+| Categoria                 | Nome/capa, grupos de opções e ordem de produtos/categorias                                  | IDs estáveis; opções gratuitas/pagas; impactos da alteração visíveis; pedidos antigos preservados                  |
+| Precificação              | Rascunho, ficha guardada, produto/opção, rendimento, custos, simulação e publicação         | Guardar ficha e aplicar preço são separados; publicação exige confirmação; limpar rascunho preserva ficha anterior |
+| Ingredientes/sub-receitas | Unidade, embalagem, preço, quantidades e dependências                                       | Unidades compatíveis, recálculo canônico e bloqueio de ciclos                                                      |
+| Encomendas/orçamentos     | Criar, consultar itens e cliente, data/hora, valores, status e taxa combinada               | Orçamento não reserva até confirmação; transições válidas; não confundir pagamento com status de produção          |
+| Agenda e produção         | Calendário, bloqueios, capacidade especial, produção consolidada e compras                  | Pedido confirmado participa conforme regra; ficha/custo ausente aparece como pendência                             |
+| Financeiro                | Sinal, saldo, recebimento, devolução, despesa, histórico                                    | Sem dupla contagem; edição/exclusão corrigem/anulam com auditoria; somente encomendas elegíveis                    |
+| Clientes                  | Histórico, contactos, morada, nascimento opcional, notas, arquivo/união                     | Acesso da própria loja; contacto público novo não sobrescreve notas privadas existentes                            |
+| Visão geral               | Encomendas, entregas e sinais pendentes; acesso aos módulos                                 | Indicadores definidos, origem e período claros; sem inventar dados ou gráficos                                     |
+| Textos da loja            | Saudação, descrição, nome de apresentação e Sobre nós                                       | Mudança refletida na vitrine e protegida por versão                                                                |
+| Configurações             | Marca, moeda, fuso, contactos, capacidade, prazo, sinal, entrega, massas/recheios e galeria | Validação, contraste e permissão; preservar pedidos antigos                                                        |
+| Perfil/aparência          | Nome/foto da própria conta; claro/escuro/sistema                                            | Foto validada e limpeza proporcional; nenhuma promoção de papel                                                    |
+| Pronta entrega            | Estoque, ajustes e opções de disponibilidade já modelados                                   | Standby nesta etapa; não oferecer compra dessa modalidade                                                          |
 
-Resumo diário/semanal soma itens e opções das encomendas confirmadas. Receitas vinculadas podem gerar demanda de ingredientes e lista de compras; conversões precisam de unidade compatível. Não converter massa em volume sem fator específico do ingrediente.
+Os controles atuais não cobrem toda configuração imaginável do produto. O objetivo de autonomia pelo painel precisa ser convertido em campos/regras explícitos na SRS, sem prometer edição arbitrária do código.
 
-**Aceite:** reservas concorrentes não excedem capacidade; cancelamento/expiração libera uma única vez; bloqueio novo informa encomendas afetadas; resumo não duplica itens e separa pendentes de confirmados.
+## 8. Precificação e dados da planilha
 
-### PD-SAS-07 — Financeiro com sinal e restante
+Preservar o fluxo PD-GAB-06 / PD-REV-08. Custo de linha = preço da embalagem ÷ quantidade da embalagem × quantidade usada; custo unitário = custo total ÷ rendimento. Markup e margem têm bases diferentes. Rendimentos, unidades e custos incompletos devem impedir uma gravação apresentada como válida.
 
-Sinal inicial de 50% como padrão configurável por loja; permitir alteração autorizada com histórico. Registrar recebimentos parciais, método, data, responsável, ajustes e estornos. Saldo = total acordado menos recebimentos líquidos confirmados, com valores em cêntimos.
+Fichas podem vincular produto e variante, ingredientes e sub-receitas. Atualizar custo não altera silenciosamente preço aprovado nem histórico da encomenda. Importação da planilha e comparação privada ao cêntimo com Gabriela continuam pendentes; os arquivos e dados originais devem ser preservados. A descrição de cálculos não comprova migração de dados comerciais. [Detalhes](PRECIFICACAO.md).
 
-Exemplo de aceite: pedido de €100, sinal de €50 e pagamento posterior de €50 deixam saldo zero; estorno de €10 reabre €10 sem apagar movimentos. Repetir a mesma confirmação não conta duas vezes.
+## 9. Arquitetura e limites de segurança
 
-Separar fluxo de caixa de resultado estimado. Compra de insumos, consumo na receita, despesas e custo do produto não podem ser contados duas vezes. O módulo não será apresentado como faturação fiscal certificada nem lucro líquido confiável enquanto custos e despesas necessários estiverem incompletos.
+| Camada      | Base existente                                                                   |
+| ----------- | -------------------------------------------------------------------------------- |
+| Interface   | React 19 + TypeScript + Vite 6 + Tailwind; componentes e tokens comuns           |
+| Publicação  | GitHub → Vercel no projeto existente; domínio oficial da Presente Doce           |
+| Gateway web | /api/store na Vercel: tamanho/prazo/origem e encaminhamento controlado de JWT/IP |
+| Backend     | Supabase Edge Function store-api; schemas Zod, identidade e escopo verificados   |
+| Dados       | PostgreSQL com stores/store_members/store_id, RLS e operações transacionais      |
+| Fotos       | Storage com pastas por loja e bucket de avatar por conta; validação e limite     |
+| Mobilidade  | PWA e bases Capacitor sincronizadas; publicação nativa ainda não executada       |
 
-### PD-SAS-08 — Clientes
+Preço, extras, reserva/capacidade, idempotência e financeiro são garantidos no backend/banco. A visibilidade no frontend não concede acesso. Snapshots preservam dados do pedido. service_role e segredos permanecem no runtime gerenciado; só URL/chave publicável podem ir ao cliente.
 
-Nome, contato, moradas necessárias, pedidos da própria loja, preferências e notas com acesso controlado. WhatsApp em um clique, mediante ação da operadora. Consolidar duplicados com conferência; não unir pessoas entre lojas pelo telefone.
+O plano gratuito foi mantido. CAPTCHA e política nativa de Auth não estão comprovadamente ativos; a aplicação administrativa da configuração preparada continua pendente. A proteção nativa contra senhas vazadas depende de plano pago. Onboarding comercial fechado no app/banco não comprova que signup nativo do Auth esteja desativado. [Estado dos controles](SEGURANCA.md). Não preencher esses estados como resolvidos por ter criado um desenho no Figma.
 
-**Aceite:** cliente e pedidos da loja A são inacessíveis à B; editar contato não altera o registro histórico do pedido; exportação e eliminação observam a política de retenção definida para a operação.
+## 10. Qualidade, interface e acessibilidade
 
-### PD-SAS-09 — Configurações
+O produto deve funcionar no celular, tablet e desktop. Validar 320, 390, 768, 1024, 1440 e 1920 px sem overflow, sobreposição da ação por barra fixa ou perda de formulário. Usar contraste adequado, foco visível, labels e tamanho de toque confortável. Movimento reduzido deve ser respeitado.
 
-Marca, logótipo, cor de destaque, moeda, fuso horário, contatos, horários, recolha/entrega, taxas, antecedência, capacidade e sinal. Padrão do piloto: EUR e Europe/Lisbon. Mudanças de moeda não convertem silenciosamente pedidos existentes.
+A identidade parte do manual da marca: bordô, dourado, creme como apoio; Lato para leitura e Great Vibes em assinatura/saudação. Superfícies claras neutras e modo escuro sem inverter fotos. Tokens de cor, fonte, escala, borda, sombra e espaçamento são centrais. [Design System](DESIGN_SYSTEM.md).
 
-**Aceite:** apenas função autorizada altera regras; valores inválidos são rejeitados; configurações refletem na vitrine e nas novas reservas sem reescrever pedidos anteriores.
+O Figma definirá composição final de títulos, cards, menus, botões, separação de ações e comportamento responsivo. O desenho deve mostrar estados vazio, carregando, erro, preenchido, gravando, sucesso, permissão insuficiente, sessão expirada e conflito de versão. Um print isolado não cobre todos esses estados.
 
-## 6. Precificação e dados existentes
-
-PD-GAB-06 permanece prioridade operacional. Manter fórmulas aprovadas e correções de ficha/rascunho. Modelar ingredientes, embalagens, despesas atribuídas, sub-receitas e rendimento com revisões; qualquer extensão de perda, trabalho ou impostos deve ser nomeada e validada com Gabriela.
-
-A importação de dados comerciais exige conferência privada de origem, vínculos, unidades e valores. Apresentar prévia e permitir repetição sem duplicações, preservando os dados originais.
-
-**Aceite:** casos reais representativos coincidem ao cêntimo; uma sub-receita não pode conter ciclo; alterações de custo atualizam estimativas, não preços de venda aprovados nem pedidos antigos sem confirmação.
+A meta transparente e a retirada da camada própria do topo eliminam a pintura do app; hora/Wi-Fi e instalação seguem capacidades do sistema/navegador. Pagamentos, notificações, envio de mensagens e segurança não surgem do protótipo visual.
 
 <a id="plataforma-por-assinatura-para-outros-negócios"></a>
 
-## 7. Isolamento e assinatura
+## 11. Evolução comercial e itens futuros
 
-### PD-SAS-10 — Fundação por loja
+| Frente                 | Preparado ou desejado                                     | Dependência antes de ativar                                                                            |
+| ---------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Multi-loja             | Contexto /lojas/slug, marca, membros e RLS                | Revisão de isolamento, operação de terceiros, suporte/exportação e recuperação                         |
+| Assinatura SaaS        | Direitos de plano modelados; Stripe escolhida para Europa | Conta, preços e regras por Erick; checkout/portal/webhooks testados, sem ativar por retorno de browser |
+| Clientes autenticados  | Avatar/conta como fundação                                | Cadastro, consentimentos, moradas, histórico próprio e autorização por cliente                         |
+| Pronta entrega         | Código/modelo preservados                                 | Regra operacional, estoque e reserva próprios, nova autorização                                        |
+| Pagamento da encomenda | Evolução desejada                                         | Escolha e contrato próprios; independente da mensalidade SaaS                                          |
+| WhatsApp/IA            | Contratos de ações limitadas por loja                     | Provedor/canal oficial, identidade, reenvio seguro, custos e autorização                               |
+| Android/iOS            | Projeto Capacitor                                         | Assinatura, aparelho, permissões, testes e publicação nas lojas                                        |
 
-stores, membros e store_id obrigatório em dados operacionais. A URL pública inicial será /lojas/[slug]; subdomínios/domínios próprios são extensão posterior. Não aceitar uma loja apenas porque o usuário enviou seu ID ou porque o slug existe.
+Não priorizar essas ativações antes da definição/validação da operação piloto. Sushi, tapiocaria e outras lojas podem ser próximos segmentos; necessidades e taxonomia exigem validação, não somente trocar o logótipo.
 
-**Aceite de liberação para terceiros:** duas lojas fictícias; membro da A não lê nem altera produtos privados, receitas, clientes, pedidos, financeiro ou arquivos da B, inclusive por ID conhecido, API direta ou RPC. Relações entre registros de lojas diferentes são rejeitadas pelo banco.
+## 12. Próxima sequência e aceite
 
-### PD-SAS-11 — Assinaturas
+1. Próximo agente lê PRD, Design System, mapa e briefing; levanta a interface atual e cria componentes/páginas no Figma.
+2. Erick experimenta e aprova frames/variantes; Gabriela confere a operação. Registro de aprovação inclui versão, data e links.
+3. Erick preenche a ERS/SRS por tela/ação, com eventos, transições, permissões, dados, erros e testes. Decisões abertas ficam explícitas.
+4. Agente executor cruza PRD + frames aprovados + SRS. Abre checklist de implementação por ID com lacunas e impactos, antes de alterar a parte afetada.
+5. Implementa, testa jornadas completas e publica com preview, evidência e possibilidade de reversão. Mudanças de banco preservam dados e histórico.
 
-Onboarding em três passos: conta, dados/marca da loja, primeiro produto/configuração de operação. Plano mensal/anual e direitos de uso mantidos no servidor. Stripe é candidato para a fase comercial europeia; Asaas/Mercado Pago permanecem alternativas para Brasil, sujeitas à região e ao escopo definido na integração.
+Critério de pronto da próxima entrega: cada requisito ligado a um frame e a um teste de aceite, escopo implementado no repositório, fluxo real verificado, pendências registradas e aceite de Erick/Gabriela separado dos testes. A clareza reduz interpretações; a validação continua necessária.
 
-Estado da assinatura não fica em coluna publicamente editável. Pagamento da mensalidade nunca registra um sinal de encomenda. Regras para teste, ativo, atraso e cancelamento precisam de transição, eventual carência e recuperação. Ao expirar, restringir escrita no Live Mode conforme regra definida; preservar leitura/exportação autorizada e dados existentes. A loja piloto pode ter direito interno explicitamente concedido no servidor.
+## 13. Evidência, pendências e histórico
 
-**Aceite:** evento repetido ou fora de ordem não duplica cobrança/direito; retorno de checkout não ativa plano sozinho; uma loja não altera sua própria assinatura pela API; reativação preserva dados.
+A base e79ff700 registrou 68 testes Node/SQL e jornadas em claro/escuro, checkout em seis larguras, tipagem/build e sincronização Capacitor. Gravações dos ensaios usaram PostgreSQL isolado; Auth/transporte do provedor são simulados nesses cenários. O smoke público real não fez gravações. Essa evidência descreve a base testada, não aprovação do novo desenho ou ausência de todos os defeitos. [Evidência de carrinho](validation/2026-11-21-cart-checkout.json) · [Testes](TESTES.md).
 
-## 8. Automação futura
+Pendências prioritárias: design completo aprovado; SRS preenchida; retorno real de Gabriela na precificação/fotografias e comparação ao cêntimo; Auth/CAPTCHA conforme acessos/plano; teste físico e integração comercial somente nas etapas próprias. [Roadmap e responsáveis](ROADMAP.md).
 
-### PD-SAS-12 — WhatsApp e IA
-
-Endpoints versionados e ferramentas com escopo de loja. Planejar áudio/texto da operadora para consultar faturamento, registrar encomenda ou ajustar estoque e relatório matinal com entregas, sinais e produção.
-
-Vincular identidade da operadora por processo verificado. Texto de cliente não é comando administrativo. A IA não recebe chaves privilegiadas nem acesso SQL irrestrito; propõe ações validadas pelas mesmas regras dos módulos. Mudanças financeiras, exclusões e ações ambíguas exigem confirmação adequada.
-
-**Aceite futuro:** repetição de mensagem não repete estoque/pagamento; loja e papel são verificados; comando de cliente é negado; falha de provedor não altera pedido; logs não expõem segredos ou dados pessoais desnecessários. Usar canal oficial como primeira opção de avaliação. n8n, OpenAI e Evolution API são referências possíveis, não integrações ativas ou já escolhidas.
-
-## 9. Liberação e métricas
-
-Etapa imediata é uma sequência de entregas pequenas: concluir validação operacional; Live Mode; decisão de framework e contexto por loja; pedidos; agenda; financeiro; CRM/configurações. Dependências em [Roadmap](ROADMAP.md). Implementar campos store_id antes de persistir os novos módulos e só vender a assinatura após comprovar o isolamento.
-
-Medir tempo para cadastrar produto/produzir orçamento, pedidos confirmados por semana, erros de cadastro, reservas recusadas por falta de capacidade e saldo pendente. Levantar a linha de base; não inventar metas de conversão ou faturamento.
-
-Critérios comuns: proteção no servidor e no banco, acessibilidade, seis larguras de tela, testes de concorrência e regressão, migração ensaiada, backup/restauração conferidos e evidências por ID. Execução do agente e aceite de Erick/liderança permanecem estados separados.
-
-## Decisão de Erick · 20/11/2026 · Implementação autorizada
-
-Manter React + Vite. A hipótese de migrar para Next.js fica encerrada: adicionar API segura compatível com Vercel e regras transacionais/RLS no Supabase. Gestly é a referência principal para distribuição de elementos, cartões, botões, ícones e navegação, preservando a identidade da Presente Doce. Erick autorizou executar o PRD e o backlog anterior. A referência deve ser verificada visualmente; não copiar ativos ou alegar integração sem teste. Acompanhar os IDs na Jornada de implementação integral do Daily Log.
-
-## Refinamento de aceite · 21/11/2026
-
-Os IDs PD-REV-01 a PD-REV-07 detalham o retorno de uso após a implementação inicial. [Critérios e causas](REVISAO-2026-11-21.md). O aceite exige compra acessível também no Live Mode, seletores junto ao campo, confirmação à direita, menu agrupado, financeiro corrigível sem perda de trilha, criação de encomenda com cliente novo e personalização de marca aplicada. Tópicos ficam na gestão e não numa segunda faixa pública. Manter o plano gratuito; senhas vazadas dependem de Pro e a política nativa preparada depende da conexão administrativa. [Segurança](SEGURANCA.md).
-
-
-## Critérios adicionais · Jornada e catálogo · 21/11/2026
-
-A correção atual detalha persistência de tópicos, edição sem perda de checkout, endereço estruturado sem API externa, disponibilidade por agenda, sacola compacta e menu único por contexto. [Especificações e evidências](CORRECOES-JORNADA-2026-11-21.md). O aceite visual e a comparação das receitas reais com a planilha não são substituídos pelos testes automatizados.
-
-
-
-## Definição vigente · Grupos e 48 horas · 21/11/2026
-
-Tópicos são grupos de opções de compra, com limites e adicionais gratuitos/pagos. A operação atual é só por encomenda, com 48 horas reais e data/hora no checkout; pronta entrega fica em standby. [Especificação PD-OPT-01 a PD-OPT-06](GRUPOS-E-ENCOMENDAS.md). Esta definição substitui as descrições anteriores de tópicos como etiquetas e da operação híbrida ativa.
-
-
-## PD-DARK · Perfil e aparência · 21/11/2026
-
-Avatar de conta, menu à direita, gestão em viewport completo, agrupamento por títulos/pílulas e modos Claro/Escuro/Sistema. [Contrato, segurança e critérios](PERFIL-E-APARENCIA.md). Perfil preparado para clientes futuros; cadastro comercial e de clientes permanece fora desta ativação.
-
-
-## Decisão vigente · Carrinho e checkout · 21/11/2026
-
-O + inicia nova personalização, enquanto a imagem pode retomar a última configuração e o lápis edita a linha exata. Mesma combinação soma quantidade; diferente gera linha independente. Checkout compacto com contagem, subtotal no card e nome/WhatsApp/nascimento opcional. Sem assistente flutuante nem pintura dinâmica do topo. [Regras, pesquisa e testes](CARRINHO-E-CHECKOUT.md). Esta decisão substitui a retomada obrigatória como único caminho de compra.
+O PRD 2.0 consolida as decisões que estavam distribuídas em adendos das versões 0.x/1.x. Preserva a direção do PRD fornecido por Erick e os IDs PD-GAB, PD-ADM, PD-SAS, PD-REV, PD-OPT, PD-DARK e PD-CART. O histórico anterior está no [GitHub antes da consolidação](https://github.com/Erick-Douglas/App-PresenteDoce/blob/e79ff700e168527f28f9b5534e9de91e42e2ad3a/docs/PRD.md). Relatórios datados continuam acessíveis pelo índice.
