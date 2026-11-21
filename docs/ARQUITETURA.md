@@ -1,134 +1,89 @@
-# Arquitetura — Micro-SaaS híbrido de confeitaria
+# Arquitetura — Plataforma híbrida de confeitaria
 
-**20/11/2026 · Proposta de implementação vinculada ao PRD 1.0**  
-Este guia descreve o destino e a sequência técnica. Não é uma migração aplicada. [PRD](PRD.md) · [Backlog](ROADMAP.md).
+**20/11/2026 · Implementação do PRD 1.1.** [Estado e limites](IMPLEMENTACAO.md) · [Roadmap](ROADMAP.md) · [Integrações futuras](INTEGRACOES.md).
 
-## 1. Decisões e fronteiras
+## Decisão de stack
 
-| Assunto | Decisão proposta | Situação atual |
-| --- | --- | --- |
-| Web | Opção Next.js App Router com React reaproveitado e BFF na Vercel; confirmar ADR | React/Vite; Next ainda não instalado |
-| Dados | Postgres/Supabase com regras transacionais e RLS por loja | RLS de administradora de loja única |
-| Identidade | Supabase Auth, sessão verificada no servidor e associação ativa à loja | Login web com renovação; validação operacional pendente |
-| Native | Consumir API versionada; manter interface reaproveitável | Capacitor com arquivos web compilados em dist |
-| Cobrança SaaS | Adaptador de gateway, eventos idempotentes e direitos no servidor | Não implementada |
-| Operação | Pedido é fonte comum para capacidade, produção, CRM e recebimentos | Checkout apenas compõe WhatsApp |
-
-**ADR-01 pendente.** Conferir Vite + API na Vercel versus migração para Next.js com BFF. Next é a stack sugerida no briefing, mas a intenção de manter a base existente precisa considerar que ela é Vite. Recomendação do executor: preservar a operação urgente e decidir a migração após um ensaio pequeno de sessão, rotas e Capacitor; não tratar a reescrita como requisito do SaaS.
-
-O MVP comercial não exige microserviços. Usar módulos claros no mesmo código e funções HTTP para pedidos, edição, webhooks e integrações. Agendamentos e tarefas duráveis entram quando houver necessidade demonstrada, sem contratar ferramentas nesta definição.
+ADR-01 encerrada por Erick: manter React 19, TypeScript, Vite 6 e Tailwind. Vercel publica o frontend estático. Supabase fornece Auth, Postgres, Storage e Edge Functions. Não há migração para Next.js ou obrigação de usar Server Actions. O mesmo frontend compilado continua compatível com as bases Capacitor.
 
 ```mermaid
 flowchart LR
-  C[Cliente: vitrine] --> API[API: sessão, loja e validação]
-  A[Operadora: Live Mode e módulos] --> API
-  API --> DB[Supabase: transações e RLS]
-  API --> ST[Storage: imagens por loja]
-  G[Gateway de assinatura] --> WH[Webhook autenticado e idempotente]
-  WH --> DB
-  BOT[Automação futura] --> API
+  V[Visitante] --> UI[React / Vite / Vercel]
+  A[Operadora autenticada] --> UI
+  UI --> PUB[Projeção pública por loja]
+  UI --> API[store-api: JWT, contratos e limites]
+  UI --> RPC[RPCs de gestão com JWT e RLS]
+  API --> DB[Postgres: transações, RLS e auditoria]
+  RPC --> DB
+  PUB --> DB
+  UI --> ST[Storage por pasta de loja]
+  B[Stripe / WhatsApp: próxima etapa] -.-> API
 ```
 
-## 2. Identidade e autorização
+O repositório é único. A cópia local serve para editar e testar; o commit revisado segue ao GitHub e gera preview/produção na Vercel. A loja e a gestão consultam a mesma base, sem catálogo duplicado.
 
-Resolver o slug para uma loja pública não concede gestão. Para cada ação administrativa: verificar identidade com o provedor; obter membership ativo; conferir ação/função e direito do plano; validar payload; executar a operação no contexto correto. Repetir o controle junto do acesso ao dado e na política do banco.
+## Contexto da loja e identidade
 
-Proxy/redirecionamento pode melhorar a navegação, mas não constitui autorização completa. Na documentação atual, Next.js usa Proxy para o mecanismo antes conhecido como Middleware; definir versão suportada durante a migração. A proteção pertence também à DAL, aos Route Handlers e às Server Actions. [Next.js: Proxy](https://nextjs.org/docs/app/api-reference/file-conventions/proxy) · [Segurança dos dados](https://nextjs.org/docs/app/guides/data-security).
+/ abre o piloto; /lojas/slug resolve a loja pública antes de montar a aplicação. Slug inexistente mostra erro e não cai no catálogo do piloto. x-store-id seleciona o contexto dos pedidos ao Supabase; esse cabeçalho não autoriza gestão. Membership, papel e entitlement são conferidos no servidor e no banco.
 
-Operações normais de membros usam o JWT da pessoa e RLS. Não trocar por service_role para contornar uma política. Um cliente privilegiado de servidor, isolado do cliente comum, é reservado a trabalhos administrativos necessários, como processar evento do gateway. Nesse caminho, validar origem, vínculo do objeto externo com a loja e escopo explicitamente, pois a chave privilegiada ignora RLS.
+Sessões são verificadas pelo Supabase e renovadas com refresh token. Armazenamento é separado por loja; a chave legada do piloto foi preservada. A opção de lembrar sessão usa localStorage; acesso temporário usa sessionStorage. A senha não é guardada pelo formulário. A prévia oculta controles sem trocar credenciais.
 
-No navegador usar URL e chave publicável. No Next, preferir NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. A chave anon é compatibilidade legada. No Vite atual, manter as variáveis VITE já configuradas até a migração. Chaves secret/service_role e segredos Stripe/IA/WhatsApp não podem ter prefixo público nem entrar em Git, bundle, logs ou respostas. [Chaves do Supabase](https://supabase.com/docs/guides/getting-started/api-keys).
+Owner/manager ativos consultam a gestão. Staff não recebe acesso aos módulos privados nesta entrega. Escrita exige plano internal ou active/trial dentro da validade. Expiração/inadimplência/cancelamento preservam consulta e exportação e recusam mutações. O dono do piloto não é administrador global.
 
-## 3. Modelo de dados proposto
+A API verifica Bearer junto a /auth/v1/user e a associação à loja. Nas mutações administrativas, encaminha o JWT da pessoa ao Postgres. Não usa service_role para contornar a RLS dessas operações. A chave privilegiada do runtime é usada no pedido público transacional, após validação e limite, e na montagem da resposta canônica.
 
-Nomes são destino conceitual. Preservar identificadores e contrato legado até passar a migração. Não renomear todas as tabelas de uma vez.
+## Dados implementados
 
-| Entidade | Campos/relações essenciais |
+| Área | Tabelas |
 | --- | --- |
-| stores | id, slug único, nome, marca, moeda, timezone, visibilidade; apenas metadados públicos necessários |
-| store_members | store_id, user_id, papel, estado; unicidade loja/usuário e atribuição protegida |
-| store_settings | store_id, regras de entrega, antecedência, sinal e demais configurações privadas/públicas explicitamente separadas |
-| categories / topics | store_id, id, ordem, nome; tópicos embutidos herdam o escopo da categoria até normalização |
-| products / variants | store_id, id, categoria, publicação e modalidades; preço de venda e moeda; sem custos privados no JSON público |
-| ingredients / recipes / recipe_items | store_id, unidade, compra, revisão, rendimento e referência a ingrediente/sub-receita |
-| customers / customer_addresses | store_id, contato, preferências e moradas necessárias |
-| orders / order_items | store_id, cliente, estado, versão, datas e snapshot de item/opção/preço |
-| inventory_movements / stock_reservations | store_id, produto/opção, quantidade, motivo, pedido, validade e chave idempotente |
-| capacity_rules / calendar_blocks / capacity_reservations | store_id, grupo, data local, limite e reserva por pedido |
-| order_payments / expenses | store_id, pedido quando aplicável, montante, moeda, método, estado, estorno e responsável |
-| store_subscriptions / entitlements | store_id, IDs de gateway, plano, estado, períodos e direitos; não públicos |
-| webhook_events / audit_events / outbox | store_id quando do negócio, provedor/evento único, ação, responsável, estado e metadados mínimos |
+| Plataforma | stores, store_members, store_entitlements |
+| Vitrine e fichas | catalog_products, catalog_categories, store_presentation, pricing_recipes |
+| Configuração | store_settings |
+| Operação | orders, order_items, customers, calendar_blocks |
+| Estoque | product_stock, stock_movements, ingredients |
+| Financeiro | finance_entries |
+| Auditoria | audit_events |
 
-store_id é obrigatório nas entidades operacionais. stores é a raiz, e tabelas globais de identidade, migrações e catálogo de planos não recebem uma autorreferência artificial.
+As 17 tabelas públicas têm RLS. Dados operacionais contêm store_id NOT NULL, índices e relações compostas nos vínculos entre entidades. Troca de store_id é recusada por trigger. Categorias mantêm unicidade por loja/nome e IDs estáveis para tópicos. A conta antiga foi associada ao piloto sem recriar usuário ou senha.
 
-Usar relações compostas com (store_id, id), por exemplo pedido/cliente e item/produto, para impedir ligações entre lojas. Índices nas colunas de escopo e consulta; unicidades e idempotência também incluem loja quando apropriado. Impedir transferência de store_id depois de criar o registro, salvo migração administrativa específica. Alterar role ou membership exige autorização própria.
+Projeções storefront_config e storefront_availability mostram apenas dados necessários à vitrine. Pedidos, receitas, clientes e finanças não têm SELECT anônimo. orders não concede INSERT direto ao visitante, e checkout_order só concede execução ao runtime privilegiado.
 
-Dinheiro em cêntimos inteiros e moeda explícita nos novos contratos; não usar float para total, sinal ou saldo. Fazer conversões de escala na fronteira com o legado e testar arredondamento. Guardar timestamps em UTC; horários de funcionamento, corte diário e capacidade usam timezone da loja. Estoque por unidade de venda e quantidades de ingredientes têm unidades e precisões distintas.
+Funções transacionais SECURITY DEFINER têm search_path vazio, grants fechados e checagem interna de gestão/plano ou escopo público validado. Os avisos do linter sobre essas funções são documentados em [IMPLEMENTACAO](IMPLEMENTACAO.md); mantê-las públicas não é concessão de escrita anônima.
 
-## 4. RLS e exposição pública
+## Pedido, reserva e financeiro
 
-Ativar RLS em cada tabela de dados exposta e definir grants mínimos. Catálogo publicado e metadados públicos da loja podem ter leitura anônima restrita. Pedidos, receitas, ingredientes, clientes, pagamentos, despesas, logs e assinatura não são públicos. Não colocar preço de custo ou notas internas no objeto de produto que o visitante recebe.
+A API recebe IDs, opções, quantidade, modalidade, data e contacto. Zod recusa valores extras como preço enviado pelo navegador. O banco lê preços, massas/recheios/acréscimos atuais, consulta a ficha para custo unitário e grava snapshots.
 
-Para membros, SELECT/DELETE conferem associação ativa e função. INSERT confere a loja de destino; UPDATE confere origem e destino com USING e WITH CHECK. Verificar o direito de escrita quando o plano estiver suspenso. Nunca usar user_metadata editável como prova de papel.
+Idempotency_key e hash do conteúdo evitam repetir pedido/reserva; reutilizar uma chave com outro conteúdo é erro. Estoque usa decremento condicional e locks. Capacidade usa trava por loja/data e soma de unidades de produção, incluindo concluídas. A reserva não pode deixar saldo negativo nem exceder o dia.
 
-Store_id no filtro da UI não é proteção. RPCs, funções privilegiadas, exports, Storage e cache precisam do mesmo escopo. Views públicas devem projetar campos mínimos e conservar a proteção de acesso, em vez de introduzir um caminho que ignora RLS. [RLS do Supabase](https://supabase.com/docs/guides/database/postgres/row-level-security).
+Solicitações públicas ficam pendentes por 30 minutos. Expiração/cancelamento libera a reserva uma vez. Orçamento fica sem reserva até confirmar. Confirmação exige disponibilidade atual. A taxa de entrega desconhecida fica explícita e precisa ser definida antes da confirmação.
 
-Matriz mínima de testes: visitante, membro A, membro B, pessoa autenticada sem membership, membro removido e papel insuficiente. Testar IDs conhecidos e referências cruzadas, não só filtros de listagem. Um membro legítimo de A e B ainda não pode ligar cliente de A a pedido de B.
+Financeiro é ledger: recibo, estorno ou despesa. Locks e idempotência evitam duplicação e recebimento/estorno acima do saldo. Cancelar não devolve dinheiro automaticamente. O custo histórico da encomenda não muda ao editar ingrediente, receita ou preço. Resultado incompleto por falta de fichas é identificado na UI.
 
-## 5. Storage e arquivos
+## Ingredientes, sub-receitas e produção
 
-Novo caminho: bucket/store_id/uuid.ext. A política confere o primeiro segmento contra memberships e a função exigida; não confiar no nome informado pelo navegador. Nome aleatório, extensão/MIME e tamanho validados; aceitar apenas imagens efetivamente decodificáveis para catálogo.
+A ficha aceita custo manual, ingredientId ou recipeId da mesma loja. O banco resolve nome, unidade, embalagem e custo. Alterar um ingrediente atualiza fichas dependentes; ciclos e exclusão de sub-receita usada são recusados. Não converter g em ml sem fator específico.
 
-O briefing propõe 2 MB; adotar esse teto para a imagem final otimizada na futura fase multi-loja, após testar qualidade. Hoje o limite é 20 MB de entrada e 5 MB otimizado: não declarar o novo teto ativo nem bloquear retroativamente arquivos existentes. A mesma fotografia aceita gera prévia e envio.
+A Agenda soma itens por período e calcula demanda de insumos das encomendas confirmadas, respeitando rendimento e sub-receitas. Desconta o saldo informado e calcula embalagens. Itens de pronta entrega não geram produção nova. Fichas ausentes deixam aviso e lista incompleta. Não há baixa automática de insumos nesta etapa.
 
-Separar imagens públicas de catálogo de documentos privados, como comprovantes. Caminho por loja protege escrita, mas bucket público não torna o conteúdo confidencial. Documento privado exige autorização e URL temporária adequada. [Controle de acesso do Storage](https://supabase.com/docs/guides/storage/security/access-control).
+## Imagens, marca e dados públicos
 
-## 6. Contratos e transações
+Uploads usam catalog-images/store_id/UUID.webp ou .jpg. A política exige membro e plano da loja. O arquivo otimizado tem limite de 2 MiB e MIME WebP/JPEG; a entrada pode ter até 20 MiB para compressão. Pastas legadas catalog/ ficam restritas ao piloto. Não apagar imagens antigas durante a migração.
 
-Rotas propostas /api/v1/stores/[storeId]/... com contexto verificado; slug é para descoberta pública. Schemas Zod no servidor para entrada, saída pública e mensagens de erro. DTOs distintos para visitante e operação.
+Configuração de marca valida nome, cor hexadecimal, contraste para branco, moeda, fuso e caminhos permitidos de logótipo. Galeria aceita imagens/categorias da própria loja. Novo lojista recebe marca genérica, não a identidade do piloto. CSS arbitrário não é aceito.
 
-| Operação | Comportamento obrigatório |
-| --- | --- |
-| PATCH products/:id | Permissão, versão esperada, modalidade válida e auditoria; preservar opções/ficha |
-| POST inventory-adjustments | Movimento com motivo e idempotência; nenhuma quantidade negativa |
-| POST orders | Recalcular preço/opções/entrega, conferir regras, reservar estoque/capacidade e criar snapshot atomicamente |
-| POST orders/:id/confirm | Transição permitida, validade de orçamento/sinal e reserva ainda válida |
-| POST orders/:id/cancel | Liberar reservas uma vez; pagamento/estorno é operação separada |
-| POST orders/:id/payments | Recebimento ou estorno autorizado, moeda/montante e idempotência |
-| GET production-summary | Somar apenas estados elegíveis, opções e janela local; sem mutações |
-| POST billing/webhook | Assinatura do provedor, deduplicação, vínculo da loja e transição de direitos |
+## Limites e integrações
 
-Preço, estoque e capacidade são calculados/verificados em transação no Postgres, com bloqueio/atualização condicional apropriados. Checar disponibilidade no React e gravar depois permite corrida e não atende ao requisito.
+Checkout tem corpo máximo de 64 KiB, timeout, origem permitida e contador distribuído no banco: 20 tentativas por IP/loja e 300 por loja em 10 minutos. A rota direta do Supabase também está protegida; firewall Vercel não a protege por si só. Login segue limites do Auth; Turnstile e proteção de senhas vazadas dependem da configuração do provedor.
 
-Chave idempotente com loja/usuário ou sessão de checkout e hash do payload: repetição devolve o mesmo resultado; chave reaproveitada com conteúdo diferente é conflito. Não manter transação de banco aberta enquanto chama WhatsApp, gateway ou IA. Publicar tarefas pela outbox após o commit.
+Não publicar segredos em VITE_*, Git, bundle ou logs. O cliente usa apenas URL/chave publicável. SUPABASE_SERVICE_ROLE_KEY é injetada no runtime gerenciado. Integrações externas futuras exigem identidade verificável, escopo mínimo, deduplicação e auditoria.
 
-Rate limiting distribuído no endpoint público de pedidos e nas ações sensíveis; combinar IP e loja/sessão, tamanho de payload, timeout e resposta 429. Bloquear INSERT anônimo direto em orders e RPC equivalente que contorne o endpoint protegido. A mitigação do domínio Vercel não protege automaticamente uma rota pública direta do Supabase.
+Stripe foi escolhida, mas conta/preços/webhook/cobrança estão na próxima etapa por decisão de Erick. Onboarding está implementado e desativado por padrão. Não ativar plano por redirect ou campo do cliente. WhatsApp continua por wa.me; não existe provedor Business API/n8n conectado.
 
-## 7. Assinatura e eventos
+## Publicação, recuperação e escala
 
-Manter cobrança SaaS em namespace separado de pagamentos de encomenda. Não ativar plano por redirect de sucesso ou campo enviado pelo browser.
+Todas as migrações são versionadas. Backup privado anterior à fundação fica ignorado pelo Git. Aplicação das migrações do zero é ensaiada em Postgres local, e operações concorrentes foram conferidas na API real com duas lojas descartáveis. O frontend anterior continua lendo o piloto sem cabeçalho de loja.
 
-Validar assinatura do webhook usando o corpo exigido pelo provedor; registrar ID externo único; tratar entrega duplicada e fora de ordem, reconciliar estado quando necessário e permitir retry seguro. O gateway identifica a assinatura; a loja é resolvida pelo vínculo já registrado. [Webhooks Stripe](https://docs.stripe.com/webhooks) · [Eventos de assinatura](https://docs.stripe.com/billing/subscriptions/webhooks).
+Preview/testes não devem mutar dados reais de operação. Ensaios de UI usam API isolada; fixtures remotas são identificadas e removidas. Rollback de frontend não reverte dados novos. Não executar restore antigo sobre encomendas posteriores.
 
-Restringir acesso por entitlements confiáveis. Falha ou cancelamento da assinatura não apaga dados. Definir carência e leitura/exportação antes de lançar. Não anunciar integração com vários gateways na primeira entrega: implementar um adaptador testado no mercado escolhido.
-
-## 8. Migração e compatibilidade
-
-1. Preservar base funcional, backup recuperável e evidências; usar ambiente de teste com duas lojas fictícias.
-2. Extrair/reusar componentes de domínio, tokens e cálculos. Se Next for escolhido, migrar preservando as rotas legadas /, /admin e /precificacao, SEO, links de recuperação e prévias de partilha preservados.
-3. Criar stores e store_members; registrar a Presente Doce como loja piloto e migrar sua associação administrativa. Não alterar senha nem recriar a conta de operação.
-4. Adicionar store_id inicialmente compatível, preencher com o piloto e conferir contagens, IDs, rascunhos, tópicos e fichas. Criar índices e relações compostas; exigir NOT NULL quando todos os registros estiverem conferidos.
-5. Preparar políticas por loja e adaptar RPCs/storage antes de abrir nova loja. Ensaiar a aplicação coordenada de grants, políticas e frontend. Não deixar a política global antiga permitindo acesso à segunda loja.
-6. Preservar caminhos de imagens antigos com mapeamento de compatibilidade; copiar/validar quando necessário, sem apagar originais na primeira etapa.
-7. Testar o cliente antigo, os novos contratos e reversão do frontend. Migração de dados não é desfeita automaticamente pelo rollback de deploy.
-8. Liberar módulos por capacidade funcional real; executar piloto da segunda loja antes de onboarding público.
-
-Next com SSR/Server Actions não pode ser simplesmente copiado para o dist do Capacitor. O cliente nativo deve consumir a API hospedada ou um frontend compatível; revisar CORS, retornos de auth, armazenamento seguro e versões de contrato. Não publicar uma URL remota como substituição silenciosa do pacote atual.
-
-## 9. Segurança operacional e observabilidade
-
-Separar dev/teste/produção e bancos de teste; previews não devem fazer mutações em dados de operação por padrão. Não registrar senhas, tokens, áudios completos ou moradas em logs de erro. Eventos de auditoria incluem loja, ator, ação, entidade, resultado e horário, com acesso e retenção definidos.
-
-Configurar CSP/headers, validação de sessão e origem nas ações, limites de login, backup/restauração, alertas e correlação de falhas sem dados pessoais desnecessários. Verificar segredos no Git/bundle e considerar revogação se algum tiver sido exposto; apenas apagar do último commit não resolve exposição histórica.
-
-Gate de lançamento comercial: testes de isolamento em tabelas/RPC/Storage/cache, concorrência, eventos de cobrança, funções sem permissão e matriz mobile/desktop. O cenário físico e a validação da operadora continuam distintos dos mocks de interface. Integrações novas exigem conta/ferramenta e escopo antes de ativação.
+Antes da venda em volume: conta/gateway, privacidade/retenção, recuperação integral ensaiada, paginação de grandes históricos, observabilidade e dimensionamento do snapshot de gestão. Antes das lojas nativas: SDKs, armazenamento adequado de sessão, retornos de autenticação, assinatura e teste físico. Sincronizar Capacitor não produz APK/IPA assinado.

@@ -1,5 +1,11 @@
 {
-  "exclude": ["node_modules", "dist", "android", "ios"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "android",
+    "ios",
+    "supabase/functions"
+  ],
   "compilerOptions": {
     "target": "ES2022",
     "experimentalDecorators": true,
@@ -16,7 +22,11 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "react", "react-dom"],
+    "types": [
+      "vite/client",
+      "react",
+      "react-dom"
+    ],
     "paths": {
       "@/*": [
         "./*"

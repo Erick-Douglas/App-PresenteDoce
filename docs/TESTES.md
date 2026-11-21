@@ -33,3 +33,11 @@ tests/database-regression.sql confere a restrição de fichas, controle de vers�
 Esse teste não substitui o fluxo de autenticação real no provedor, a validação das receitas com Gabriela nem o ensaio em aparelho físico. O parecer da liderança continua separado da execução.
 
 O ensaio public-layout lê o catálogo público e confere detalhes de produto, carrinho preenchido e login nas seis larguras. Não faz login, não submete checkout e não envia mensagens. A evidência versionada é validation/2026-11-20-public-layout.json.
+
+## Plataforma híbrida · 20/11/2026
+
+A suíte Node inclui PostgreSQL local por PGlite, aplicando todas as migrações sem contactar produção. Há testes de preço e acréscimos, saldo/idempotência, reserva/capacidade, estados, ingredientes/sub-receitas, ciclos, acesso anônimo, isolamento de lojas, Storage, conta não verificada e plano expirado. O contrato Edge verifica JWT, loja, payload, origem, tamanho, rate limit e preservação do JWT nas escritas.
+
+Os ensaios admin-workflows.mjs também gravam cliente, insumo, encomenda, sinal, estoque e calendário numa API fictícia isolada; testam a prévia de cliente e 102 vistas + 6 editores em seis larguras. public-layout.mjs testa 18 vistas, recusa de slug inexistente e cadastro comercial desativado. Capturas/saídas locais ficam no cache ignorado; o relatório sanitizado é versionado em validation/2026-11-20-platform.json.
+
+Duas lojas descartáveis no projeto hospedado validaram a API real e concorrência de última unidade/capacidade. Nenhum WhatsApp foi enviado; fixtures foram removidas, com contagens de produção preservadas. Esses ensaios não substituem login/uso físico de Gabriela nem comparação dos registros comerciais antigos. [Estado completo](IMPLEMENTACAO.md).
