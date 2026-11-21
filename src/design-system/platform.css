@@ -524,7 +524,7 @@
     font-size: 0.7rem;
     padding: 0.5rem 0.6rem;
     color: #fff;
-    background: var(--pd-color-ink);
+    background: var(--pd-color-brand);
     border-radius: 0.625rem;
     transition: background-color 0.15s;
   }
@@ -557,8 +557,8 @@
     padding: 0.75rem 1rem;
     border-radius: 1rem;
     color: white;
-    background: var(--pd-color-ink);
-    box-shadow: 0 6px 25px #1a161530;
+    background: var(--pd-color-brand);
+    box-shadow: 0 5px 18px #38101026;
     font-size: 0.875rem;
   }
   .product-purchase-bar {
@@ -832,9 +832,7 @@
   .module-metrics [data-tone="danger"] {
     border-top-color: #d8a29a;
   }
-  .product-detail-toolbar .product-detail-action:first-child {
-    order: 2;
-  }
+
   .with-management .product-purchase-bar .page-width {
     padding-bottom: 0.25rem;
   }

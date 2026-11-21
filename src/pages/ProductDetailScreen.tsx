@@ -373,7 +373,8 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
         onAddToCart(product, { mode: saleMode, sauce, observations, quantity });
       }
     }
-    onNavigate("cart");
+    if (editingItem) onNavigate("cart");
+    else onBack();
   };
 
   const fmtExtra = (extra: number) => "+" + formatEuros(extra);
@@ -386,7 +387,7 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
       className="min-h-screen bg-subtle"
     >
       {/* Botões flutuantes */}
-      <div className="product-detail-toolbar fixed top-[env(safe-area-inset-top)] inset-x-0 z-50 flex justify-end items-center p-3 pointer-events-none gap-2">
+      <div className="product-detail-toolbar fixed top-[env(safe-area-inset-top)] inset-x-0 z-50 flex justify-between items-center p-3 pointer-events-none gap-2">
         <button
           type="button"
           aria-label="Voltar"
@@ -446,6 +447,13 @@ export const ProductDetailScreen: React.FC<ProductDetailScreenProps> = ({
                 {product.description}
               </p>
 
+              {!!product.tags?.length && (
+                <ul className="product-topics" aria-label="Tópicos do produto">
+                  {product.tags.map((tag) => (
+                    <li key={tag}>{tag}</li>
+                  ))}
+                </ul>
+              )}
               {/* Preço total — bem visível */}
               <div className="flex items-baseline gap-2">
                 {isConfiguravel &&

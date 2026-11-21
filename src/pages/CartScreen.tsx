@@ -1,6 +1,25 @@
 import { AppSelect } from "../components/AppSelect";
-import { ArrowLeft, Minus, Pencil, Plus, Trash2 } from "lucide-react";
-import { useRef, useState, type FormEvent } from "react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  Check,
+  MapPin,
+  Minus,
+  Pencil,
+  Plus,
+  ShoppingBag,
+  Trash2,
+  UserRound,
+  Wallet,
+} from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type FormEvent,
+  type SetStateAction,
+} from "react";
 import { BUSINESS_INFO } from "../config/constants";
 import type { CartItem, View } from "../config/types";
 import {
@@ -9,63 +28,170 @@ import {
   prepareOrder,
   whatsappLink,
 } from "../features/checkout/order";
+import {
+  deliveryAddress,
+  type CheckoutDraft,
+} from "../features/checkout/draft";
+import {
+  cartUnits,
+  dateProblem,
+  firstEligibleDate,
+  plusDays,
+} from "../features/checkout/schedule";
 import { checkout, today } from "../features/platform/api";
 import { useStore } from "../features/platform/StoreProvider";
 import type { OrderPayload } from "../features/platform/types";
 
-interface CartScreenProps {
+type Props = {
   cart: CartItem[];
+  draft: CheckoutDraft;
+  setDraft: Dispatch<SetStateAction<CheckoutDraft>>;
   onUpdateQuantity: (id: string, quantity: number) => void;
   onEditItem: (item: CartItem) => void;
   onNavigate: (view: View) => void;
+};
+function orderPayload(
+  cart: CartItem[],
+  draft: CheckoutDraft,
+  fulfillment: "pickup" | "delivery",
+  date: string,
+  address: string,
+  key: string,
+): OrderPayload {
+  return {
+    idempotency_key: key,
+    delivery_date: date,
+    fulfillment,
+    customer: {
+      name: draft.name.trim(),
+      phone: draft.phone.trim(),
+      email: draft.email.trim(),
+      address: fulfillment === "delivery" ? address : "",
+    },
+    notes:
+      "Preferência de pagamento: " +
+      draft.payment +
+      (draft.payment === "cash" && draft.changeFor
+        ? " · Troco para " + draft.changeFor
+        : ""),
+    items: cart.map((i) => ({
+      product_id: i.id,
+      variant: i.variant || i.tamanho || "",
+      quantity: i.quantity,
+      mode: i.mode || "preorder",
+      configuration: Object.fromEntries(
+        Object.entries({
+          massa: i.massa,
+          recheio1: i.recheio1,
+          recheio2: i.recheio2,
+          tema: i.tema,
+          selectedFlavors: i.selectedFlavors,
+          observations: i.observations,
+        }).filter(([, v]) => v !== undefined && v !== ""),
+      ),
+    })),
+  };
 }
-
-const field = "ui-field";
-const iconButton = "ui-icon-action";
 
 export function CartScreen({
   cart,
+  draft,
+  setDraft,
   onUpdateQuantity,
   onEditItem,
   onNavigate,
-}: CartScreenProps) {
-  const { store, settings, reload } = useStore();
+}: Props) {
+  const { store, settings, blocks, days, reload } = useStore();
   const [busy, setBusy] = useState(false),
+    [error, setError] = useState(""),
+    [feedback, setFeedback] = useState(""),
+    [message, setMessage] = useState(""),
     [link, setLink] = useState("");
-  const retry = useRef({ signature: "", key: crypto.randomUUID() });
-  const hasReady = cart.some((i) => i.mode === "ready");
-  const minimum = new Date(today(store.timezone) + "T12:00:00");
-  minimum.setDate(minimum.getDate() + (hasReady ? 0 : settings.lead_days));
-  const minDate = minimum.toISOString().slice(0, 10);
-  const [fulfillment, setFulfillment] = useState<"pickup" | "delivery">(
-    "pickup",
+  const retry = useRef(
+    draft.intent ?? { signature: "", key: crypto.randomUUID() },
   );
-  const [payment, setPayment] = useState<"cash" | "mbway" | "wise">("mbway");
-  const [feedback, setFeedback] = useState("");
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const currentDay = today(store.timezone),
+    hasReady = cart.some((i) => i.mode === "ready");
+  const minimum = plusDays(currentDay, hasReady ? 0 : settings.lead_days),
+    units = cartUnits(cart);
+  const initialDate = firstEligibleDate(
+    minimum,
+    hasReady,
+    currentDay,
+    blocks,
+    days,
+    units,
+  );
+  const date = draft.date || initialDate,
+    fulfillment = settings.delivery_enabled ? draft.fulfillment : "pickup";
+  const address = deliveryAddress(draft);
+  const currentSignature = JSON.stringify({
+    ...orderPayload(cart, draft, fulfillment, date, address, ""),
+    idempotency_key: "",
+  });
+  const dateError = dateProblem(
+    date,
+    minimum,
+    hasReady,
+    currentDay,
+    blocks,
+    draft.submittedSignature === currentSignature ? [] : days,
+    units,
+  );
   const subtotal = orderSubtotal(cart);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
-    const form = new FormData(event.currentTarget);
-    const get = (name: string) => String(form.get(name) ?? "");
+  const fee = fulfillment === "delivery" ? settings.delivery_fee_cents : 0;
+  // Preserve the selected eligible day when navigating to an item and back.
+  useEffect(() => {
+    if (!draft.date && initialDate)
+      setDraft((d) => ({ ...d, date: initialDate }));
+  }, [draft.date, initialDate, setDraft]);
+  const update = <K extends keyof CheckoutDraft>(
+    name: K,
+    value: CheckoutDraft[K],
+  ) => {
+    setDraft((d) => ({ ...d, [name]: value }));
     setError("");
     setFeedback("");
     setMessage("");
-
+    setLink("");
+  };
+  const input = (
+    name:
+      | "name"
+      | "phone"
+      | "email"
+      | "street"
+      | "door"
+      | "postalCode"
+      | "city"
+      | "complement"
+      | "changeFor",
+    label: string,
+    props: React.InputHTMLAttributes<HTMLInputElement> = {},
+  ) => (
+    <label className="module-field">
+      <span>{label}</span>
+      <input
+        name={name}
+        className="ui-field"
+        value={draft[name]}
+        onChange={(e) => update(name, e.target.value)}
+        {...props}
+      />
+    </label>
+  );
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    setError("");
+    setFeedback("");
+    const copying =
+      (event.nativeEvent as SubmitEvent).submitter?.getAttribute("value") ===
+      "copy";
+    let popup: Window | null = null;
     setBusy(true);
     try {
-      prepareOrder(cart, {
-        name: get("name"),
-        phone: get("phone"),
-        fulfillment,
-        payment,
-        address: get("address"),
-        date: get("date"),
-        changeFor: get("changeFor"),
-      });
+      if (dateError) throw Error(dateError);
       if (
         hasReady &&
         cart.some((i) => i.mode !== "ready") &&
@@ -74,273 +200,307 @@ export function CartScreen({
         throw Error(
           "Pronta entrega e encomendas com antecedência precisam de pedidos separados. Ajuste os itens do carrinho.",
         );
-      const payload: OrderPayload = {
-        idempotency_key: retry.current.key,
-        delivery_date: get("date"),
+      const preview = prepareOrder(cart, {
+        ...draft,
         fulfillment,
-        customer: {
-          name: get("name").trim(),
-          phone: get("phone").trim(),
-          email: get("email").trim(),
-          address: get("address").trim(),
-        },
-        notes:
-          "Preferência de pagamento: " +
-          payment +
-          (get("changeFor") ? " · Troco para " + get("changeFor") : ""),
-        items: cart.map((i) => ({
-          product_id: i.id,
-          variant: i.variant || i.tamanho || "",
-          quantity: i.quantity,
-          mode: i.mode || "preorder",
-          configuration: Object.fromEntries(
-            Object.entries({
-              massa: i.massa,
-              recheio1: i.recheio1,
-              recheio2: i.recheio2,
-              tema: i.tema,
-              selectedFlavors: i.selectedFlavors,
-              observations: i.observations,
-            }).filter(([, v]) => v !== undefined && v !== ""),
-          ),
-        })),
-      };
+        date,
+        address,
+      });
+      if (copying) {
+        await navigator.clipboard.writeText(preview);
+        setFeedback(
+          "Mensagem copiada. O pedido só será reservado ao continuar no WhatsApp.",
+        );
+        return;
+      }
+      // Opening during the user gesture avoids mobile popup blocking after the API request.
+      popup = window.open("", "_blank");
+      if (popup) popup.opener = null;
+      const payload = orderPayload(
+        cart,
+        draft,
+        fulfillment,
+        date,
+        address,
+        retry.current.key,
+      );
       const signature = JSON.stringify({ ...payload, idempotency_key: "" });
       if (signature !== retry.current.signature)
         retry.current = { signature, key: crypto.randomUUID() };
       payload.idempotency_key = retry.current.key;
+      setDraft((d) => ({ ...d, intent: retry.current }));
       const saved = await checkout(payload);
-      const nextMessage = saved.message;
-      setMessage(nextMessage);
+      setDraft((d) => ({ ...d, submittedSignature: signature }));
+      setMessage(saved.message);
       setLink(saved.whatsapp_url);
-      void reload().catch(() => {});
-
-      const submitter = (event.nativeEvent as SubmitEvent).submitter;
-      if (submitter?.getAttribute("value") === "copy") {
-        await navigator.clipboard.writeText(nextMessage);
-        setFeedback("Mensagem copiada.");
-        return;
-      }
-      window.open(saved.whatsapp_url, "_blank", "noopener,noreferrer");
+      if (popup) popup.location.href = saved.whatsapp_url;
       setFeedback(
         "Pedido #" +
           saved.order.reference +
-          " registrado. Envie a mensagem no WhatsApp e aguarde a confirmação da confeitaria.",
+          " registrado. Envie a mensagem no WhatsApp para confirmar com a confeitaria.",
       );
+      void reload().catch(() => {});
     } catch (cause) {
+      popup?.close();
       setError(
         cause instanceof Error
           ? cause.message
           : "Não foi possível preparar o pedido.",
       );
+      void reload().catch(() => {});
     } finally {
       setBusy(false);
     }
   }
-
   return (
-    <section className="mx-auto w-full max-w-3xl px-4 pb-12 sm:px-8">
+    <section className="page-width checkout-page">
       <header className="customer-page-heading">
         <button
           type="button"
           aria-label="Voltar ao catálogo"
           onClick={() => onNavigate("home")}
-          className={iconButton + " order-2 ml-auto"}
+          className="ui-icon-action"
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="type-module text-on-surface">A sua encomenda</h1>
+        <div>
+          <span className="page-eyebrow">Feito para si</span>
+          <h1 className="type-module text-on-surface">A sua encomenda</h1>
+        </div>
       </header>
-      {cart.length === 0 ? (
-        <div className="space-y-4 py-10">
-          <p>O carrinho está vazio.</p>
-          <button
-            type="button"
-            onClick={() => onNavigate("home")}
-            className="ui-primary"
-          >
-            Ver catálogo
-          </button>
+      {!cart.length ? (
+        <div className="module-panel">
+          <ShoppingBag size={24} />
+          <h2 className="type-section">O carrinho está vazio.</h2>
+          <p className="text-sm text-muted">
+            Escolha algo especial na nossa vitrine.
+          </p>
+          <div className="form-actions">
+            <button
+              type="button"
+              className="ui-primary"
+              onClick={() => onNavigate("home")}
+            >
+              Ver catálogo
+            </button>
+          </div>
         </div>
       ) : (
-        <>
-          <ul className="divide-y divide-outline">
-            {cart.map((item) => (
-              <li
-                key={item.cartId}
-                className="flex flex-wrap items-center gap-3 py-4"
-              >
-                {item.image && (
-                  <img
-                    src={item.image}
-                    alt=""
-                    className="size-14 rounded-lg object-cover"
-                  />
-                )}
-                <div className="min-w-36 flex-1">
-                  <h2 className="type-item">{item.name}</h2>
-                  {item.variant || item.tamanho ? (
-                    <p className="text-sm text-muted">
-                      {item.variant || item.tamanho}
-                    </p>
-                  ) : null}
-                  <p className="text-sm">
-                    {formatEuros(orderSubtotal([item]))}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {item.mode === "ready"
-                      ? "Pronta entrega hoje"
-                      : "Por encomenda"}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    className={iconButton}
-                    type="button"
-                    aria-label={"Diminuir quantidade de " + item.name}
-                    onClick={() => {
-                      setMessage("");
-                      onUpdateQuantity(item.cartId, item.quantity - 1);
-                    }}
-                  >
-                    <Minus size={16} />
-                  </button>
-                  <span aria-label="Quantidade">{item.quantity}</span>
-                  <button
-                    className={iconButton}
-                    type="button"
-                    aria-label={"Aumentar quantidade de " + item.name}
-                    onClick={() => {
-                      setMessage("");
-                      onUpdateQuantity(item.cartId, item.quantity + 1);
-                    }}
-                  >
-                    <Plus size={16} />
-                  </button>
-                  <button
-                    className={iconButton}
-                    type="button"
-                    aria-label={"Editar " + item.name}
-                    onClick={() => onEditItem(item)}
-                  >
-                    <Pencil size={16} />
-                  </button>
-                  <button
-                    className={iconButton}
-                    type="button"
-                    aria-label={"Remover " + item.name}
-                    onClick={() => {
-                      setMessage("");
-                      onUpdateQuantity(item.cartId, 0);
-                    }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <form
-            aria-busy={busy}
-            onSubmit={submit}
-            onChange={() => {
-              setMessage("");
-              setFeedback("");
-              setError("");
-            }}
-            className="space-y-5 border-t border-outline pt-6"
-          >
-            <fieldset disabled={busy} className="admin-form">
-              <h2 className="type-section text-primary">Dados para o pedido</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-1">
-                  <span>Nome</span>
-                  <input
-                    name="name"
-                    required
-                    maxLength={100}
-                    autoComplete="name"
-                    className={field}
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span>Telefone</span>
-                  <input
-                    name="phone"
-                    type="tel"
-                    required
-                    maxLength={30}
-                    autoComplete="tel"
-                    className={field}
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span>E-mail (opcional)</span>
-                  <input
-                    type="email"
-                    name="email"
-                    maxLength={254}
-                    autoComplete="email"
-                    className={field}
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span>Como quer receber?</span>
-                  <AppSelect
-                    className={field}
-                    value={fulfillment}
-                    onChange={(event) =>
-                      setFulfillment(
-                        event.target.value === "delivery"
-                          ? "delivery"
-                          : "pickup",
-                      )
-                    }
-                  >
-                    <option value="pickup">Recolha</option>
-                    {settings.delivery_enabled && (
-                      <option value="delivery">Entrega a combinar</option>
+        <form onSubmit={submit} aria-busy={busy} className="checkout-layout">
+          <fieldset disabled={busy} className="checkout-fields">
+            <section className="checkout-card">
+              <h2 className="checkout-title">
+                <ShoppingBag size={18} />
+                Os seus produtos{" "}
+                <small>{cart.reduce((n, i) => n + i.quantity, 0)} itens</small>
+              </h2>
+              <ul className="checkout-items">
+                {cart.map((item) => (
+                  <li key={item.cartId}>
+                    {item.image && (
+                      <img src={item.image} alt="" className="checkout-thumb" />
                     )}
-                  </AppSelect>
-                </label>
-                <label className="space-y-1">
-                  <span>Data pretendida</span>
-                  <input
-                    name="date"
-                    type="date"
-                    required
-                    min={minDate}
-                    max={hasReady ? today(store.timezone) : undefined}
-                    defaultValue={minDate}
-                    className={field}
-                  />
-                </label>
+                    <div className="checkout-item-info">
+                      <h3 className="type-item">{item.name}</h3>
+                      <p className="text-xs text-muted">
+                        {[
+                          item.variant || item.tamanho,
+                          item.massa,
+                          item.recheio1,
+                          item.recheio2 !== item.recheio1 ? item.recheio2 : "",
+                          item.selectedFlavors?.join(", "),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                      <span className="text-xs text-muted">
+                        {item.mode === "ready"
+                          ? "Pronta entrega hoje"
+                          : "Por encomenda"}
+                      </span>
+                      <p className="type-price mt-1">
+                        {formatEuros(orderSubtotal([item]))}
+                      </p>
+                    </div>
+                    <div className="checkout-item-actions">
+                      <div className="quantity-control">
+                        <button
+                          type="button"
+                          aria-label={"Diminuir " + item.name}
+                          className="ui-icon-action"
+                          onClick={() =>
+                            onUpdateQuantity(item.cartId, item.quantity - 1)
+                          }
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="tabular-nums">{item.quantity}</span>
+                        <button
+                          type="button"
+                          aria-label={"Aumentar " + item.name}
+                          className="ui-icon-action"
+                          onClick={() =>
+                            onUpdateQuantity(item.cartId, item.quantity + 1)
+                          }
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      <div className="flex justify-end gap-1">
+                        <button
+                          type="button"
+                          className="ui-icon-action"
+                          aria-label={"Editar " + item.name}
+                          onClick={() => onEditItem(item)}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="ui-icon-action"
+                          data-destructive="true"
+                          aria-label={"Remover " + item.name}
+                          onClick={() => onUpdateQuantity(item.cartId, 0)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="checkout-card">
+              <h2 className="checkout-title">
+                <UserRound size={18} />
+                Os seus dados
+              </h2>
+              <div className="module-form-grid">
+                {input("name", "Nome", {
+                  required: true,
+                  maxLength: 100,
+                  autoComplete: "name",
+                })}
+                {input("phone", "Telefone", {
+                  required: true,
+                  type: "tel",
+                  maxLength: 30,
+                  autoComplete: "tel",
+                })}
+                {input("email", "E-mail (opcional)", {
+                  type: "email",
+                  maxLength: 254,
+                  autoComplete: "email",
+                })}
               </div>
+            </section>
+            <section className="checkout-card">
+              <h2 className="checkout-title">
+                <MapPin size={18} />
+                Entrega ou recolha
+              </h2>
+              <label className="module-field">
+                <span>Como quer receber?</span>
+                <AppSelect
+                  className="ui-field"
+                  value={fulfillment}
+                  onChange={(e) =>
+                    update(
+                      "fulfillment",
+                      e.target.value === "delivery" ? "delivery" : "pickup",
+                    )
+                  }
+                >
+                  <option value="pickup">Recolha</option>
+                  {settings.delivery_enabled && (
+                    <option value="delivery">Entrega a combinar</option>
+                  )}
+                </AppSelect>
+              </label>
               {fulfillment === "delivery" ? (
-                <label className="block space-y-1">
-                  <span>Morada, código postal e localidade</span>
-                  <textarea
-                    name="address"
-                    required
-                    maxLength={400}
-                    autoComplete="street-address"
-                    rows={2}
-                    className={field}
-                  />
-                </label>
+                <div className="module-form-grid mt-4">
+                  {input("street", "Rua ou avenida", {
+                    required: true,
+                    maxLength: 180,
+                    autoComplete: "address-line1",
+                  })}
+                  {input("door", "Número, andar ou porta", {
+                    required: true,
+                    maxLength: 50,
+                    autoComplete: "address-line2",
+                  })}
+                  {input("postalCode", "Código postal", {
+                    required: true,
+                    maxLength: 20,
+                    autoComplete: "postal-code",
+                    placeholder: "0000-000",
+                  })}
+                  {input("city", "Localidade", {
+                    required: true,
+                    maxLength: 80,
+                    autoComplete: "address-level2",
+                  })}
+                  {input("complement", "Referência para a entrega (opcional)", {
+                    maxLength: 100,
+                  })}
+                </div>
               ) : (
-                <p className="text-sm text-muted">
+                <p className="checkout-note">
+                  <MapPin size={16} />
                   Recolha em {BUSINESS_INFO.address}, em horário a combinar.
                 </p>
               )}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="space-y-1">
+              <label className="module-field mt-4">
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={15} />
+                  Data pretendida
+                </span>
+                <input
+                  name="date"
+                  type="date"
+                  required
+                  min={minimum}
+                  max={hasReady ? currentDay : undefined}
+                  value={date}
+                  onChange={(e) => update("date", e.target.value)}
+                  className="ui-field"
+                  aria-invalid={!!dateError}
+                  aria-describedby="checkout-date-help"
+                />
+              </label>
+              <p
+                id="checkout-date-help"
+                role={dateError ? "alert" : undefined}
+                className={
+                  "text-xs mt-2 " + (dateError ? "text-primary" : "text-muted")
+                }
+              >
+                {dateError ||
+                  (hasReady
+                    ? "Pronta entrega disponível hoje."
+                    : "A primeira data disponível considera a antecedência e a agenda da confeitaria. A disponibilidade é confirmada ao continuar.")}
+              </p>
+            </section>
+            <section className="checkout-card">
+              <h2 className="checkout-title">
+                <Wallet size={18} />
+                Pagamento
+              </h2>
+              <p className="text-sm text-muted mb-3">
+                Escolha a sua preferência. O pagamento é combinado com a
+                confeitaria.
+              </p>
+              <div className="module-form-grid">
+                <label className="module-field">
                   <span>Preferência de pagamento</span>
                   <AppSelect
-                    className={field}
-                    value={payment}
-                    onChange={(event) =>
-                      setPayment(event.target.value as typeof payment)
+                    value={draft.payment}
+                    className="ui-field"
+                    onChange={(e) =>
+                      update(
+                        "payment",
+                        e.target.value as CheckoutDraft["payment"],
+                      )
                     }
                   >
                     <option value="mbway">MB WAY</option>
@@ -348,76 +508,97 @@ export function CartScreen({
                     <option value="cash">Dinheiro</option>
                   </AppSelect>
                 </label>
-                {payment === "cash" && (
-                  <label className="space-y-1">
-                    <span>Troco para (opcional)</span>
-                    <input
-                      name="changeFor"
-                      inputMode="decimal"
-                      maxLength={12}
-                      className={field}
-                    />
-                  </label>
-                )}
+                {draft.payment === "cash" &&
+                  input("changeFor", "Troco para (opcional)", {
+                    inputMode: "decimal",
+                    maxLength: 12,
+                  })}
               </div>
-              <div className="rounded-xl bg-subtle p-4">
-                <p className="flex justify-between gap-4 font-bold">
-                  <span>Subtotal dos produtos</span>
-                  <span>{formatEuros(subtotal)}</span>
+            </section>
+          </fieldset>
+          <aside className="checkout-summary">
+            <section className="checkout-card">
+              <h2 className="checkout-title">Resumo da encomenda</h2>
+              <dl className="checkout-totals">
+                <div>
+                  <dt>Subtotal dos produtos</dt>
+                  <dd>{formatEuros(subtotal)}</dd>
+                </div>
+                <div>
+                  <dt>{fulfillment === "delivery" ? "Entrega" : "Recolha"}</dt>
+                  <dd>
+                    {fee === null
+                      ? "A combinar"
+                      : fee === 0
+                        ? "Sem custo"
+                        : formatEuros(fee / 100)}
+                  </dd>
+                </div>
+                <div className="checkout-total">
+                  <dt>{fee === null ? "Subtotal" : "Total"}</dt>
+                  <dd>{formatEuros(subtotal + (fee || 0) / 100)}</dd>
+                </div>
+              </dl>
+              {fee === null && (
+                <p className="text-xs text-muted">
+                  Taxa de entrega e total final a confirmar no WhatsApp.
                 </p>
-                {fulfillment === "delivery" && (
-                  <p className="mt-2 text-sm text-muted">
-                    {settings.delivery_fee_cents === null
-                      ? "Taxa de entrega e total final a confirmar no WhatsApp."
-                      : "Taxa de entrega: " +
-                        formatEuros(settings.delivery_fee_cents / 100)}
-                  </p>
-                )}
-              </div>
-              <div className="admin-actions">
-                <button type="submit" value="open" className="ui-primary">
+              )}
+              <div className="checkout-submit">
+                <button
+                  disabled={busy || !!dateError}
+                  type="submit"
+                  value="open"
+                  className="ui-primary"
+                >
                   {busy ? "A validar pedido…" : "Continuar no WhatsApp"}
                 </button>
-                <button type="submit" value="copy" className="ui-secondary">
+                <button
+                  disabled={busy || !!dateError}
+                  type="submit"
+                  value="copy"
+                  className="ui-quiet-action"
+                >
                   Copiar mensagem
                 </button>
               </div>
-              <p className="text-sm text-muted">
-                A encomenda é confirmada no atendimento. Os dados são
-                registrados pela confeitaria para atender e acompanhar a sua
-                encomenda. Uma reserva pendente expira em 30 minutos.
+              <p className="text-xs text-muted">
+                A confeitaria confirma a encomenda no atendimento. Ao continuar,
+                os dados são registados para atender o pedido e a reserva
+                aguarda confirmação por 30 minutos.
               </p>
               {error && (
-                <p role="alert" className="text-sm text-primary">
+                <p role="alert" className="module-error">
                   {error}
                 </p>
               )}
               {feedback && (
-                <p role="status" className="text-sm font-bold">
+                <p role="status" className="checkout-feedback">
+                  <Check size={17} />
                   {feedback}
                 </p>
               )}
               {message && (
-                <details className="rounded-xl border border-outline p-3">
-                  <summary className="cursor-pointer font-bold">
-                    Ver mensagem e opção de abertura
-                  </summary>
-                  <p className="my-3 whitespace-pre-wrap break-words text-sm">
-                    {message}
-                  </p>
+                <div className="checkout-message">
                   <a
-                    className="font-bold text-primary underline"
+                    className="ui-secondary"
                     href={link || whatsappLink(BUSINESS_INFO.whatsapp, message)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     Abrir mensagem no WhatsApp
                   </a>
-                </details>
+                  <details>
+                    <summary>Ver mensagem do pedido</summary>
+                    <p className="whitespace-pre-wrap break-words text-sm mt-3">
+                      {message}
+                    </p>
+                  </details>
+                </div>
               )}
-            </fieldset>
-          </form>
-        </>
+            </section>
+          </aside>
+        </form>
       )}
     </section>
   );

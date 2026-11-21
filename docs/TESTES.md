@@ -49,3 +49,9 @@ Execute também node tests/buyer-admin-flows.mjs com o preview aberto. A identid
 refinement-db.test.mjs verifica correção, exclusão lógica, rollback, idempotência, versão, saldo, isolamento e contraste. A conferência hospedada das novas regras usa transação integral com rollback, sem deixar fixtures. 54 testes de regras/contratos aprovados nesta revisão. [Estado de segurança](SEGURANCA.md).
 
 Para os controles remotos sem escrita, execute node scripts/check-security.mjs. Defina PD_SITE_URL para incluir a rejeição de corpo excessivo no gateway publicado. O limite no handler Edge é coberto isoladamente; a resposta direta do relay não foi declarada corrigida.
+
+
+## Suíte da jornada · 21/11/2026
+
+Executar também node tests/catalog-journey.mjs, node tests/checkout-journey.mjs, node tests/pricing-journey.mjs e node tests/review-captures.mjs com preview local ativo. As três jornadas usam banco isolado, gateway/handler reais e identidade simulada. Capturas em node_modules/.cache ficam fora do Git. [Cobertura, resultados e limites](CORRECOES-JORNADA-2026-11-21.md).
+

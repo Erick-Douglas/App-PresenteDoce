@@ -69,7 +69,7 @@ export function LiveProductStock({ product }: { product: Product }) {
     }
   }
   return (
-    <div className="grid px-3 pb-1">
+    <div className="live-product-control">
       <button
         className="ui-edit-action"
         type="button"
@@ -78,10 +78,10 @@ export function LiveProductStock({ product }: { product: Product }) {
         onClick={() => (open ? setOpen(false) : void load())}
       >
         <Package size={14} />
-        Disponibilidade
+        Stock
       </button>
       {open && (
-        <div className="admin-form pb-3 pt-2 text-xs">
+        <div className="admin-form live-stock-form pb-3 pt-2 text-xs">
           <div className="flex gap-2 flex-wrap">
             {(["ready", "preorder"] as const).map((m) => (
               <button

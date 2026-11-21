@@ -30,3 +30,9 @@
 Dados antigos da planilha não foram importados por suposição. Turnstile, proteção de senhas vazadas, credenciais Stripe/WhatsApp, aceite físico e lançamento comercial continuam identificados em [Implementação](docs/IMPLEMENTACAO.md) e [Integrações](docs/INTEGRACOES.md). [Evidência sanitizada](docs/validation/2026-11-20-platform.json).
 
 Também foram reforçados: versão obrigatória nas alterações transacionais, sinal somente após confirmar a encomenda e atualização manual/periódica da gestão.
+
+
+## 21/11/2026 · Jornada e catálogo
+
+Tópicos com criação/seleção direta e indicação do vínculo; ficha exibe os associados. Checkout preservado ao editar itens, endereço em campos próprios, agenda/capacidade agregada e cópia sem reserva. Compra/sacola compactas, navegação sem menu duplicado, retorno separado do favorito e módulos com hierarquia comum. Precificação em etapas. Índices para relações por loja. Testes integrados de persistência e compra. Limites/pendências em docs/CORRECOES-JORNADA-2026-11-21.md.
+

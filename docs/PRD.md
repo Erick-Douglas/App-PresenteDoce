@@ -164,3 +164,9 @@ Manter React + Vite. A hipótese de migrar para Next.js fica encerrada: adiciona
 ## Refinamento de aceite · 21/11/2026
 
 Os IDs PD-REV-01 a PD-REV-07 detalham o retorno de uso após a implementação inicial. [Critérios e causas](REVISAO-2026-11-21.md). O aceite exige compra acessível também no Live Mode, seletores junto ao campo, confirmação à direita, menu agrupado, financeiro corrigível sem perda de trilha, criação de encomenda com cliente novo e personalização de marca aplicada. Tópicos ficam na gestão e não numa segunda faixa pública. Manter o plano gratuito; senhas vazadas dependem de Pro e a política nativa preparada depende da conexão administrativa. [Segurança](SEGURANCA.md).
+
+
+## Critérios adicionais · Jornada e catálogo · 21/11/2026
+
+A correção atual detalha persistência de tópicos, edição sem perda de checkout, endereço estruturado sem API externa, disponibilidade por agenda, sacola compacta e menu único por contexto. [Especificações e evidências](CORRECOES-JORNADA-2026-11-21.md). O aceite visual e a comparação das receitas reais com a planilha não são substituídos pelos testes automatizados.
+

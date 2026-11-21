@@ -1,83 +1,84 @@
 import { AppSelect } from "../components/AppSelect";
-import { Plus } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { THEMED_CAKE_SIZES } from '../config/constants';
-import type { Product, ProductOrderMode } from '../config/types';
-import { currencySymbol, formatEuros } from '../features/checkout/order';
+import { Plus } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { THEMED_CAKE_SIZES } from "../config/constants";
+import type { Product, ProductOrderMode } from "../config/types";
+import { currencySymbol, formatEuros } from "../features/checkout/order";
 import {
   createCatalogCategory,
   deleteProduct,
   getCatalogProduct,
   imageUrl,
   saveProduct,
+  saveCatalogCategory,
   uploadProductImage,
   type AdminCategoryRow,
   type CatalogRow,
-} from '../features/products/catalogApi';
+} from "../features/products/catalogApi";
 import {
   formatCatalogPrice,
   parseCatalogPrice,
   productOrderMode,
-} from '../features/products/catalogFields';
-import { validateProductImage } from '../features/products/productImage';
+} from "../features/products/catalogFields";
+import { validateProductImage } from "../features/products/productImage";
 import {
   CategoryEditor,
   categoryNameFrom,
   type CategoryChange,
-} from './CategoryEditor';
+} from "./CategoryEditor";
 
-const primary = 'ui-primary';
-const secondary = 'ui-secondary';
-const field = 'ui-field';
+const primary = "ui-primary";
+const secondary = "ui-secondary";
+const field = "ui-field";
 const chip =
-  'rounded-full border border-primary/15 px-3 py-1.5 text-sm text-primary';
+  "rounded-full border border-primary/15 px-3 py-1.5 text-sm text-primary";
 type Variant = { label: string; price: string; maxFlavors: string };
 const optionFields = new Map<
   ProductOrderMode,
   { title: string; label: string; example: string; add: string }
 >([
   [
-    'cake',
+    "cake",
     {
-      title: 'Tamanhos do bolo',
-      label: 'Tamanho',
-      example: 'Pequeno (1,5 kg)',
-      add: 'Adicionar tamanho',
+      title: "Tamanhos do bolo",
+      label: "Tamanho",
+      example: "Pequeno (1,5 kg)",
+      add: "Adicionar tamanho",
     },
   ],
   [
-    'brigadeiros',
+    "brigadeiros",
     {
-      title: 'Tamanhos da caixa',
-      label: 'Caixa',
-      example: 'Caixa com 12',
-      add: 'Adicionar caixa',
+      title: "Tamanhos da caixa",
+      label: "Caixa",
+      example: "Caixa com 12",
+      add: "Adicionar caixa",
     },
   ],
   [
-    'salgados',
+    "salgados",
     {
-      title: 'Quantidades disponíveis',
-      label: 'Quantidade',
-      example: '25 unidades',
-      add: 'Adicionar quantidade',
+      title: "Quantidades disponíveis",
+      label: "Quantidade",
+      example: "25 unidades",
+      add: "Adicionar quantidade",
     },
   ],
 ]);
 const parseList = (value: string) => [
   ...new Set(
     value
-      .split('\n')
+      .split("\n")
       .map((item) => item.trim())
       .filter(Boolean),
   ),
 ];
-const topicKey = (value: string) => value.trim().toLocaleLowerCase('pt-PT');
+const topicKey = (value: string) => value.trim().toLocaleLowerCase("pt-PT");
 
-function productContent(details: CatalogRow['details']) {
+function productContent(details: CatalogRow["details"]) {
   return JSON.stringify(
     Object.entries(details)
-      .filter(([key]) => !['category', 'topicIds', 'tags'].includes(key))
+      .filter(([key]) => !["category", "topicIds", "tags"].includes(key))
       .sort(([a], [b]) => a.localeCompare(b)),
   );
 }
@@ -85,7 +86,7 @@ function productContent(details: CatalogRow['details']) {
 function priceFrom(value: string) {
   const price = parseCatalogPrice(value);
   if (price === null)
-    throw new Error('Indique um preço válido com até duas casas decimais.');
+    throw new Error("Indique um preço válido com até duas casas decimais.");
   return price;
 }
 
@@ -106,7 +107,7 @@ function PriceInput({
       <span className="relative block">
         <input
           aria-label={label}
-          className={field + ' pr-9 tabular-nums'}
+          className={field + " pr-9 tabular-nums"}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onBlur={() => {
@@ -155,21 +156,23 @@ function ProductForm({
     ? categories.find((item) => item.name === data.category)
     : (categories.find(
         (c) =>
-          c.id === new URLSearchParams(window.location.search).get('categoria'),
+          c.id === new URLSearchParams(window.location.search).get("categoria"),
       ) ?? categories[0]);
   const [productId] = useState(() => row?.id ?? crypto.randomUUID());
   const [baseline, setBaseline] = useState(row);
   const version = baseline?.version ?? null;
-  const [categoryId, setCategoryId] = useState(initialCategory?.id ?? '');
+  const [categoryId, setCategoryId] = useState(initialCategory?.id ?? "");
   const [managingCategory, setManagingCategory] = useState(false);
+  const [newTopic, setNewTopic] = useState<string | null>(null);
+  const [topicError, setTopicError] = useState("");
   const [categoryDraft, setCategoryDraft] = useState<string | null>(null);
-  const [categoryError, setCategoryError] = useState('');
+  const [categoryError, setCategoryError] = useState("");
   const [creatingCategory, setCreatingCategory] = useState(false);
-  const [saleModes, setSaleModes] = useState<('ready' | 'preorder')[]>(
-    data?.saleModes || ['preorder'],
+  const [saleModes, setSaleModes] = useState<("ready" | "preorder")[]>(
+    data?.saleModes || ["preorder"],
   );
   const [price, setPrice] = useState(
-    data ? formatCatalogPrice(data.price) : '',
+    data ? formatCatalogPrice(data.price) : "",
   );
   const [topicDrafts, setTopicDrafts] = useState<Record<string, string[]>>(
     () =>
@@ -191,9 +194,9 @@ function ProductForm({
     () => {
       if (!data) return {};
       const savedOptions = data.variants ?? [];
-      const options: NonNullable<Product['variants']> =
+      const options: NonNullable<Product["variants"]> =
         !savedOptions.length &&
-        productOrderMode(data) === 'cake' &&
+        productOrderMode(data) === "cake" &&
         row?.published
           ? THEMED_CAKE_SIZES
           : savedOptions;
@@ -202,7 +205,7 @@ function ProductForm({
           label: option.label,
           price: formatCatalogPrice(option.price),
           maxFlavors:
-            option.maxFlavors == null ? '' : String(option.maxFlavors),
+            option.maxFlavors == null ? "" : String(option.maxFlavors),
         })),
       };
     },
@@ -210,23 +213,23 @@ function ProductForm({
   const [flavorDrafts, setFlavorDrafts] = useState(
     () =>
       new Map(
-        data ? [[productOrderMode(data), data.flavors?.join('\n') ?? '']] : [],
+        data ? [[productOrderMode(data), data.flavors?.join("\n") ?? ""]] : [],
       ),
   );
-  const [image, setImage] = useState(data?.image ?? '');
+  const [image, setImage] = useState(data?.image ?? "");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState('');
-  const [saveStage, setSaveStage] = useState('');
+  const [preview, setPreview] = useState("");
+  const [saveStage, setSaveStage] = useState("");
   const errorRef = useRef<HTMLParagraphElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const selectedCategory = categories.find((item) => item.id === categoryId);
   const mode = data
     ? productOrderMode(data)
-    : (selectedCategory?.order_mode ?? 'simple');
+    : (selectedCategory?.order_mode ?? "simple");
   const optionFieldsForCategory = optionFields.get(mode);
-  const isThemedCake = mode === 'cake';
+  const isThemedCake = mode === "cake";
   const variants = optionFieldsForCategory ? (variantDrafts[mode] ?? []) : [];
   const optionPrices = variants.map((option) =>
     parseCatalogPrice(option.price),
@@ -242,7 +245,7 @@ function ProductForm({
 
   useEffect(() => {
     if (!selectedImage) {
-      setPreview('');
+      setPreview("");
       return;
     }
     const url = URL.createObjectURL(selectedImage);
@@ -252,14 +255,55 @@ function ProductForm({
 
   useEffect(() => {
     if (error)
-      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [error]);
+
+  async function addProductTopic() {
+    if (!selectedCategory || busy || newTopic === null) return;
+    const name = newTopic.trim().replace(/\s+/g, " ");
+    if (!name || name.length > 80) {
+      setTopicError("Indique um tópico com até 80 caracteres.");
+      return;
+    }
+    const existing = selectedCategory.topics.find(
+      (t) => topicKey(t.name) === topicKey(name),
+    );
+    if (existing) {
+      setTopicDrafts((d) => ({
+        ...d,
+        [categoryId]: [...new Set([...(d[categoryId] ?? []), existing.id])],
+      }));
+      setNewTopic(null);
+      setTopicError("");
+      return;
+    }
+    setBusy(true);
+    setTopicError("");
+    try {
+      const next = {
+        ...selectedCategory,
+        topics: [...selectedCategory.topics, { id: crypto.randomUUID(), name }],
+      };
+      await saveCatalogCategory(next, token);
+      await applyManagedCategory({
+        previous: selectedCategory,
+        saved: { ...next, revision: next.revision + 1 },
+      });
+      setNewTopic(null);
+    } catch (e) {
+      setTopicError(
+        e instanceof Error ? e.message : "Não foi possível criar o tópico.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function addCategory() {
     if (busy || creatingCategory) return;
-    setCategoryError('');
+    setCategoryError("");
     try {
-      const name = categoryNameFrom(categoryDraft ?? '');
+      const name = categoryNameFrom(categoryDraft ?? "");
       setCreatingCategory(true);
       const created = await createCatalogCategory(name, token);
       onCategoryCreated(created);
@@ -269,14 +313,14 @@ function ProductForm({
       setCategoryError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível criar a categoria.',
+          : "Não foi possível criar a categoria.",
       );
     } finally {
       setCreatingCategory(false);
     }
   }
 
-  function applyManagedCategory(change: CategoryChange) {
+  async function applyManagedCategory(change: CategoryChange) {
     onCategoryChanged(change);
     if (change.saved && change.previous.id === categoryId) {
       const added = change.saved.topics.filter(
@@ -310,11 +354,11 @@ function ProductForm({
             .map((topic) => topic.id),
         }));
       }
-      setCategoryId(target?.id ?? '');
+      setCategoryId(target?.id ?? "");
     }
     if (!baseline) return;
     setBusy(true);
-    void getCatalogProduct(baseline.id, token)
+    return getCatalogProduct(baseline.id, token)
       .then((updated) => {
         const previous = baseline.details;
         const affected = change.previous.name === previous.category;
@@ -353,7 +397,7 @@ function ProductForm({
   async function remove() {
     if (!row || busy) return;
     setBusy(true);
-    setError('');
+    setError("");
     try {
       await deleteProduct({ ...row, version: version ?? row.version }, token);
       onDeleted(row.id);
@@ -361,7 +405,7 @@ function ProductForm({
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível excluir o produto.',
+          : "Não foi possível excluir o produto.",
       );
     } finally {
       setBusy(false);
@@ -383,33 +427,39 @@ function ProductForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || creatingCategory) return;
+    if (newTopic !== null) {
+      setTopicError(
+        "Confirme ou cancele o novo tópico antes de guardar o produto.",
+      );
+      return;
+    }
     if (categoryDraft !== null) {
       setCategoryError(
-        'Crie a categoria ou cancele antes de guardar o produto.',
+        "Crie a categoria ou cancele antes de guardar o produto.",
       );
       return;
     }
     setBusy(true);
-    setError('');
+    setError("");
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
-    const text = (name: string) => String(form.get(name) ?? '').trim();
-    const name = text('name');
-    const description = text('description');
-    const published = form.get('published') === 'on';
+    const text = (name: string) => String(form.get(name) ?? "").trim();
+    const name = text("name");
+    const description = text("description");
+    const published = form.get("published") === "on";
     try {
       if (!saleModes.length)
-        throw Error('Escolha ao menos uma forma de disponibilidade.');
+        throw Error("Escolha ao menos uma forma de disponibilidade.");
       if (!name || !description)
-        throw new Error('Preencha o nome e a descrição.');
-      if (!selectedCategory) throw new Error('Escolha uma categoria.');
+        throw new Error("Preencha o nome e a descrição.");
+      if (!selectedCategory) throw new Error("Escolha uma categoria.");
       const configurable = !!optionFieldsForCategory;
       const options = configurable
         ? variants.map((option) => {
             const label = option.label.trim();
-            if (!label) throw new Error('Indique o nome de cada opção.');
+            if (!label) throw new Error("Indique o nome de cada opção.");
             const maxFlavors =
-              isThemedCake || option.maxFlavors === ''
+              isThemedCake || option.maxFlavors === ""
                 ? undefined
                 : Number(option.maxFlavors);
             if (
@@ -418,7 +468,7 @@ function ProductForm({
                 maxFlavors < 1 ||
                 maxFlavors > 100)
             ) {
-              throw new Error('O limite de sabores deve estar entre 1 e 100.');
+              throw new Error("O limite de sabores deve estar entre 1 e 100.");
             }
             return {
               label,
@@ -431,18 +481,18 @@ function ProductForm({
         new Set(options.map((option) => option.label.toLowerCase())).size !==
         options.length
       ) {
-        throw new Error('Dê um nome diferente a cada opção.');
+        throw new Error("Dê um nome diferente a cada opção.");
       }
       if (published && configurable && !options.length)
-        throw new Error('Adicione pelo menos uma opção antes de publicar.');
+        throw new Error("Adicione pelo menos uma opção antes de publicar.");
       const productPrice = options.length
         ? Math.min(...options.map((option) => option.price))
-        : priceFrom(configurable ? '0' : price);
+        : priceFrom(configurable ? "0" : price);
       if (published && productPrice <= 0)
-        throw new Error('Os preços publicados devem ser superiores a zero.');
+        throw new Error("Os preços publicados devem ser superiores a zero.");
       const flavors =
         configurable && !isThemedCake
-          ? parseList(flavorDrafts.get(mode) ?? '')
+          ? parseList(flavorDrafts.get(mode) ?? "")
           : [];
       if (
         chosenTopics.length > 20 ||
@@ -450,23 +500,23 @@ function ProductForm({
         flavors.some((value) => value.length > 80)
       ) {
         throw new Error(
-          'Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres por sabor.',
+          "Use até 20 tópicos e 50 opções de sabor, com até 80 caracteres por sabor.",
         );
       }
 
       const file = selectedImage;
       let nextImage = image;
       if (file instanceof File && file.size) {
-        setSaveStage('A enviar fotografia…');
+        setSaveStage("A enviar fotografia…");
         nextImage = await uploadProductImage(file, token);
         setSelectedImage(null);
         setImage(nextImage);
-        const input = formElement.elements.namedItem('image');
-        if (input instanceof HTMLInputElement) input.value = '';
+        const input = formElement.elements.namedItem("image");
+        if (input instanceof HTMLInputElement) input.value = "";
       }
       if (published && !nextImage)
-        throw new Error('Adicione uma imagem antes de publicar.');
-      const details: Omit<Product, 'id'> = {
+        throw new Error("Adicione uma imagem antes de publicar.");
+      const details: Omit<Product, "id"> = {
         ...data,
         name,
         description,
@@ -474,7 +524,7 @@ function ProductForm({
         price: productPrice,
         image: nextImage,
         saleModes,
-        capacityUnits: Number(form.get('capacityUnits')),
+        capacityUnits: Number(form.get("capacityUnits")),
         orderMode: mode,
         topicIds: chosenTopics.map((topic) => topic.id),
         tags: chosenTopics.map((topic) => topic.name),
@@ -483,7 +533,7 @@ function ProductForm({
         variants: options.length ? options : undefined,
         flavors: flavors.length ? flavors : undefined,
       };
-      setSaveStage('A guardar produto…');
+      setSaveStage("A guardar produto…");
       const saved = await saveProduct(
         { id: productId, details, published },
         version,
@@ -492,7 +542,7 @@ function ProductForm({
       onSaved(saved);
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : 'Não foi possível guardar.',
+        cause instanceof Error ? cause.message : "Não foi possível guardar.",
       );
     } finally {
       setBusy(false);
@@ -521,7 +571,7 @@ function ProductForm({
               Disponibilidade e produção
             </h2>
             <div className="flex flex-wrap gap-4">
-              {(['preorder', 'ready'] as const).map((m) => (
+              {(["preorder", "ready"] as const).map((m) => (
                 <label key={m} className="flex gap-2 items-center text-sm">
                   <input
                     type="checkbox"
@@ -534,7 +584,7 @@ function ProductForm({
                       )
                     }
                   />
-                  {m === 'ready' ? 'Pronta entrega' : 'Por encomenda'}
+                  {m === "ready" ? "Pronta entrega" : "Por encomenda"}
                 </label>
               ))}
             </div>
@@ -579,7 +629,7 @@ function ProductForm({
                 required
                 maxLength={3000}
                 defaultValue={data?.description}
-                className={field + ' resize-y'}
+                className={field + " resize-y"}
               />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -589,9 +639,9 @@ function ProductForm({
                   <AppSelect
                     aria-label="Categoria"
                     className={field}
-                    value={selectedCategory?.id ?? ''}
+                    value={selectedCategory?.id ?? ""}
                     onChange={(event) => {
-                      if (event.target.value === '@manage')
+                      if (event.target.value === "@manage")
                         setManagingCategory(true);
                       else setCategoryId(event.target.value);
                     }}
@@ -616,8 +666,8 @@ function ProductForm({
                   aria-expanded={categoryDraft !== null}
                   className="ui-icon-action"
                   onClick={() => {
-                    setCategoryDraft(categoryDraft === null ? '' : null);
-                    setCategoryError('');
+                    setCategoryDraft(categoryDraft === null ? "" : null);
+                    setCategoryError("");
                   }}
                 >
                   <Plus size={16} strokeWidth={1.65} aria-hidden="true" />
@@ -644,7 +694,7 @@ function ProductForm({
                       onChange={(event) => setCategoryDraft(event.target.value)}
                       onKeyDown={(event) => {
                         if (
-                          event.key === 'Enter' &&
+                          event.key === "Enter" &&
                           !event.nativeEvent.isComposing
                         ) {
                           event.preventDefault();
@@ -658,14 +708,14 @@ function ProductForm({
                     type="button"
                     onClick={addCategory}
                   >
-                    {creatingCategory ? 'A criar…' : 'Confirmar nome'}
+                    {creatingCategory ? "A criar…" : "Confirmar nome"}
                   </button>
                   <button
                     className={secondary}
                     type="button"
                     onClick={() => {
                       setCategoryDraft(null);
-                      setCategoryError('');
+                      setCategoryError("");
                     }}
                   >
                     Cancelar
@@ -695,10 +745,68 @@ function ProductForm({
                 >
                   Gerir tópicos
                 </button>
+                <button
+                  type="button"
+                  className="ui-quiet-action ml-auto"
+                  disabled={
+                    newTopic !== null || selectedCategory.topics.length >= 100
+                  }
+                  onClick={() => {
+                    setNewTopic("");
+                    setTopicError("");
+                  }}
+                >
+                  <Plus size={14} />
+                  Adicionar tópico ao produto
+                </button>
               </div>
               <p className="text-xs text-muted">
                 Selecione os tópicos que descrevem este produto. Criar um tópico
                 nesta edição também o associa ao produto ao guardar.
+              </p>
+              {newTopic !== null && (
+                <div className="module-inset space-y-2">
+                  <label className="module-field">
+                    <span>Novo tópico do produto</span>
+                    <input
+                      className="ui-field"
+                      maxLength={80}
+                      value={newTopic}
+                      onChange={(e) => setNewTopic(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          void addProductTopic();
+                        }
+                      }}
+                    />
+                  </label>
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="ui-quiet-action"
+                      onClick={() => setNewTopic(null)}
+                    >
+                      Cancelar tópico
+                    </button>
+                    <button
+                      type="button"
+                      className="ui-secondary"
+                      onClick={() => void addProductTopic()}
+                    >
+                      Confirmar e selecionar tópico
+                    </button>
+                  </div>
+                </div>
+              )}
+              {topicError && (
+                <p role="alert" className="text-primary text-sm">
+                  {topicError}
+                </p>
+              )}
+              <p className="text-xs text-muted">
+                {chosenTopics.length} tópico(s) selecionado(s). O vínculo fica
+                guardado ao guardar o produto.
               </p>
               {selectedCategory.topics.length ? (
                 <div className="flex flex-wrap gap-2">
@@ -707,7 +815,7 @@ function ProductForm({
                       key={topic.id}
                       className={
                         chip +
-                        ' inline-flex min-h-10 items-center gap-2 has-checked:bg-primary/5'
+                        " inline-flex min-h-10 items-center gap-2 has-checked:bg-primary/5"
                       }
                     >
                       <input
@@ -749,10 +857,10 @@ function ProductForm({
               </p>
               <p className="text-sm text-muted">
                 {lowestPrice === null ? (
-                  'O card mostra o preço da opção mais barata.'
+                  "O card mostra o preço da opção mais barata."
                 ) : (
                   <>
-                    No card{' '}
+                    No card{" "}
                     <strong>A partir de {formatEuros(lowestPrice)}</strong>
                   </>
                 )}
@@ -818,7 +926,7 @@ function ProductForm({
                 onClick={() =>
                   setVariants([
                     ...variants,
-                    { label: '', price: '', maxFlavors: '' },
+                    { label: "", price: "", maxFlavors: "" },
                   ])
                 }
               >
@@ -827,15 +935,15 @@ function ProductForm({
               {!isThemedCake && (
                 <label className="block space-y-1">
                   <span>
-                    {mode === 'salgados'
-                      ? 'Tipos de salgado (um por linha)'
-                      : 'Sabores da caixa (um por linha)'}
+                    {mode === "salgados"
+                      ? "Tipos de salgado (um por linha)"
+                      : "Sabores da caixa (um por linha)"}
                   </span>
                   <textarea
                     maxLength={4050}
                     rows={2}
                     className={field}
-                    value={flavorDrafts.get(mode) ?? ''}
+                    value={flavorDrafts.get(mode) ?? ""}
                     onChange={(event) => {
                       const value = event.target.value;
                       setFlavorDrafts((current) =>
@@ -869,19 +977,19 @@ function ProductForm({
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   if (!file) return;
-                  setError('');
+                  setError("");
                   try {
                     validateProductImage(file);
                   } catch (cause) {
                     setError(
                       (cause instanceof Error
                         ? cause.message
-                        : 'Fotografia inválida.') +
+                        : "Fotografia inválida.") +
                         (selectedImage
-                          ? ' A fotografia anterior foi mantida.'
-                          : ' Nenhuma nova fotografia foi selecionada.'),
+                          ? " A fotografia anterior foi mantida."
+                          : " Nenhuma nova fotografia foi selecionada."),
                     );
-                    event.target.value = '';
+                    event.target.value = "";
                     return;
                   }
                   setSelectedImage(file);
@@ -890,10 +998,10 @@ function ProductForm({
             </label>
             <p className="text-xs text-muted">
               {selectedImage
-                ? 'Selecionada: ' +
+                ? "Selecionada: " +
                   selectedImage.name +
-                  '. Será enviada ao guardar o produto.'
-                : 'JPG, PNG, WebP ou HEIC até 20 MB. A fotografia é otimizada antes do envio.'}
+                  ". Será enviada ao guardar o produto."
+                : "JPG, PNG, WebP ou HEIC até 20 MB. A fotografia é otimizada antes do envio."}
             </p>
             <label className="flex min-h-11 items-center gap-3">
               <input
@@ -901,13 +1009,13 @@ function ProductForm({
                 type="checkbox"
                 defaultChecked={row?.published}
                 className="size-4 accent-primary"
-              />{' '}
+              />{" "}
               Mostrar no catálogo público
             </label>
           </section>
           <div className="admin-actions">
             <button className={primary} type="submit">
-              {busy ? saveStage || 'A guardar…' : 'Guardar produto'}
+              {busy ? saveStage || "A guardar…" : "Guardar produto"}
             </button>
             <button
               className="ui-quiet-action"
@@ -942,7 +1050,7 @@ function ProductForm({
                   className={secondary}
                   onClick={() => {
                     setConfirmDelete(false);
-                    setError('');
+                    setError("");
                   }}
                 >
                   Cancelar exclusão
@@ -988,7 +1096,7 @@ export function CatalogEditor({
   onChanged: (id: string, row: CatalogRow | null) => void;
 }) {
   const [row, setRow] = useState<CatalogRow | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!productId) return;
@@ -1000,7 +1108,7 @@ export function CatalogEditor({
           setError(
             cause instanceof Error
               ? cause.message
-              : 'Não foi possível abrir o produto.',
+              : "Não foi possível abrir o produto.",
           );
       });
     return () => controller.abort();

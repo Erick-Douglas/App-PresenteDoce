@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { AnimatePresence, motion } from "framer-motion";
+import { Plus } from "lucide-react";
 import React, {
   lazy,
   Suspense,
@@ -8,14 +8,14 @@ import React, {
   useLayoutEffect,
   useRef,
   useState,
-} from 'react';
-import { ManagementNav } from './components/ManagementNav';
-import { LiveEditingProvider } from './features/platform/LiveEditing';
-import { storePath, useStore } from './features/platform/StoreProvider';
-import { useOperations } from './features/platform/useOperations';
+} from "react";
+import { ManagementNav } from "./components/ManagementNav";
+import { LiveEditingProvider } from "./features/platform/LiveEditing";
+import { storePath, useStore } from "./features/platform/StoreProvider";
+import { useOperations } from "./features/platform/useOperations";
 
-import { useCart } from './features/cart/useCart';
-import { readRecoveryCallback } from './features/products/adminLink';
+import { useCart } from "./features/cart/useCart";
+import { readRecoveryCallback } from "./features/products/adminLink";
 import {
   catalogEnabled,
   getStorePresentation,
@@ -24,115 +24,116 @@ import {
   type AdminCategoryRow,
   type CatalogRow,
   type CatalogSession,
-} from './features/products/catalogApi';
+} from "./features/products/catalogApi";
 import {
   defaultStorePresentation,
   type StorePresentation,
-} from './features/products/storePresentation';
-import { useAdminCatalog } from './features/products/useAdminCatalog';
-import { useCatalog } from './features/products/useCatalog';
-import { useFavorites } from './features/products/useFavorites';
-import type { CategoryChange } from './pages/CategoryEditor';
+} from "./features/products/storePresentation";
+import { useAdminCatalog } from "./features/products/useAdminCatalog";
+import { useCatalog } from "./features/products/useCatalog";
+import { useFavorites } from "./features/products/useFavorites";
+import type { CategoryChange } from "./pages/CategoryEditor";
 
-import { CartItem, Product, View } from './config/types';
+import { CartItem, Product, View } from "./config/types";
 
-import { CartScreen } from './pages/CartScreen';
-import { CategoriesScreen } from './pages/CategoriesScreen';
-import { HomeScreen } from './pages/HomeScreen';
-import { ProductDetailScreen } from './pages/ProductDetailScreen';
-import { ProductListScreen } from './pages/ProductListScreen';
-import { SavedScreen } from './pages/SavedScreen';
-import { SettingsScreen } from './pages/SettingsScreen';
-import { WelcomeScreen } from './pages/WelcomeScreen';
+import { CartScreen } from "./pages/CartScreen";
+import { newCheckoutDraft } from "./features/checkout/draft";
+import { CategoriesScreen } from "./pages/CategoriesScreen";
+import { HomeScreen } from "./pages/HomeScreen";
+import { ProductDetailScreen } from "./pages/ProductDetailScreen";
+import { ProductListScreen } from "./pages/ProductListScreen";
+import { SavedScreen } from "./pages/SavedScreen";
+import { SettingsScreen } from "./pages/SettingsScreen";
+import { WelcomeScreen } from "./pages/WelcomeScreen";
 
-import { AdminPage } from './components/AdminPage';
-import { ContactAssistant } from './components/ContactAssistant';
-import { FloatingCart } from './components/FloatingCart';
-import { Sidebar } from './components/Sidebar';
-import { StoreDialog } from './components/StoreDialog';
-import { useAppInstall } from './features/install/useAppInstall';
-import { useCatalogSession } from './features/products/useCatalogSession';
+import { AdminPage } from "./components/AdminPage";
+import { ContactAssistant } from "./components/ContactAssistant";
+import { FloatingCart } from "./components/FloatingCart";
+import { Sidebar } from "./components/Sidebar";
+import { StoreDialog } from "./components/StoreDialog";
+import { useAppInstall } from "./features/install/useAppInstall";
+import { useCatalogSession } from "./features/products/useCatalogSession";
 
-const OperationsScreen = lazy(() => import('./pages/OperationsScreen'));
+const OperationsScreen = lazy(() => import("./pages/OperationsScreen"));
 const operationViews: View[] = [
-  'dashboard',
-  'orders',
-  'agenda',
-  'finance',
-  'customers',
-  'inventory',
-  'ingredients',
-  'store-settings',
+  "dashboard",
+  "orders",
+  "agenda",
+  "finance",
+  "customers",
+  "inventory",
+  "ingredients",
+  "store-settings",
 ];
 const operationTitles: Partial<Record<View, string>> = {
-  dashboard: 'Visão geral',
-  orders: 'Encomendas',
-  agenda: 'Agenda e produção',
-  finance: 'Financeiro',
-  customers: 'Clientes',
-  inventory: 'Pronta entrega',
-  ingredients: 'Ingredientes',
-  'store-settings': 'Configurações da loja',
+  dashboard: "Visão geral",
+  orders: "Encomendas",
+  agenda: "Agenda e produção",
+  finance: "Financeiro",
+  customers: "Clientes",
+  inventory: "Pronta entrega",
+  ingredients: "Ingredientes",
+  "store-settings": "Configurações da loja",
 };
-const AccountForm = lazy(() => import('./pages/AccountForm'));
-const CatalogManagement = lazy(() => import('./pages/CatalogManagement'));
+const AccountForm = lazy(() => import("./pages/AccountForm"));
+const CatalogManagement = lazy(() => import("./pages/CatalogManagement"));
 const CatalogEditor = lazy(() =>
-  import('./pages/AdminScreen').then((module) => ({
+  import("./pages/AdminScreen").then((module) => ({
     default: module.CatalogEditor,
   })),
 );
 const CategoryEditor = lazy(() =>
-  import('./pages/CategoryEditor').then((module) => ({
+  import("./pages/CategoryEditor").then((module) => ({
     default: module.CategoryEditor,
   })),
 );
-const PricingScreen = lazy(() => import('./pages/PricingScreen'));
+const PricingScreen = lazy(() => import("./pages/PricingScreen"));
 const StorePresentationEditor = lazy(
-  () => import('./pages/StorePresentationEditor'),
+  () => import("./pages/StorePresentationEditor"),
 );
 
 type Route = { view: View; id?: string };
 type ReturnRoute = { view: View; scroll: number };
 const adminViews = [
-  'catalog-admin',
-  'product-editor',
-  'category-editor',
-  'pricing',
-  'store-texts',
+  "catalog-admin",
+  "product-editor",
+  "category-editor",
+  "pricing",
+  "store-texts",
   ...operationViews,
 ] as const;
 const views: View[] = [
-  'welcome',
-  'home',
-  'product-list',
-  'product-details',
-  'cart',
-  'saved',
-  'categories-list',
-  'settings',
-  'contact',
+  "welcome",
+  "home",
+  "product-list",
+  "product-details",
+  "cart",
+  "saved",
+  "categories-list",
+  "settings",
+  "contact",
   ...adminViews,
 ];
 
 function entryPath() {
-  return window.location.pathname.replace(/\/$/, '');
+  return window.location.pathname.replace(/\/$/, "");
 }
 
 function readRoute(productOpen = false): Route {
-  if (entryPath() === '/precificacao') return { view: 'pricing' };
-  const [hash, id, extra] = window.location.hash.slice(1).split('/');
+  if (entryPath() === "/precificacao") return { view: "pricing" };
+  const [hash, id, extra] = window.location.hash.slice(1).split("/");
   const view = hash as View;
   if (
     extra !== undefined ||
     !views.includes(view) ||
-    (view === 'product-details' && !productOpen)
+    (view === "product-details" && !productOpen)
   )
-    return { view: 'home' };
-  if (id && (view === 'product-editor' || view === 'category-editor')) {
+    return { view: "home" };
+  if (id && (view === "product-editor" || view === "category-editor")) {
     try {
       return { view, id: decodeURIComponent(id) };
     } catch {
-      return { view: 'catalog-admin' };
+      return { view: "catalog-admin" };
     }
   }
   return { view };
@@ -141,14 +142,15 @@ function readRoute(productOpen = false): Route {
 export default function App() {
   const { store, reload: reloadStore } = useStore();
   const [preview, setPreview] = useState(false);
+  const [checkoutDraft, setCheckoutDraft] = useState(newCheckoutDraft);
   const [route, setRoute] = useState(readRoute);
   const currentView = route.view;
-  const [previousView, setPreviousView] = useState<View>('home');
+  const [previousView, setPreviousView] = useState<View>("home");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingCartItem, setEditingCartItem] = useState<CartItem | null>(null);
-  const [activeRecCategory, setActiveRecCategory] = useState('all');
-  const [homeSearch, setHomeSearch] = useState('');
-  const [homeSelection, setHomeSelection] = useState<string | null>('');
+  const [activeRecCategory, setActiveRecCategory] = useState("all");
+  const [homeSearch, setHomeSearch] = useState("");
+  const [homeSelection, setHomeSelection] = useState<string | null>("");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {
     session,
@@ -163,18 +165,18 @@ export default function App() {
   );
   const [loginOpen, setLoginOpen] = useState(
     () =>
-      entryPath() === '/admin' ||
-      entryPath() === '/precificacao' ||
+      entryPath() === "/admin" ||
+      entryPath() === "/precificacao" ||
       !!recoveryCallback,
   );
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState("");
   const [presentation, setPresentation] = useState(() =>
-    store.slug === 'presente-doce'
+    store.slug === "presente-doce"
       ? defaultStorePresentation
       : {
           ...defaultStorePresentation,
           admin_name: store.name,
-          home_description: 'Conheça o nosso catálogo.',
+          home_description: "Conheça o nosso catálogo.",
           about_text: store.name,
         },
   );
@@ -229,8 +231,8 @@ export default function App() {
   const adminView = adminViews.some((view) => view === currentView);
   const recoveringAccess =
     !!recoveryCallback ||
-    (entryPath() === '/admin' &&
-      new URLSearchParams(window.location.search).get('recuperar') === '1');
+    (entryPath() === "/admin" &&
+      new URLSearchParams(window.location.search).get("recuperar") === "1");
   const overlayOpen =
     isMenuOpen ||
     (loginOpen && (!session || recoveringAccess) && !restoringSession) ||
@@ -244,12 +246,12 @@ export default function App() {
     const root = document.documentElement;
     const meta = document.querySelector('meta[name="theme-color"]');
     const colors = getComputedStyle(root);
-    const brand = colors.getPropertyValue('--pd-color-brand').trim();
-    const canvas = colors.getPropertyValue('--pd-color-canvas').trim();
+    const brand = colors.getPropertyValue("--pd-color-brand").trim();
+    const canvas = colors.getPropertyValue("--pd-color-canvas").trim();
     const masthead =
-      currentView === 'home' ||
-      currentView === 'welcome' ||
-      currentView === 'categories-list' ||
+      currentView === "home" ||
+      currentView === "welcome" ||
+      currentView === "categories-list" ||
       adminView;
     function updateStatusArea() {
       const showBrand =
@@ -257,11 +259,11 @@ export default function App() {
       const state = String(showBrand);
       if (root.dataset.brandStatus === state) return;
       root.dataset.brandStatus = state;
-      meta?.setAttribute('content', showBrand ? brand : canvas);
+      meta?.setAttribute("content", showBrand ? brand : canvas);
     }
     updateStatusArea();
-    window.addEventListener('scroll', updateStatusArea, { passive: true });
-    return () => window.removeEventListener('scroll', updateStatusArea);
+    window.addEventListener("scroll", updateStatusArea, { passive: true });
+    return () => window.removeEventListener("scroll", updateStatusArea);
   }, [currentView, adminView]);
 
   useLayoutEffect(() => {
@@ -269,12 +271,12 @@ export default function App() {
     const { style } = document.body;
     const { position, top, width } = style;
     lockedScroll.current = window.scrollY;
-    style.position = 'fixed';
-    style.top = -lockedScroll.current + 'px';
-    style.width = document.documentElement.clientWidth + 'px';
+    style.position = "fixed";
+    style.top = -lockedScroll.current + "px";
+    style.width = document.documentElement.clientWidth + "px";
     return () => {
       Object.assign(style, { position, top, width });
-      window.scrollTo({ top: lockedScroll.current ?? 0, behavior: 'instant' });
+      window.scrollTo({ top: lockedScroll.current ?? 0, behavior: "instant" });
       lockedScroll.current = null;
     };
   }, [overlayOpen]);
@@ -283,24 +285,24 @@ export default function App() {
     if (recoveryCallback)
       window.history.replaceState(
         window.history.state,
-        '',
-        '/admin?recuperar=1',
+        "",
+        "/admin?recuperar=1",
       );
   }, [recoveryCallback]);
 
   useEffect(() => {
     if (!notice || loginOpen) return;
-    const timeout = window.setTimeout(() => setNotice(''), 6500);
+    const timeout = window.setTimeout(() => setNotice(""), 6500);
     return () => window.clearTimeout(timeout);
   }, [notice, loginOpen]);
 
   useEffect(() => {
     const syncLocation = () => setRoute(readRoute(!!selectedProduct));
-    window.addEventListener('popstate', syncLocation);
-    window.addEventListener('hashchange', syncLocation);
+    window.addEventListener("popstate", syncLocation);
+    window.addEventListener("hashchange", syncLocation);
     return () => {
-      window.removeEventListener('popstate', syncLocation);
-      window.removeEventListener('hashchange', syncLocation);
+      window.removeEventListener("popstate", syncLocation);
+      window.removeEventListener("hashchange", syncLocation);
     };
   }, [selectedProduct]);
   useLayoutEffect(() => {
@@ -308,7 +310,7 @@ export default function App() {
     const scroll = returnScroll.current;
     returnScroll.current = null;
     const frame = requestAnimationFrame(() =>
-      window.scrollTo({ top: scroll, behavior: 'instant' }),
+      window.scrollTo({ top: scroll, behavior: "instant" }),
     );
     return () => cancelAnimationFrame(frame);
   }, [currentView]);
@@ -316,7 +318,7 @@ export default function App() {
   const handleNavigate = useCallback(
     (view: View, id?: string, returnTo?: View) => {
       if (view !== currentView || id !== route.id) {
-        const suffix = id ? '/' + encodeURIComponent(id) : '';
+        const suffix = id ? "/" + encodeURIComponent(id) : "";
         const origin = returnTo
           ? ({
               view: returnTo,
@@ -325,28 +327,28 @@ export default function App() {
           : undefined;
         window.history.pushState(
           { origin },
-          '',
-          (storePath() || '/') +
-            (view === 'product-editor' && !id ? window.location.search : '') +
-            '#' +
+          "",
+          (storePath() || "/") +
+            (view === "product-editor" && !id ? window.location.search : "") +
+            "#" +
             view +
             suffix,
         );
         setRoute({ view, id });
-        setNotice('');
+        setNotice("");
       }
       if (lockedScroll.current !== null) lockedScroll.current = 0;
-      else window.scrollTo({ top: 0, behavior: 'instant' });
+      else window.scrollTo({ top: 0, behavior: "instant" });
     },
     [currentView, route.id],
   );
 
   function closePanel() {
-    if (recoveryCallback && 'token' in recoveryCallback)
+    if (recoveryCallback && "token" in recoveryCallback)
       void signOut(recoveryCallback.token).catch(() => {});
     setRecoveryCallback(null);
-    if (entryPath() === '/admin' || entryPath() === '/precificacao') {
-      window.history.replaceState(window.history.state, '', '/#' + currentView);
+    if (entryPath() === "/admin" || entryPath() === "/precificacao") {
+      window.history.replaceState(window.history.state, "", "/#" + currentView);
     }
     setLoginOpen(false);
   }
@@ -354,40 +356,40 @@ export default function App() {
   function handleLogin(next: CatalogSession) {
     acceptSession(next);
     closePanel();
-    setNotice('');
+    setNotice("");
   }
 
   function handleLogout() {
     logoutSession();
     setPreview(false);
     setLoginOpen(false);
-    if (adminView) handleNavigate('home');
-    setNotice('Sessão encerrada.');
+    if (adminView) handleNavigate("home");
+    setNotice("Sessão encerrada.");
   }
 
   const openLogin = () => {
-    setNotice('');
+    setNotice("");
     setLoginOpen(true);
   };
   const openProductEditor = managing
-    ? (id: string) => openEditor('product-editor', id)
+    ? (id: string) => openEditor("product-editor", id)
     : undefined;
   const openCategoryEditor = managing
-    ? (id: string) => openEditor('category-editor', id)
+    ? (id: string) => openEditor("category-editor", id)
     : undefined;
 
-  function openEditor(view: 'product-editor' | 'category-editor', id: string) {
+  function openEditor(view: "product-editor" | "category-editor", id: string) {
     handleNavigate(view, id, currentView);
   }
 
   function leaveEditor() {
     const origin = window.history.state?.origin as ReturnRoute | undefined;
-    if (origin && (origin.view !== 'product-details' || selectedProduct)) {
+    if (origin && (origin.view !== "product-details" || selectedProduct)) {
       returnScroll.current = origin.scroll;
       window.history.back();
       return;
     }
-    handleNavigate('catalog-admin');
+    handleNavigate("catalog-admin");
   }
 
   function onCategoryCreated(category: AdminCategoryRow) {
@@ -402,7 +404,7 @@ export default function App() {
     reload();
     if (activeRecCategory === change.previous.name) {
       setActiveRecCategory(
-        change.saved?.name ?? change.destination?.name ?? 'all',
+        change.saved?.name ?? change.destination?.name ?? "all",
       );
     }
   }
@@ -414,7 +416,7 @@ export default function App() {
       selectedProduct?.id === id &&
       !editingCartItem &&
       !row?.published &&
-      window.history.state?.origin?.view === 'product-details';
+      window.history.state?.origin?.view === "product-details";
     if (selectedProduct?.id === id && !editingCartItem) {
       if (row?.published) setSelectedProduct(toProduct(row));
       else {
@@ -426,9 +428,9 @@ export default function App() {
     setNotice(
       row
         ? row.published
-          ? 'Produto guardado no catálogo.'
-          : 'Rascunho guardado.'
-        : 'Produto excluído.',
+          ? "Produto guardado no catálogo."
+          : "Rascunho guardado."
+        : "Produto excluído.",
     );
   }
 
@@ -437,7 +439,7 @@ export default function App() {
       setPreviousView(currentView);
       setSelectedProduct(product);
       setEditingCartItem(null);
-      handleNavigate('product-details');
+      handleNavigate("product-details");
     },
     [currentView, handleNavigate],
   );
@@ -447,39 +449,39 @@ export default function App() {
       setPreviousView(currentView);
       setSelectedProduct(item);
       setEditingCartItem(item);
-      handleNavigate('product-details');
+      handleNavigate("product-details");
     },
     [currentView, handleNavigate],
   );
 
   const selectOrConfigure = (product: Product, event?: React.MouseEvent) => {
-    if (product.configuravel || product.saleModes?.includes('ready')) {
+    if (product.configuravel || product.saleModes?.includes("ready")) {
       event?.stopPropagation();
       handleProductClick(product);
       return;
     }
     event?.stopPropagation();
-    addToCart(product, { quantity: 1, mode: 'preorder' });
+    addToCart(product, { quantity: 1, mode: "preorder" });
   };
 
   const commonProps = {
     onNavigate: handleNavigate,
     onOpenMenu: () => setIsMenuOpen(true),
   };
-  const catalogNotice = status !== 'ready' && (
+  const catalogNotice = status !== "ready" && (
     <div
       className={
-        'flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface ' +
-        (currentView === 'home'
-          ? 'mx-auto max-w-6xl px-4 py-2 sm:px-6'
-          : 'justify-center bg-amber-50 p-3')
+        "flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface " +
+        (currentView === "home"
+          ? "mx-auto max-w-6xl px-4 py-2 sm:px-6"
+          : "justify-center bg-amber-50 p-3")
       }
       role="status"
     >
-      {status === 'loading'
-        ? 'A carregar o catálogo…'
-        : 'Catálogo temporariamente indisponível.'}
-      {status === 'error' && (
+      {status === "loading"
+        ? "A carregar o catálogo…"
+        : "Catálogo temporariamente indisponível."}
+      {status === "error" && (
         <button
           type="button"
           onClick={reload}
@@ -492,17 +494,17 @@ export default function App() {
   );
   const adminTitle =
     operationTitles[currentView] ??
-    (currentView === 'catalog-admin'
-      ? 'Gerir catálogo'
-      : currentView === 'pricing'
-        ? 'Precificação'
-        : currentView === 'store-texts'
-          ? 'Textos da loja'
-          : currentView === 'category-editor'
-            ? 'Editar categoria'
+    (currentView === "catalog-admin"
+      ? "Gerir catálogo"
+      : currentView === "pricing"
+        ? "Precificação"
+        : currentView === "store-texts"
+          ? "Textos da loja"
+          : currentView === "category-editor"
+            ? "Editar categoria"
             : route.id
-              ? 'Editar produto'
-              : 'Novo produto');
+              ? "Editar produto"
+              : "Novo produto");
   const adminStatus = adminCatalog.error ? (
     <div role="alert" className="space-y-2 text-sm text-primary">
       <p>{adminCatalog.error}</p>
@@ -522,10 +524,10 @@ export default function App() {
     if (!session) return null;
     if (!adminCatalog.data) return adminStatus;
     const data = adminCatalog.data;
-    if (currentView === 'product-editor')
+    if (currentView === "product-editor")
       return (
         <CatalogEditor
-          key={route.id ?? 'new'}
+          key={route.id ?? "new"}
           productId={route.id}
           token={session.token}
           categories={data.categories}
@@ -550,20 +552,20 @@ export default function App() {
         onNewProduct={() => {
           window.history.replaceState(
             window.history.state,
-            '',
-            (storePath() || '/') +
-              '?categoria=' +
+            "",
+            (storePath() || "/") +
+              "?categoria=" +
               category.id +
-              '#category-editor/' +
+              "#category-editor/" +
               category.id,
           );
-          handleNavigate('product-editor');
+          handleNavigate("product-editor");
         }}
         onChanged={(change) => {
           onCategoryChanged(change);
           leaveEditor();
           setNotice(
-            change.saved ? 'Categoria guardada.' : 'Categoria excluída.',
+            change.saved ? "Categoria guardada." : "Categoria excluída.",
           );
         }}
       />
@@ -596,7 +598,7 @@ export default function App() {
         token={session.token}
         onSave={(value: StorePresentation) => {
           setPresentation(value);
-          setNotice('Textos da loja guardados.');
+          setNotice("Textos da loja guardados.");
         }}
       />
     );
@@ -619,13 +621,13 @@ export default function App() {
     >
       <div
         className={
-          'app-theme ' +
+          "app-theme " +
           (session
             ? preview
-              ? 'preview-management '
-              : 'with-management '
-            : '') +
-          'relative min-h-screen overflow-x-clip bg-porcelain font-sans text-base font-normal text-on-surface'
+              ? "preview-management "
+              : "with-management "
+            : "") +
+          "relative min-h-screen overflow-x-clip bg-porcelain font-sans text-base font-normal text-on-surface"
         }
       >
         {session && (
@@ -636,7 +638,7 @@ export default function App() {
             preview={preview}
             onPreview={() => {
               setPreview((p) => !p);
-              handleNavigate('home');
+              handleNavigate("home");
             }}
           />
         )}
@@ -648,7 +650,7 @@ export default function App() {
               handleNavigate(
                 view,
                 undefined,
-                view === 'catalog-admin' ||
+                view === "catalog-admin" ||
                   !adminViews.some((item) => item === view)
                   ? undefined
                   : currentView,
@@ -659,7 +661,7 @@ export default function App() {
               managing
                 ? () => {
                     setPreview(true);
-                    handleNavigate('home');
+                    handleNavigate("home");
                   }
                 : undefined
             }
@@ -669,7 +671,7 @@ export default function App() {
             canInstallDirectly={canPrompt}
           />
 
-          {currentView !== 'home' && !adminView && catalogNotice}
+          {currentView !== "home" && !adminView && catalogNotice}
           {sessionError && (
             <div
               role="status"
@@ -699,11 +701,11 @@ export default function App() {
             )}
           <main className="min-h-screen flex flex-col">
             <AnimatePresence mode="wait">
-              {currentView === 'welcome' && (
+              {currentView === "welcome" && (
                 <WelcomeScreen key="welcome" {...commonProps} />
               )}
 
-              {currentView === 'home' && (
+              {currentView === "home" && (
                 <HomeScreen
                   key="home"
                   products={products}
@@ -724,7 +726,7 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'product-list' && (
+              {currentView === "product-list" && (
                 <ProductListScreen
                   key="product-list"
                   products={products}
@@ -740,7 +742,7 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'product-details' && selectedProduct && (
+              {currentView === "product-details" && selectedProduct && (
                 <ProductDetailScreen
                   key="product-details"
                   product={selectedProduct}
@@ -765,9 +767,11 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'cart' && (
+              {currentView === "cart" && (
                 <CartScreen
                   key="cart"
+                  draft={checkoutDraft}
+                  setDraft={setCheckoutDraft}
                   cart={cart}
                   onUpdateQuantity={updateQuantity}
                   onEditItem={handleEditCartItem}
@@ -775,7 +779,7 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'settings' && (
+              {currentView === "settings" && (
                 <SettingsScreen
                   key="settings"
                   mode="about"
@@ -784,7 +788,7 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'contact' && (
+              {currentView === "contact" && (
                 <SettingsScreen
                   key="contact"
                   mode="contact"
@@ -793,7 +797,7 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'categories-list' && (
+              {currentView === "categories-list" && (
                 <CategoriesScreen
                   key="categories"
                   categories={categories}
@@ -812,7 +816,7 @@ export default function App() {
                 />
               )}
 
-              {currentView === 'saved' && (
+              {currentView === "saved" && (
                 <SavedScreen
                   key="saved"
                   products={products}
@@ -826,7 +830,7 @@ export default function App() {
               )}
               {adminView && (
                 <AdminPage
-                  key={currentView + (route.id ?? '')}
+                  key={currentView + (route.id ?? "")}
                   title={adminTitle}
                   onRefresh={
                     operationViews.includes(currentView) && managing
@@ -835,15 +839,15 @@ export default function App() {
                   }
                   refreshing={operations.loading}
                   wide={
-                    currentView === 'catalog-admin' ||
+                    currentView === "catalog-admin" ||
                     operationViews.includes(currentView)
                   }
                   onMenu={commonProps.onOpenMenu}
                   onBack={
                     operationViews.includes(currentView) ||
-                    currentView === 'catalog-admin' ||
+                    currentView === "catalog-admin" ||
                     !session
-                      ? () => handleNavigate('home')
+                      ? () => handleNavigate("home")
                       : leaveEditor
                   }
                 >
@@ -876,7 +880,7 @@ export default function App() {
                         ) : (
                           <p role="status">A carregar a gestão…</p>
                         ))}
-                      {currentView === 'catalog-admin' && (
+                      {currentView === "catalog-admin" && (
                         <>
                           {(!adminCatalog.data || adminCatalog.error) &&
                             adminStatus}
@@ -887,21 +891,21 @@ export default function App() {
                               token={session.token}
                               onNew={() =>
                                 handleNavigate(
-                                  'product-editor',
+                                  "product-editor",
                                   undefined,
                                   currentView,
                                 )
                               }
-                              onEdit={(id) => openEditor('product-editor', id)}
+                              onEdit={(id) => openEditor("product-editor", id)}
                               onEditCategory={(id) =>
-                                openEditor('category-editor', id)
+                                openEditor("category-editor", id)
                               }
                               onCategoryCreated={onCategoryCreated}
                             />
                           )}
                         </>
                       )}
-                      {currentView === 'pricing' &&
+                      {currentView === "pricing" &&
                         (adminCatalog.data ? (
                           <PricingScreen
                             ingredients={operations.data?.ingredients || []}
@@ -915,17 +919,17 @@ export default function App() {
                         ) : (
                           adminStatus
                         ))}
-                      {currentView === 'store-texts' && presentationEditor()}
-                      {(currentView === 'product-editor' ||
-                        currentView === 'category-editor') &&
+                      {currentView === "store-texts" && presentationEditor()}
+                      {(currentView === "product-editor" ||
+                        currentView === "category-editor") &&
                         editorContent()}
                     </Suspense>
                   ) : (
                     <section className="ui-glass-panel space-y-3">
                       <p className="text-sm text-muted">
                         {restoringSession
-                          ? 'A restaurar o acesso…'
-                          : 'Entre com a conta da confeitaria para usar este módulo.'}
+                          ? "A restaurar o acesso…"
+                          : "Entre com a conta da confeitaria para usar este módulo."}
                       </p>
                       <button
                         type="button"
@@ -946,10 +950,10 @@ export default function App() {
               <Suspense fallback={<p role="status">A carregar…</p>}>
                 <AccountForm
                   initialRecovery={
-                    entryPath() === '/admin' &&
+                    entryPath() === "/admin" &&
                     new URLSearchParams(window.location.search).get(
-                      'recuperar',
-                    ) === '1'
+                      "recuperar",
+                    ) === "1"
                   }
                   callback={recoveryCallback}
                   onLogin={handleLogin}
@@ -977,15 +981,15 @@ export default function App() {
                 <div className="space-y-2 text-sm text-muted">
                   {appleMobile ? (
                     <p>
-                      No Safari, toque em{' '}
+                      No Safari, toque em{" "}
                       <strong>Partilhar → Adicionar ao ecrã principal</strong>.
                       Ative <strong>Abrir como app</strong> se aparecer e toque
                       em <strong>Adicionar</strong>.
                     </p>
                   ) : (
                     <p>
-                      No menu do navegador, escolha{' '}
-                      <strong>Instalar app</strong> ou{' '}
+                      No menu do navegador, escolha{" "}
+                      <strong>Instalar app</strong> ou{" "}
                       <strong>Adicionar ao ecrã principal</strong>, quando
                       disponível.
                     </p>
@@ -1004,7 +1008,7 @@ export default function App() {
               {notice}
               <button
                 type="button"
-                onClick={() => setNotice('')}
+                onClick={() => setNotice("")}
                 aria-label="Dispensar aviso"
                 className="p-2 text-lg leading-none"
               >
@@ -1019,9 +1023,9 @@ export default function App() {
             onNavigate={handleNavigate}
             isVisible={
               !adminView &&
-              currentView !== 'cart' &&
-              currentView !== 'welcome' &&
-              currentView !== 'product-details'
+              currentView !== "cart" &&
+              currentView !== "welcome" &&
+              currentView !== "product-details"
             }
           />
           {!managing && (
@@ -1029,14 +1033,14 @@ export default function App() {
               visible={
                 !overlayOpen &&
                 [
-                  'home',
-                  'categories-list',
-                  'product-list',
-                  'product-details',
-                  'saved',
+                  "home",
+                  "categories-list",
+                  "product-list",
+                  "product-details",
+                  "saved",
                 ].includes(currentView)
               }
-              aboveOrder={cart.length > 0 || currentView === 'product-details'}
+              aboveOrder={cart.length > 0 || currentView === "product-details"}
             />
           )}
 
