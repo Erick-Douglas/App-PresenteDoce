@@ -39,3 +39,8 @@ A instalação PWA segue as permissões do navegador. As bases [Capacitor](docs/
 Stripe Portugal/Europa confirmada, sem conta/preços configurados e sem cobrança ativa. WhatsApp/n8n ainda sem provedor. [Integrações](docs/INTEGRACOES.md). A importação da planilha antiga depende de conferir dados comerciais; nenhuma fórmula financeira foi substituída por suposição. [Precificação](docs/PRECIFICACAO.md).
 
 [Deploy e reversão](docs/DEPLOY.md) · [Roadmap e pendências](docs/ROADMAP.md) · [Referências](docs/REFERENCIAS-SAAS.md).
+
+
+## Perfil e aparência
+
+O avatar fica à esquerda e o menu à direita. Em Perfil e aparência, escolha Claro, Escuro ou Sistema; a conta autenticada pode configurar sua fotografia. [Contrato e segurança](docs/PERFIL-E-APARENCIA.md).

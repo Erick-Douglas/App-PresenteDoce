@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { AvatarButton } from "../features/account/AccountProvider";
 import { motion } from "framer-motion";
 import { ArrowLeft, Menu, RefreshCw } from "lucide-react";
 type Heading = { title: string; onBack?: () => void };
@@ -45,14 +46,7 @@ export function AdminPage({
       >
         <header className="store-masthead module-masthead">
           <div className="page-width">
-            <button
-              type="button"
-              aria-label="Abrir menu"
-              className="store-icon-action"
-              onClick={onMenu}
-            >
-              <Menu size={21} strokeWidth={1.6} />
-            </button>
+            <AvatarButton />
             <h1 className="type-module">{override?.title ?? title}</h1>
             <button
               type="button"
@@ -61,6 +55,14 @@ export function AdminPage({
               onClick={override?.onBack ?? onBack}
             >
               <ArrowLeft size={21} />
+            </button>
+            <button
+              type="button"
+              aria-label="Abrir menu"
+              className="store-icon-action"
+              onClick={onMenu}
+            >
+              <Menu size={21} strokeWidth={1.6} />
             </button>
           </div>
         </header>

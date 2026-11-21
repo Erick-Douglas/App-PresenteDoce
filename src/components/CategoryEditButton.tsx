@@ -18,10 +18,12 @@ export function CategoryEditButton({
       aria-label={"Editar categoria " + name}
       onClick={() => onEdit(id)}
       className={
-        compact ? "ui-icon-action absolute top-0 right-0" : "ui-icon-action"
+        compact
+          ? "ui-icon-action category-edit-glass absolute top-0 right-0"
+          : "ui-icon-action category-edit-glass"
       }
     >
-      <SquarePen size={21} strokeWidth={1.65} aria-hidden="true" />
+      <SquarePen size={26} strokeWidth={1.65} aria-hidden="true" />
     </button>
   );
 }

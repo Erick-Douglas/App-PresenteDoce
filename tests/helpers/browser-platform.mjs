@@ -20,6 +20,7 @@ export async function browserPlatform(context, origin) {
   const config = (await db.query("select public.storefront_config() d")).rows[0]
     .d;
   const errors = [];
+  let account = { id: uid, email: "fixture@example.test", user_metadata: {} };
   const images = new Map();
   let queue = Promise.resolve();
   function serial(fn) {
@@ -34,7 +35,7 @@ export async function browserPlatform(context, origin) {
       auth = (h.get("Authorization") || "").replace("Bearer ", "");
     if (p === "/auth/v1/user")
       return Response.json(
-        auth === token ? { id: uid } : { message: "Unauthorized" },
+        auth === token ? account : { message: "Unauthorized" },
         { status: auth === token ? 200 : 401 },
       );
     return serial(async () => {
@@ -255,10 +256,11 @@ export async function browserPlatform(context, origin) {
       return route.abort();
     }
     if (
-      p.startsWith("/storage/v1/object/catalog-images/") &&
+      /^\/storage\/v1\/object\/(catalog-images|account-avatars)\//.test(p) &&
       req.method() === "POST"
     ) {
-      const name = p.split("/catalog-images/")[1],
+      const bucket = p.split("/")[4],
+        name = p.split("/" + bucket + "/")[1],
         bytes = req.postDataBuffer();
       try {
         await serial(async () => {
@@ -271,7 +273,7 @@ export async function browserPlatform(context, origin) {
           await db.query(
             "insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3::jsonb)",
             [
-              "catalog-images",
+              bucket,
               name,
               JSON.stringify({
                 mimetype: req.headers()["content-type"],
@@ -280,7 +282,10 @@ export async function browserPlatform(context, origin) {
             ],
           );
         });
-        images.set(name, { bytes, type: req.headers()["content-type"] });
+        images.set(bucket + "/" + name, {
+          bytes,
+          type: req.headers()["content-type"],
+        });
         return route.fulfill({ status: 200, json: { Key: name } });
       } catch (e) {
         errors.push(e.message);
@@ -288,7 +293,7 @@ export async function browserPlatform(context, origin) {
       }
     }
     if (req.resourceType() === "image" && req.method() === "GET") {
-      const stored = images.get(p.split("/catalog-images/")[1]);
+      const stored = images.get(p.split("/object/public/")[1]);
       if (stored)
         return route.fulfill({
           status: 200,
@@ -296,6 +301,36 @@ export async function browserPlatform(context, origin) {
           contentType: stored.type,
         });
       return route.continue();
+    }
+    if (
+      p.startsWith("/storage/v1/object/account-avatars/") &&
+      req.method() === "DELETE"
+    ) {
+      const name = p.split("/account-avatars/")[1];
+      await serial(async () => {
+        await scope(db, uid, sid, "authenticated");
+        await db.query(
+          "delete from storage.objects where bucket_id='account-avatars' and name=$1",
+          [name],
+        );
+      });
+      images.delete("account-avatars/" + name);
+      return route.fulfill({ status: 200, json: {} });
+    }
+    if (p === "/auth/v1/user" && req.method() === "PUT") {
+      const body = JSON.parse(req.postData());
+      assert.deepEqual(Object.keys(body), ["data"]);
+      assert.ok(
+        Object.keys(body.data).every((k) =>
+          ["avatar_path", "display_name"].includes(k),
+        ),
+      );
+      assert.equal(req.headers().authorization, "Bearer " + token);
+      account = {
+        ...account,
+        user_metadata: { ...account.user_metadata, ...body.data },
+      };
+      return route.fulfill({ status: 200, json: account });
     }
     let response;
     if (p === "/auth/v1/token")

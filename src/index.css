@@ -21,7 +21,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: clip;
-    color-scheme: light;
+    color-scheme: inherit;
   }
   
   body::-webkit-scrollbar {
@@ -50,3 +50,5 @@
 @import "./design-system/journey.css";
 
 @import "./design-system/modifiers.css";
+
+@import "./design-system/appearance.css";

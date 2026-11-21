@@ -18,6 +18,7 @@ const origin = process.env.PD_BASE_URL || "http://127.0.0.1:4173",
   context = await browser.newContext({
     viewport: { width: 390, height: 844 },
     reducedMotion: "reduce",
+    colorScheme: process.env.PD_THEME === "dark" ? "dark" : "light",
     permissions: ["clipboard-read", "clipboard-write"],
   }),
   platform = await browserPlatform(context, origin),
@@ -26,7 +27,9 @@ page.setDefaultTimeout(12000);
 await page.addInitScript(() => {
   window.open = () => null;
 });
-const out = "node_modules/.cache/pd-modifier-journey";
+const out =
+  "node_modules/.cache/pd-modifier-journey" +
+  (process.env.PD_THEME === "dark" ? "-dark" : "");
 fs.mkdirSync(out, { recursive: true });
 const query = (sql) =>
   platform.query(async () => {

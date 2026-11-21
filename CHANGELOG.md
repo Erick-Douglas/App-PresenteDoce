@@ -44,3 +44,11 @@ Tópicos com criação/seleção direta e indicação do vínculo; ficha exibe o
 - Produto recupera escolhas/observações/quantidade da sacola e permite atualizar a mesma linha. Ficha sem disponibilidade/agendamento; checkout com data/hora, morada/recolha e mínimo de 48 horas. Pronta entrega preservada em standby.
 - Menu no topo, ícones + consistentes, sacola compacta com ícone amarelo, feedback integrado, edição sobre a foto, títulos superiores e ações de edição padronizadas.
 - Testes e detalhes em [Grupos e encomendas](docs/GRUPOS-E-ENCOMENDAS.md). Mantidas pendências de aceite visual, Auth nativo/CAPTCHA, receitas comerciais e teste físico.
+
+
+## 21/11/2026 · Perfil, menu e modo escuro
+
+- Avatar de conta no topo esquerdo, com escolha/troca/remoção de foto; menu no topo direito. Visitantes usam ícone e painel compacto, administração menu em viewport completo.
+- Grupos com títulos externos, módulos em pílulas compactas, ícones suaves e edição de categoria maior com vidro. Partilha transferida para o menu.
+- Claro/Escuro/Sistema em todas as páginas, preferência persistida, início sem clarão e tokens sem inversão de fotografias.
+- Bucket próprio com RLS por utilizador, testes de perfil, modos e regressões de compra/gestão. [Detalhes](docs/PERFIL-E-APARENCIA.md).

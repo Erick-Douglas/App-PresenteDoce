@@ -466,7 +466,7 @@ export async function deleteProduct(row: CatalogRow, token: string) {
     );
 }
 
-export async function uploadProductImage(file: File, token: string) {
+export async function prepareProductImage(file: File, maxDimension=1600) {
   validateProductImage(file);
   let image: ImageBitmap | HTMLImageElement;
   try {
@@ -490,7 +490,7 @@ export async function uploadProductImage(file: File, token: string) {
     image instanceof HTMLImageElement ? image.naturalWidth : image.width;
   const height =
     image instanceof HTMLImageElement ? image.naturalHeight : image.height;
-  const scale = Math.min(1, 1600 / Math.max(width, height));
+  const scale = Math.min(1, maxDimension / Math.max(width, height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(width * scale));
   canvas.height = Math.max(1, Math.round(height * scale));
@@ -515,6 +515,11 @@ export async function uploadProductImage(file: File, token: string) {
       "Não foi possível preparar a fotografia. Escolha outra imagem.",
     );
   }
+  return blob;
+}
+
+export async function uploadProductImage(file:File,token:string){
+  const blob=await prepareProductImage(file);
   const path =
     activeStoreId() +
     "/" +
@@ -527,3 +532,5 @@ export async function uploadProductImage(file: File, token: string) {
   );
   return path;
 }
+
+export function avatarImageUrl(path:string){return serviceUrl+"/storage/v1/object/public/account-avatars/"+path;}

@@ -175,3 +175,8 @@ A correção atual detalha persistência de tópicos, edição sem perda de chec
 ## Definição vigente · Grupos e 48 horas · 21/11/2026
 
 Tópicos são grupos de opções de compra, com limites e adicionais gratuitos/pagos. A operação atual é só por encomenda, com 48 horas reais e data/hora no checkout; pronta entrega fica em standby. [Especificação PD-OPT-01 a PD-OPT-06](GRUPOS-E-ENCOMENDAS.md). Esta definição substitui as descrições anteriores de tópicos como etiquetas e da operação híbrida ativa.
+
+
+## PD-DARK · Perfil e aparência · 21/11/2026
+
+Avatar de conta, menu à direita, gestão em viewport completo, agrupamento por títulos/pílulas e modos Claro/Escuro/Sistema. [Contrato, segurança e critérios](PERFIL-E-APARENCIA.md). Perfil preparado para clientes futuros; cadastro comercial e de clientes permanece fora desta ativação.

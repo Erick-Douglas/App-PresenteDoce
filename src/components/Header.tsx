@@ -1,5 +1,5 @@
-import { Menu, Share2 } from "lucide-react";
-import { useState } from "react";
+import { AvatarButton } from "../features/account/AccountProvider";
+import { Menu } from "lucide-react";
 import { BUSINESS_INFO } from "../config/constants";
 import { useStore } from "../features/platform/StoreProvider";
 import { imageUrl } from "../features/products/catalogApi";
@@ -11,30 +11,6 @@ interface HeaderProps {
 
 export function Header({ onOpenMenu, showShare = true }: HeaderProps) {
   const { store } = useStore();
-  const [shareNotice, setShareNotice] = useState("");
-
-  const handleShare = async () => {
-    const { name, description, website } = BUSINESS_INFO;
-    setShareNotice("");
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: name, text: description, url: website });
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError")
-          return;
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(
-        [name, description, website].join("\n"),
-      );
-      setShareNotice("Descrição e link copiados.");
-    } catch {
-      setShareNotice(website);
-    }
-  };
-
   return (
     <header className="relative text-on-strong">
       <div
@@ -43,6 +19,14 @@ export function Header({ onOpenMenu, showShare = true }: HeaderProps) {
           (showShare ? "min-h-24 pt-3 sm:min-h-28" : "min-h-18")
         }
       >
+        <AvatarButton />
+        <img
+          src={imageUrl(store.logo_url)}
+          alt={BUSINESS_INFO.name}
+          width={1176}
+          height={521}
+          className={"mx-auto h-auto " + (showShare ? "w-36 sm:w-40" : "w-28")}
+        />
         <button
           type="button"
           aria-label="Abrir menu"
@@ -51,29 +35,7 @@ export function Header({ onOpenMenu, showShare = true }: HeaderProps) {
         >
           <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
         </button>
-        <img
-          src={imageUrl(store.logo_url)}
-          alt={BUSINESS_INFO.name}
-          width={1176}
-          height={521}
-          className={"mx-auto h-auto " + (showShare ? "w-36 sm:w-40" : "w-28")}
-        />
-        {showShare && (
-          <button
-            type="button"
-            aria-label="Partilhar catálogo"
-            onClick={handleShare}
-            className="store-icon-action"
-          >
-            <Share2 size={19} strokeWidth={1.6} aria-hidden="true" />
-          </button>
-        )}
       </div>
-      {shareNotice && (
-        <p role="status" className="page-width pb-2 text-right text-xs">
-          {shareNotice}
-        </p>
-      )}
     </header>
   );
 }

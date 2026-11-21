@@ -1,3 +1,5 @@
+import { AccountProvider } from "./features/account/AccountProvider";
+import { useAppearance } from "./features/appearance/AppearanceProvider";
 import { hasPurchaseOptions } from "./features/products/options";
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus } from "lucide-react";
@@ -141,6 +143,8 @@ function readRoute(productOpen = false): Route {
 }
 
 export default function App() {
+  const { resolved: appearance } = useAppearance();
+  const [profileOpen, setProfileOpen] = useState(false);
   const { store, reload: reloadStore } = useStore();
   const [preview, setPreview] = useState(false);
   const [checkoutDraft, setCheckoutDraft] = useState(newCheckoutDraft);
@@ -235,6 +239,7 @@ export default function App() {
     (entryPath() === "/admin" &&
       new URLSearchParams(window.location.search).get("recuperar") === "1");
   const overlayOpen =
+    profileOpen ||
     isMenuOpen ||
     (loginOpen && (!session || recoveringAccess) && !restoringSession) ||
     showInstructions;
@@ -265,7 +270,7 @@ export default function App() {
     updateStatusArea();
     window.addEventListener("scroll", updateStatusArea, { passive: true });
     return () => window.removeEventListener("scroll", updateStatusArea);
-  }, [currentView, adminView]);
+  }, [currentView, adminView, appearance]);
 
   useLayoutEffect(() => {
     if (!overlayOpen) return;
@@ -613,449 +618,466 @@ export default function App() {
   }
 
   return (
-    <LiveEditingProvider
-      value={
-        managing && session
-          ? {
-              token: session.token,
-              reload: async () => {
-                reload();
-                adminCatalog.reload();
-                await Promise.all([operations.reload(), reloadStore()]);
-              },
-            }
-          : null
-      }
+    <AccountProvider
+      token={session?.token}
+      open={profileOpen}
+      onOpenChange={setProfileOpen}
+      onLogin={openLogin}
     >
-      <div
-        className={
-          "app-theme " +
-          (session
-            ? preview
-              ? "preview-management "
-              : "with-management "
-            : "") +
-          "relative min-h-screen overflow-x-clip bg-porcelain font-sans text-base font-normal text-on-surface"
+      <LiveEditingProvider
+        value={
+          managing && session
+            ? {
+                token: session.token,
+                reload: async () => {
+                  reload();
+                  adminCatalog.reload();
+                  await Promise.all([operations.reload(), reloadStore()]);
+                },
+              }
+            : null
         }
       >
-        {session && (
-          <ManagementNav
-            current={currentView}
-            onNavigate={handleNavigate}
-            onMenu={() => setIsMenuOpen(true)}
-            preview={preview}
-            onPreview={() => {
-              setPreview((p) => !p);
-              handleNavigate("home");
-            }}
-          />
-        )}
-        <div className="w-full min-h-screen relative">
-          <Sidebar
-            isOpen={isMenuOpen}
-            onClose={() => setIsMenuOpen(false)}
-            onNavigate={(view) =>
-              handleNavigate(
-                view,
-                undefined,
-                view === "catalog-admin" ||
-                  !adminViews.some((item) => item === view)
-                  ? undefined
-                  : currentView,
-              )
-            }
-            isAdmin={managing}
-            onPreview={
-              managing
-                ? () => {
-                    setPreview(true);
-                    handleNavigate("home");
-                  }
-                : undefined
-            }
-            onLogin={openLogin}
-            onLogout={handleLogout}
-            onInstall={installed ? undefined : install}
-            canInstallDirectly={canPrompt}
-          />
-
-          {currentView !== "home" && !adminView && catalogNotice}
-          {sessionError && (
-            <div
-              role="status"
-              className="page-width flex flex-wrap items-center gap-2 py-2 text-sm text-primary"
-            >
-              <p>{sessionError}</p>
-              <button
-                type="button"
-                className="ui-quiet-action"
-                onClick={() => void retrySession()}
-              >
-                Tentar novamente
-              </button>
-            </div>
-          )}
-          {managing &&
-            operationViews.includes(currentView) &&
-            operations.error &&
-            operations.data && (
-              <div
-                role="status"
-                className="page-width py-3 text-sm text-primary"
-              >
-                Não foi possível atualizar. A última lista carregada continua
-                disponível. Use Atualizar para tentar novamente.
-              </div>
-            )}
-          <main className="min-h-screen flex flex-col">
-            <AnimatePresence mode="wait">
-              {currentView === "welcome" && (
-                <WelcomeScreen key="welcome" {...commonProps} />
-              )}
-
-              {currentView === "home" && (
-                <HomeScreen
-                  key="home"
-                  products={products}
-                  categories={categories}
-                  cart={cart}
-                  isAdmin={managing}
-                  catalogNotice={catalogNotice}
-                  presentation={presentation}
-                  search={homeSearch}
-                  selection={homeSelection}
-                  onSearch={setHomeSearch}
-                  onSelect={setHomeSelection}
-                  {...commonProps}
-                  onProductClick={handleProductClick}
-                  onEditProduct={openProductEditor}
-                  onEditCategory={openCategoryEditor}
-                  onToggleCartItem={selectOrConfigure}
-                />
-              )}
-
-              {currentView === "product-list" && (
-                <ProductListScreen
-                  key="product-list"
-                  products={products}
-                  categories={categories}
-                  cart={cart}
-                  activeRecCategory={activeRecCategory}
-                  {...commonProps}
-                  onSetCategory={setActiveRecCategory}
-                  onProductClick={handleProductClick}
-                  onEditProduct={openProductEditor}
-                  onEditCategory={openCategoryEditor}
-                  onToggleCartItem={selectOrConfigure}
-                />
-              )}
-
-              {currentView === "product-details" && selectedProduct && (
-                <ProductDetailScreen
-                  key="product-details"
-                  product={selectedProduct}
-                  categoryId={
-                    categories.find((c) => c.name === selectedProduct.category)
-                      ?.id
-                  }
-                  onEditProduct={
-                    editingCartItem ? undefined : openProductEditor
-                  }
-                  cart={cart}
-                  favorites={favorites}
-                  onAddToCart={addToCart}
-                  onUpdateCartItem={updateCartItem}
-                  editingItem={editingCartItem}
-                  onToggleFavorite={toggleFavorite}
-                  onNavigate={handleNavigate}
-                  onBack={() => {
-                    setEditingCartItem(null);
-                    handleNavigate(previousView);
-                  }}
-                />
-              )}
-
-              {currentView === "cart" && (
-                <CartScreen
-                  key="cart"
-                  draft={checkoutDraft}
-                  setDraft={setCheckoutDraft}
-                  cart={cart}
-                  onUpdateQuantity={updateQuantity}
-                  onEditItem={handleEditCartItem}
-                  onNavigate={handleNavigate}
-                />
-              )}
-
-              {currentView === "settings" && (
-                <SettingsScreen
-                  key="settings"
-                  mode="about"
-                  aboutText={presentation.about_text}
-                  {...commonProps}
-                />
-              )}
-
-              {currentView === "contact" && (
-                <SettingsScreen
-                  key="contact"
-                  mode="contact"
-                  aboutText={presentation.about_text}
-                  {...commonProps}
-                />
-              )}
-
-              {currentView === "categories-list" && (
-                <CategoriesScreen
-                  key="categories"
-                  categories={categories}
-                  overview={
-                    managing && !adminCatalog.error
-                      ? adminCatalog.data
-                      : undefined
-                  }
-                  products={products}
-                  cart={cart}
-                  onProductClick={handleProductClick}
-                  onEditProduct={openProductEditor}
-                  onEditCategory={openCategoryEditor}
-                  onToggleCartItem={selectOrConfigure}
-                  onNavigate={handleNavigate}
-                />
-              )}
-
-              {currentView === "saved" && (
-                <SavedScreen
-                  key="saved"
-                  products={products}
-                  cart={cart}
-                  favorites={favorites}
-                  onProductClick={handleProductClick}
-                  onEditProduct={openProductEditor}
-                  onToggleCartItem={selectOrConfigure}
-                  {...commonProps}
-                />
-              )}
-              {adminView && (
-                <AdminPage
-                  key={currentView + (route.id ?? "")}
-                  title={adminTitle}
-                  onRefresh={
-                    operationViews.includes(currentView) && managing
-                      ? () => void operations.reload()
-                      : undefined
-                  }
-                  refreshing={operations.loading}
-                  wide={
-                    currentView === "catalog-admin" ||
-                    operationViews.includes(currentView)
-                  }
-                  onMenu={commonProps.onOpenMenu}
-                  onBack={
-                    operationViews.includes(currentView) ||
-                    currentView === "catalog-admin" ||
-                    !session
-                      ? () => handleNavigate("home")
-                      : leaveEditor
-                  }
-                >
-                  {managing && session ? (
-                    <Suspense fallback={<p role="status">A carregar…</p>}>
-                      {operationViews.includes(currentView) &&
-                        (operations.error && !operations.data ? (
-                          <div role="alert" className="module-error">
-                            {operations.error}
-                            <button
-                              className="ui-secondary"
-                              onClick={() => void operations.reload()}
-                            >
-                              Tentar novamente
-                            </button>
-                          </div>
-                        ) : operations.data && adminCatalog.data ? (
-                          <OperationsScreen
-                            key={currentView}
-                            view={currentView}
-                            data={operations.data}
-                            token={session.token}
-                            rows={adminCatalog.data.rows}
-                            onNavigate={handleNavigate}
-                            reload={async () => {
-                              await operations.reload();
-                              await reloadStore();
-                            }}
-                          />
-                        ) : (
-                          <p role="status">A carregar a gestão…</p>
-                        ))}
-                      {currentView === "catalog-admin" && (
-                        <>
-                          {(!adminCatalog.data || adminCatalog.error) &&
-                            adminStatus}
-                          {adminCatalog.data && (
-                            <CatalogManagement
-                              categories={adminCatalog.data.categories}
-                              rows={adminCatalog.data.rows}
-                              token={session.token}
-                              onNew={() =>
-                                handleNavigate(
-                                  "product-editor",
-                                  undefined,
-                                  currentView,
-                                )
-                              }
-                              onEdit={(id) => openEditor("product-editor", id)}
-                              onEditCategory={(id) =>
-                                openEditor("category-editor", id)
-                              }
-                              onCategoryCreated={onCategoryCreated}
-                            />
-                          )}
-                        </>
-                      )}
-                      {currentView === "pricing" &&
-                        (adminCatalog.data ? (
-                          <PricingScreen
-                            ingredients={operations.data?.ingredients || []}
-                            rows={adminCatalog.data.rows}
-                            token={session.token}
-                            onProductChanged={(row) => {
-                              applyChange(row.id, row);
-                              adminCatalog.reload();
-                            }}
-                          />
-                        ) : (
-                          adminStatus
-                        ))}
-                      {currentView === "store-texts" && presentationEditor()}
-                      {(currentView === "product-editor" ||
-                        currentView === "category-editor") &&
-                        editorContent()}
-                    </Suspense>
-                  ) : (
-                    <section className="ui-glass-panel space-y-3">
-                      <p className="text-sm text-muted">
-                        {restoringSession
-                          ? "A restaurar o acesso…"
-                          : "Entre com a conta da confeitaria para usar este módulo."}
-                      </p>
-                      <button
-                        type="button"
-                        className="ui-primary"
-                        onClick={openLogin}
-                      >
-                        Entrar
-                      </button>
-                    </section>
-                  )}
-                </AdminPage>
-              )}
-            </AnimatePresence>
-          </main>
-
-          {loginOpen && !restoringSession && (!session || recoveringAccess) && (
-            <StoreDialog title="Entrar na Presente Doce" onClose={closePanel}>
-              <Suspense fallback={<p role="status">A carregar…</p>}>
-                <AccountForm
-                  initialRecovery={
-                    entryPath() === "/admin" &&
-                    new URLSearchParams(window.location.search).get(
-                      "recuperar",
-                    ) === "1"
-                  }
-                  callback={recoveryCallback}
-                  onLogin={handleLogin}
-                  onRecoveryComplete={() => {
-                    logoutSession();
-                    setRecoveryCallback(null);
-                  }}
-                />
-              </Suspense>
-            </StoreDialog>
-          )}
-          {showInstructions && (
-            <StoreDialog
-              title="Como instalar a Presente Doce"
-              onClose={closeInstructions}
-            >
-              <div className="flex items-start gap-3">
-                <img
-                  src="/apple-touch-icon.png"
-                  alt=""
-                  width={44}
-                  height={44}
-                  className="rounded-xl"
-                />
-                <div className="space-y-2 text-sm text-muted">
-                  {appleMobile ? (
-                    <p>
-                      No Safari, toque em{" "}
-                      <strong>Partilhar → Adicionar ao ecrã principal</strong>.
-                      Ative <strong>Abrir como app</strong> se aparecer e toque
-                      em <strong>Adicionar</strong>.
-                    </p>
-                  ) : (
-                    <p>
-                      No menu do navegador, escolha{" "}
-                      <strong>Instalar app</strong> ou{" "}
-                      <strong>Adicionar ao ecrã principal</strong>, quando
-                      disponível.
-                    </p>
-                  )}
-                  <p>O ícone Presente Doce fica no ecrã principal.</p>
-                </div>
-              </div>
-            </StoreDialog>
-          )}
-
-          {notice && !loginOpen && (
-            <div
-              role="status"
-              className="fixed bottom-28 left-1/2 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl border border-primary/15 bg-porcelain px-4 py-2 text-sm font-bold text-primary shadow-lg"
-            >
-              {notice}
-              <button
-                type="button"
-                onClick={() => setNotice("")}
-                aria-label="Dispensar aviso"
-                className="p-2 text-lg leading-none"
-              >
-                ×
-              </button>
-            </div>
-          )}
-
-          <FloatingCart
-            added={showSuccessToast}
-            cart={cart}
-            cartTotal={cartTotal}
-            onNavigate={handleNavigate}
-            isVisible={
-              !adminView &&
-              currentView !== "cart" &&
-              currentView !== "welcome" &&
-              currentView !== "product-details"
-            }
-          />
-          {!managing && (
-            <ContactAssistant
-              visible={
-                !overlayOpen &&
-                [
-                  "home",
-                  "categories-list",
-                  "product-list",
-                  "product-details",
-                  "saved",
-                ].includes(currentView)
-              }
-              aboveOrder={cart.length > 0 || currentView === "product-details"}
+        <div
+          className={
+            "app-theme " +
+            (session
+              ? preview
+                ? "preview-management "
+                : "with-management "
+              : "") +
+            "relative min-h-screen overflow-x-clip bg-porcelain font-sans text-base font-normal text-on-surface"
+          }
+        >
+          {session && (
+            <ManagementNav
+              current={currentView}
+              onNavigate={handleNavigate}
+              onMenu={() => setIsMenuOpen(true)}
+              preview={preview}
+              onPreview={() => {
+                setPreview((p) => !p);
+                handleNavigate("home");
+              }}
             />
           )}
+          <div className="w-full min-h-screen relative">
+            <Sidebar
+              isOpen={isMenuOpen}
+              onClose={() => setIsMenuOpen(false)}
+              onNavigate={(view) =>
+                handleNavigate(
+                  view,
+                  undefined,
+                  view === "catalog-admin" ||
+                    !adminViews.some((item) => item === view)
+                    ? undefined
+                    : currentView,
+                )
+              }
+              isAdmin={managing}
+              onPreview={
+                managing
+                  ? () => {
+                      setPreview(true);
+                      handleNavigate("home");
+                    }
+                  : undefined
+              }
+              onLogin={openLogin}
+              onLogout={handleLogout}
+              onInstall={installed ? undefined : install}
+              canInstallDirectly={canPrompt}
+            />
 
-          <AnimatePresence></AnimatePresence>
+            {currentView !== "home" && !adminView && catalogNotice}
+            {sessionError && (
+              <div
+                role="status"
+                className="page-width flex flex-wrap items-center gap-2 py-2 text-sm text-primary"
+              >
+                <p>{sessionError}</p>
+                <button
+                  type="button"
+                  className="ui-quiet-action"
+                  onClick={() => void retrySession()}
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            )}
+            {managing &&
+              operationViews.includes(currentView) &&
+              operations.error &&
+              operations.data && (
+                <div
+                  role="status"
+                  className="page-width py-3 text-sm text-primary"
+                >
+                  Não foi possível atualizar. A última lista carregada continua
+                  disponível. Use Atualizar para tentar novamente.
+                </div>
+              )}
+            <main className="min-h-screen flex flex-col">
+              <AnimatePresence mode="wait">
+                {currentView === "welcome" && (
+                  <WelcomeScreen key="welcome" {...commonProps} />
+                )}
+
+                {currentView === "home" && (
+                  <HomeScreen
+                    key="home"
+                    products={products}
+                    categories={categories}
+                    cart={cart}
+                    isAdmin={managing}
+                    catalogNotice={catalogNotice}
+                    presentation={presentation}
+                    search={homeSearch}
+                    selection={homeSelection}
+                    onSearch={setHomeSearch}
+                    onSelect={setHomeSelection}
+                    {...commonProps}
+                    onProductClick={handleProductClick}
+                    onEditProduct={openProductEditor}
+                    onEditCategory={openCategoryEditor}
+                    onToggleCartItem={selectOrConfigure}
+                  />
+                )}
+
+                {currentView === "product-list" && (
+                  <ProductListScreen
+                    key="product-list"
+                    products={products}
+                    categories={categories}
+                    cart={cart}
+                    activeRecCategory={activeRecCategory}
+                    {...commonProps}
+                    onSetCategory={setActiveRecCategory}
+                    onProductClick={handleProductClick}
+                    onEditProduct={openProductEditor}
+                    onEditCategory={openCategoryEditor}
+                    onToggleCartItem={selectOrConfigure}
+                  />
+                )}
+
+                {currentView === "product-details" && selectedProduct && (
+                  <ProductDetailScreen
+                    key="product-details"
+                    product={selectedProduct}
+                    categoryId={
+                      categories.find(
+                        (c) => c.name === selectedProduct.category,
+                      )?.id
+                    }
+                    onEditProduct={
+                      editingCartItem ? undefined : openProductEditor
+                    }
+                    cart={cart}
+                    favorites={favorites}
+                    onAddToCart={addToCart}
+                    onUpdateCartItem={updateCartItem}
+                    editingItem={editingCartItem}
+                    onToggleFavorite={toggleFavorite}
+                    onNavigate={handleNavigate}
+                    onBack={() => {
+                      setEditingCartItem(null);
+                      handleNavigate(previousView);
+                    }}
+                  />
+                )}
+
+                {currentView === "cart" && (
+                  <CartScreen
+                    key="cart"
+                    draft={checkoutDraft}
+                    setDraft={setCheckoutDraft}
+                    cart={cart}
+                    onUpdateQuantity={updateQuantity}
+                    onEditItem={handleEditCartItem}
+                    onNavigate={handleNavigate}
+                  />
+                )}
+
+                {currentView === "settings" && (
+                  <SettingsScreen
+                    key="settings"
+                    mode="about"
+                    aboutText={presentation.about_text}
+                    {...commonProps}
+                  />
+                )}
+
+                {currentView === "contact" && (
+                  <SettingsScreen
+                    key="contact"
+                    mode="contact"
+                    aboutText={presentation.about_text}
+                    {...commonProps}
+                  />
+                )}
+
+                {currentView === "categories-list" && (
+                  <CategoriesScreen
+                    key="categories"
+                    categories={categories}
+                    overview={
+                      managing && !adminCatalog.error
+                        ? adminCatalog.data
+                        : undefined
+                    }
+                    products={products}
+                    cart={cart}
+                    onProductClick={handleProductClick}
+                    onEditProduct={openProductEditor}
+                    onEditCategory={openCategoryEditor}
+                    onToggleCartItem={selectOrConfigure}
+                    onNavigate={handleNavigate}
+                  />
+                )}
+
+                {currentView === "saved" && (
+                  <SavedScreen
+                    key="saved"
+                    products={products}
+                    cart={cart}
+                    favorites={favorites}
+                    onProductClick={handleProductClick}
+                    onEditProduct={openProductEditor}
+                    onToggleCartItem={selectOrConfigure}
+                    {...commonProps}
+                  />
+                )}
+                {adminView && (
+                  <AdminPage
+                    key={currentView + (route.id ?? "")}
+                    title={adminTitle}
+                    onRefresh={
+                      operationViews.includes(currentView) && managing
+                        ? () => void operations.reload()
+                        : undefined
+                    }
+                    refreshing={operations.loading}
+                    wide={
+                      currentView === "catalog-admin" ||
+                      operationViews.includes(currentView)
+                    }
+                    onMenu={commonProps.onOpenMenu}
+                    onBack={
+                      operationViews.includes(currentView) ||
+                      currentView === "catalog-admin" ||
+                      !session
+                        ? () => handleNavigate("home")
+                        : leaveEditor
+                    }
+                  >
+                    {managing && session ? (
+                      <Suspense fallback={<p role="status">A carregar…</p>}>
+                        {operationViews.includes(currentView) &&
+                          (operations.error && !operations.data ? (
+                            <div role="alert" className="module-error">
+                              {operations.error}
+                              <button
+                                className="ui-secondary"
+                                onClick={() => void operations.reload()}
+                              >
+                                Tentar novamente
+                              </button>
+                            </div>
+                          ) : operations.data && adminCatalog.data ? (
+                            <OperationsScreen
+                              key={currentView}
+                              view={currentView}
+                              data={operations.data}
+                              token={session.token}
+                              rows={adminCatalog.data.rows}
+                              onNavigate={handleNavigate}
+                              reload={async () => {
+                                await operations.reload();
+                                await reloadStore();
+                              }}
+                            />
+                          ) : (
+                            <p role="status">A carregar a gestão…</p>
+                          ))}
+                        {currentView === "catalog-admin" && (
+                          <>
+                            {(!adminCatalog.data || adminCatalog.error) &&
+                              adminStatus}
+                            {adminCatalog.data && (
+                              <CatalogManagement
+                                categories={adminCatalog.data.categories}
+                                rows={adminCatalog.data.rows}
+                                token={session.token}
+                                onNew={() =>
+                                  handleNavigate(
+                                    "product-editor",
+                                    undefined,
+                                    currentView,
+                                  )
+                                }
+                                onEdit={(id) =>
+                                  openEditor("product-editor", id)
+                                }
+                                onEditCategory={(id) =>
+                                  openEditor("category-editor", id)
+                                }
+                                onCategoryCreated={onCategoryCreated}
+                              />
+                            )}
+                          </>
+                        )}
+                        {currentView === "pricing" &&
+                          (adminCatalog.data ? (
+                            <PricingScreen
+                              ingredients={operations.data?.ingredients || []}
+                              rows={adminCatalog.data.rows}
+                              token={session.token}
+                              onProductChanged={(row) => {
+                                applyChange(row.id, row);
+                                adminCatalog.reload();
+                              }}
+                            />
+                          ) : (
+                            adminStatus
+                          ))}
+                        {currentView === "store-texts" && presentationEditor()}
+                        {(currentView === "product-editor" ||
+                          currentView === "category-editor") &&
+                          editorContent()}
+                      </Suspense>
+                    ) : (
+                      <section className="ui-glass-panel space-y-3">
+                        <p className="text-sm text-muted">
+                          {restoringSession
+                            ? "A restaurar o acesso…"
+                            : "Entre com a conta da confeitaria para usar este módulo."}
+                        </p>
+                        <button
+                          type="button"
+                          className="ui-primary"
+                          onClick={openLogin}
+                        >
+                          Entrar
+                        </button>
+                      </section>
+                    )}
+                  </AdminPage>
+                )}
+              </AnimatePresence>
+            </main>
+
+            {loginOpen &&
+              !restoringSession &&
+              (!session || recoveringAccess) && (
+                <StoreDialog
+                  title="Entrar na Presente Doce"
+                  onClose={closePanel}
+                >
+                  <Suspense fallback={<p role="status">A carregar…</p>}>
+                    <AccountForm
+                      initialRecovery={
+                        entryPath() === "/admin" &&
+                        new URLSearchParams(window.location.search).get(
+                          "recuperar",
+                        ) === "1"
+                      }
+                      callback={recoveryCallback}
+                      onLogin={handleLogin}
+                      onRecoveryComplete={() => {
+                        logoutSession();
+                        setRecoveryCallback(null);
+                      }}
+                    />
+                  </Suspense>
+                </StoreDialog>
+              )}
+            {showInstructions && (
+              <StoreDialog
+                title="Como instalar a Presente Doce"
+                onClose={closeInstructions}
+              >
+                <div className="flex items-start gap-3">
+                  <img
+                    src="/apple-touch-icon.png"
+                    alt=""
+                    width={44}
+                    height={44}
+                    className="rounded-xl"
+                  />
+                  <div className="space-y-2 text-sm text-muted">
+                    {appleMobile ? (
+                      <p>
+                        No Safari, toque em{" "}
+                        <strong>Partilhar → Adicionar ao ecrã principal</strong>
+                        . Ative <strong>Abrir como app</strong> se aparecer e
+                        toque em <strong>Adicionar</strong>.
+                      </p>
+                    ) : (
+                      <p>
+                        No menu do navegador, escolha{" "}
+                        <strong>Instalar app</strong> ou{" "}
+                        <strong>Adicionar ao ecrã principal</strong>, quando
+                        disponível.
+                      </p>
+                    )}
+                    <p>O ícone Presente Doce fica no ecrã principal.</p>
+                  </div>
+                </div>
+              </StoreDialog>
+            )}
+
+            {notice && !loginOpen && (
+              <div
+                role="status"
+                className="fixed bottom-28 left-1/2 z-[90] flex w-max max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-3 rounded-xl border border-primary/15 bg-porcelain px-4 py-2 text-sm font-bold text-primary shadow-lg"
+              >
+                {notice}
+                <button
+                  type="button"
+                  onClick={() => setNotice("")}
+                  aria-label="Dispensar aviso"
+                  className="p-2 text-lg leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            <FloatingCart
+              added={showSuccessToast}
+              cart={cart}
+              cartTotal={cartTotal}
+              onNavigate={handleNavigate}
+              isVisible={
+                !adminView &&
+                currentView !== "cart" &&
+                currentView !== "welcome" &&
+                currentView !== "product-details"
+              }
+            />
+            {!managing && (
+              <ContactAssistant
+                visible={
+                  !overlayOpen &&
+                  [
+                    "home",
+                    "categories-list",
+                    "product-list",
+                    "product-details",
+                    "saved",
+                  ].includes(currentView)
+                }
+                aboveOrder={
+                  cart.length > 0 || currentView === "product-details"
+                }
+              />
+            )}
+
+            <AnimatePresence></AnimatePresence>
+          </div>
         </div>
-      </div>
-    </LiveEditingProvider>
+      </LiveEditingProvider>
+    </AccountProvider>
   );
 }
