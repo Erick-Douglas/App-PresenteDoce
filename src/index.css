@@ -46,3 +46,5 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@import "./design-system/journey.css";

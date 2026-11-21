@@ -20,6 +20,7 @@ export async function browserPlatform(context, origin) {
   const config = (await db.query("select public.storefront_config() d")).rows[0]
     .d;
   const errors = [];
+  const images = new Map();
   let queue = Promise.resolve();
   function serial(fn) {
     const next = queue.then(fn);
@@ -69,13 +70,16 @@ export async function browserPlatform(context, origin) {
             "set_delivery_fee",
             "adjust_stock",
             "save_catalog_category",
+            "delete_catalog_category",
           ];
           assert.ok(allowed.includes(fn), "Unexpected RPC " + fn);
           const args = Object.keys(body),
             values = args.map((k) =>
-              typeof body[k] === "object" && body[k] !== null
-                ? JSON.stringify(body[k])
-                : body[k],
+              /p_(expected_)?(product|category)_ids/.test(k)
+                ? body[k]
+                : typeof body[k] === "object" && body[k] !== null
+                  ? JSON.stringify(body[k])
+                  : body[k],
             );
           const params = args
             .map(
@@ -83,9 +87,13 @@ export async function browserPlatform(context, origin) {
                 k +
                 " => $" +
                 (i + 1) +
-                (typeof body[k] === "object" && body[k] !== null
-                  ? "::jsonb"
-                  : ""),
+                (/p_(expected_)?product_ids/.test(k)
+                  ? "::text[]"
+                  : /p_(expected_)?category_ids/.test(k)
+                    ? "::uuid[]"
+                    : typeof body[k] === "object" && body[k] !== null
+                      ? "::jsonb"
+                      : ""),
             )
             .join(",");
           const value = (
@@ -109,7 +117,14 @@ export async function browserPlatform(context, origin) {
         );
         const conditions = [],
           values = [];
-        for (const name of ["id", "version", "slug", "store_id", "order_id"])
+        for (const name of [
+          "id",
+          "version",
+          "slug",
+          "store_id",
+          "order_id",
+          "revision",
+        ])
           if (u.searchParams.has(name)) {
             values.push(u.searchParams.get(name).slice(3));
             conditions.push(name + "=$" + values.length);
@@ -117,6 +132,21 @@ export async function browserPlatform(context, origin) {
         const where = conditions.length
           ? " where " + conditions.join(" and ")
           : "";
+        const order = u.searchParams
+          .get("order")
+          ?.split(",")
+          .map((part) => {
+            const [key, dir, nulls] = part.split(".");
+            assert.match(key, /^[a-z_]+$/);
+            assert.ok(!dir || ["asc", "desc"].includes(dir));
+            return (
+              key +
+              " " +
+              (dir || "asc") +
+              (nulls === "nullslast" ? " nulls last" : "")
+            );
+          })
+          .join(",");
         let rows;
         if (!init.method || init.method === "GET") {
           const columns = u.searchParams.get("select") || "*";
@@ -128,6 +158,7 @@ export async function browserPlatform(context, origin) {
                 " from public." +
                 table +
                 where +
+                (order ? " order by " + order : "") +
                 ") t",
               values,
             )
@@ -148,6 +179,12 @@ export async function browserPlatform(context, origin) {
             "pack_quantity",
             "pack_price_cents",
             "stock_quantity",
+            "product_id",
+            "recipe",
+            "home_title",
+            "home_description",
+            "admin_name",
+            "about_text",
           ];
           const cols = Object.keys(body);
           assert.ok(cols.every((c) => allowedFields.includes(c)));
@@ -162,24 +199,31 @@ export async function browserPlatform(context, origin) {
             );
           });
           const sql =
-            init.method === "POST"
-              ? "insert into public." +
+            init.method === "DELETE"
+              ? "delete from public." +
                 table +
-                "(" +
-                cols.join(",") +
-                ") values(" +
-                params.join(",") +
-                ") returning to_jsonb(" +
-                table +
-                ".*) d"
-              : "update public." +
-                table +
-                " set " +
-                cols.map((c, i) => c + "=" + params[i]).join(",") +
                 where +
                 " returning to_jsonb(" +
                 table +
-                ".*) d";
+                ".*) d"
+              : init.method === "POST"
+                ? "insert into public." +
+                  table +
+                  "(" +
+                  cols.join(",") +
+                  ") values(" +
+                  params.join(",") +
+                  ") returning to_jsonb(" +
+                  table +
+                  ".*) d"
+                : "update public." +
+                  table +
+                  " set " +
+                  cols.map((c, i) => c + "=" + params[i]).join(",") +
+                  where +
+                  " returning to_jsonb(" +
+                  table +
+                  ".*) d";
           rows = (await db.query(sql, values)).rows.map((r) => r.d);
         }
         return Response.json(rows);
@@ -202,7 +246,52 @@ export async function browserPlatform(context, origin) {
     ) {
       if (u.origin === origin || ["data:", "blob:"].includes(u.protocol))
         return route.continue();
+      if (req.resourceType() === "image" && req.method() === "GET")
+        return route.continue();
       return route.abort();
+    }
+    if (
+      p.startsWith("/storage/v1/object/catalog-images/") &&
+      req.method() === "POST"
+    ) {
+      const name = p.split("/catalog-images/")[1],
+        bytes = req.postDataBuffer();
+      try {
+        await serial(async () => {
+          await scope(
+            db,
+            uid,
+            req.headers()["x-store-id"] || sid,
+            "authenticated",
+          );
+          await db.query(
+            "insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3::jsonb)",
+            [
+              "catalog-images",
+              name,
+              JSON.stringify({
+                mimetype: req.headers()["content-type"],
+                size: bytes.length,
+              }),
+            ],
+          );
+        });
+        images.set(name, { bytes, type: req.headers()["content-type"] });
+        return route.fulfill({ status: 200, json: { Key: name } });
+      } catch (e) {
+        errors.push(e.message);
+        return route.fulfill({ status: 403, json: { message: e.message } });
+      }
+    }
+    if (req.resourceType() === "image" && req.method() === "GET") {
+      const stored = images.get(p.split("/catalog-images/")[1]);
+      if (stored)
+        return route.fulfill({
+          status: 200,
+          body: stored.bytes,
+          contentType: stored.type,
+        });
+      return route.continue();
     }
     let response;
     if (p === "/auth/v1/token")

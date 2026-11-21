@@ -94,3 +94,13 @@ Clean White & Warm Craft implementado com branco/neutros quentes e bordô/dourad
 Ações de confirmação ficam alinhadas à direita; cancelar precede a ação principal. Retorno e atualização ocupam o lado direito do cabeçalho de módulo. Títulos usam Lato 700 e texto de superfície, com pequeno contexto acima; bordô fica reservado à marca e à ação principal. Edição/navegação são neutras, sucesso usa --pd-color-success, atenção --pd-color-warning e exclusão/erro --pd-color-danger. Preço no card tem tinta escura e compra um botão compacto independente.
 
 Sidebar em grupos de cards discretos. Formulários usam Panel/Field/ActionForm e AppSelect para lista ancorada acessível. Conteúdo secundário pode ser recolhido; um erro de validação reabre a seção do campo. A cor de marca tem prévia e contraste validado no browser e banco. Sacola e barra de compra respeitam a navegação inferior e a área segura. [Critérios completos](REVISAO-2026-11-21.md).
+
+## Jornada e gestão · revisão de 21/11/2026
+
+Coffee orienta a composição; os tokens continuam em src/design-system/tokens.css. Composições partilhadas da jornada ficam em journey.css, importado pelo índice, e não em personalizações de cada página. Ações de compra usam a cor da loja; preço usa tinta neutra. O controlo visual pode medir 32 px, mantendo alvo de toque de 44 px. Adição, feedback e abertura da sacola são ações distintas.
+
+O retorno fica separado do favorito; a regra de confirmações à direita não agrupa navegação e favoritos. Um menu por contexto, cabeçalho comum de gestão, superfícies brancas, campos com espaçamento e títulos Lato 700. Etapas da precificação e blocos do checkout têm hierarquia própria com os mesmos tokens.
+
+Tópicos pertencem à categoria e são associados por ID ao produto. Criar a definição não atribui o tópico a todos os produtos; criar no produto seleciona-o nessa edição. Exibir os associados na ficha, sem faixa extra na vitrine. Persistir o vínculo ao guardar produto.
+
+[Critérios, ensaios e limites da revisão](CORRECOES-JORNADA-2026-11-21.md).

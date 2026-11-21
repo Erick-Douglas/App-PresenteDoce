@@ -41,7 +41,11 @@ const pass = (s) => {
   evidence.push(s);
 };
 const menu = async (label) => {
-  await page.getByRole("button", { name: "Abrir menu", exact: true }).click();
+  await page
+    .getByRole("button", { name: /^(Abrir menu|Mais|Mais opções)$/ })
+    .and(page.locator("button:visible"))
+    .first()
+    .click();
   await page
     .getByRole("dialog", { name: "Menu", exact: true })
     .getByRole("button", { name: label, exact: true })
@@ -85,6 +89,9 @@ const value = async (sql) =>
     return (await platform.db.query(sql)).rows;
   });
 try {
+  await page.addInitScript(() => {
+    window.open = () => null;
+  });
   await page.goto(origin);
   await page.getByRole("heading", { name: "Seja bem-vindo!" }).waitFor();
   const simple = platform.productRows.find((p) => p.id === "bc-1").details,
@@ -143,6 +150,7 @@ try {
   assert.equal(await add.isEnabled(), true);
   await hit(add);
   await add.click();
+  await page.getByRole("button", { name: /^Ver carrinho/ }).click();
   await page
     .getByRole("heading", { name: "A sua encomenda", exact: true })
     .waitFor();
@@ -153,12 +161,9 @@ try {
   const future = day.toISOString().slice(0, 10);
   await page.locator("input[type=date]").fill(future);
   await page
-    .getByRole("button", { name: "Copiar mensagem", exact: true })
+    .getByRole("button", { name: "Continuar no WhatsApp", exact: true })
     .click();
-  await page
-    .getByRole("status")
-    .filter({ hasText: "Mensagem copiada." })
-    .waitFor();
+  await page.getByRole("status").filter({ hasText: "Pedido #" }).waitFor();
   const orders = await value("select to_jsonb(o) d from public.orders o");
   assert.equal(orders.length, 1);
   const items = await value("select to_jsonb(i) d from public.order_items i");
@@ -169,7 +174,7 @@ try {
     label(masses[0]),
   );
   await page
-    .getByRole("button", { name: "Copiar mensagem", exact: true })
+    .getByRole("button", { name: "Continuar no WhatsApp", exact: true })
     .click();
   assert.equal((await value("select id from public.orders")).length, 1);
   pass(
@@ -201,14 +206,26 @@ try {
     .click();
   await page.getByLabel("Nome", { exact: true }).fill("Novo cliente fictício");
   await page.getByLabel("Telefone", { exact: true }).fill("+351000000000");
-  await page.getByRole('button',{name:'Guardar encomenda',exact:true}).click();
-  const productChoice=page.getByRole('combobox',{name:'Produto',exact:true});
-  assert.equal(await productChoice.getAttribute('aria-invalid'),'true');
-  await productChoice.press('ArrowDown');await productChoice.press('ArrowDown');await productChoice.press('Enter');
-  assert.equal(await productChoice.getAttribute('aria-expanded'),'false');
-  await productChoice.click();await page.getByRole('heading',{name:'Nova encomenda ou orçamento',exact:true}).click();
-  assert.equal(await productChoice.getAttribute('aria-expanded'),'false');
-  pass('selectors: required validation, keyboard selection and outside dismissal');
+  await page
+    .getByRole("button", { name: "Guardar encomenda", exact: true })
+    .click();
+  const productChoice = page.getByRole("combobox", {
+    name: "Produto",
+    exact: true,
+  });
+  assert.equal(await productChoice.getAttribute("aria-invalid"), "true");
+  await productChoice.press("ArrowDown");
+  await productChoice.press("ArrowDown");
+  await productChoice.press("Enter");
+  assert.equal(await productChoice.getAttribute("aria-expanded"), "false");
+  await productChoice.click();
+  await page
+    .getByRole("heading", { name: "Nova encomenda ou orçamento", exact: true })
+    .click();
+  assert.equal(await productChoice.getAttribute("aria-expanded"), "false");
+  pass(
+    "selectors: required validation, keyboard selection and outside dismissal",
+  );
   await choose("Produto", "bc-1");
   await page.getByLabel("Quantidade", { exact: true }).fill("1");
   await page.getByLabel("Data", { exact: true }).fill(future);
@@ -314,32 +331,89 @@ try {
   pass(
     "brand: valid color persists and updates the storefront; unreadable color is explained without overwriting it",
   );
-  const box=platform.productRows.find(p=>p.id==='br-1').details;
-  await page.getByRole('button',{name:box.name,exact:true}).click();
-  const firstVariant=box.variants[0];await page.getByRole('button').filter({hasText:firstVariant.label}).first().click();
-  const flavors=box.flavors.filter(f=>f!=='Tudo misturado');
-  const max=firstVariant.maxFlavors || flavors.length;
-  for(const f of flavors.slice(0,max))await page.getByRole('button',{name:f,exact:true}).click();
-  if(flavors[max]){await page.getByRole('button',{name:flavors[max],exact:true}).click();assert.equal(await page.getByRole('button',{name:flavors[max],exact:true}).getAttribute('aria-pressed'),'false');}
-  assert.equal(await page.locator('.product-purchase-bar button.ui-primary').isEnabled(),true);
-  pass('product options: box quantity and maximum flavor choices remain valid before checkout');
+  const box = platform.productRows.find((p) => p.id === "br-1").details;
+  await page.getByRole("button", { name: box.name, exact: true }).click();
+  const firstVariant = box.variants[0];
+  await page
+    .getByRole("button")
+    .filter({ hasText: firstVariant.label })
+    .first()
+    .click();
+  const flavors = box.flavors.filter((f) => f !== "Tudo misturado");
+  const max = firstVariant.maxFlavors || flavors.length;
+  for (const f of flavors.slice(0, max))
+    await page.getByRole("button", { name: f, exact: true }).click();
+  if (flavors[max]) {
+    await page.getByRole("button", { name: flavors[max], exact: true }).click();
+    assert.equal(
+      await page
+        .getByRole("button", { name: flavors[max], exact: true })
+        .getAttribute("aria-pressed"),
+      "false",
+    );
+  }
+  assert.equal(
+    await page.locator(".product-purchase-bar button.ui-primary").isEnabled(),
+    true,
+  );
+  pass(
+    "product options: box quantity and maximum flavor choices remain valid before checkout",
+  );
 
-  await platform.query(async()=>{
-    const {scope}=await import('./helpers/database.mjs');await scope(platform.db);
-    await platform.db.exec(`update public.catalog_products set details=details||'{"saleModes":["ready"]}'::jsonb where id='bc-1'`);
-    await platform.db.query("select public.adjust_stock('bc-1','',1,'Fixture',$1)",[crypto.randomUUID()]);
+  await platform.query(async () => {
+    const { scope } = await import("./helpers/database.mjs");
+    await scope(platform.db);
+    await platform.db.exec(
+      `update public.catalog_products set details=details||'{"saleModes":["ready"]}'::jsonb where id='bc-1'`,
+    );
+    await platform.db.query(
+      "select public.adjust_stock('bc-1','',1,'Fixture',$1)",
+      [crypto.randomUUID()],
+    );
   });
-  await page.goto(origin);await page.getByRole('heading',{name:'Olá, Gabriela!'}).waitFor();
-  await page.getByRole('button',{name:simple.name,exact:true}).click();
-  const readyAdd=page.locator('.product-purchase-bar button.ui-primary');assert.equal(await readyAdd.isEnabled(),true);await hit(readyAdd);await readyAdd.click();
-  await page.getByLabel('Nome',{exact:true}).fill('Pronta entrega fictícia');await page.getByLabel('Telefone',{exact:true}).fill('+351000000000');
-  await page.getByRole('button',{name:'Copiar mensagem',exact:true}).click();await page.getByRole('status').filter({hasText:'Mensagem copiada.'}).waitFor();
-  assert.equal((await value("select available from public.product_stock where product_id='bc-1'"))[0].available,0);
-  await page.getByRole('button',{name:'Voltar ao catálogo',exact:true}).click();await page.getByRole('button',{name:simple.name,exact:true}).click();
-  assert.equal(await page.locator('.product-purchase-bar button.ui-primary').isDisabled(),true);
-  pass('ready stock: same-day checkout reserves the last unit and disables a subsequent purchase');
-  await page.getByRole('button',{name:'Voltar',exact:true}).click();
-  await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.screenshot({path:path.join(out,'refined-menu-390.png')});await page.getByRole('button',{name:'Fechar menu',exact:true}).click();
+  await page.goto(origin);
+  await page.getByRole("heading", { name: "Olá, Gabriela!" }).waitFor();
+  await page.getByRole("button", { name: simple.name, exact: true }).click();
+  const readyAdd = page.locator(".product-purchase-bar button.ui-primary");
+  assert.equal(await readyAdd.isEnabled(), true);
+  await hit(readyAdd);
+  await readyAdd.click();
+  await page.getByRole("button", { name: /^Ver carrinho/ }).click();
+  await page
+    .getByLabel("Nome", { exact: true })
+    .fill("Pronta entrega fictícia");
+  await page.getByLabel("Telefone", { exact: true }).fill("+351000000000");
+  await page
+    .getByRole("button", { name: "Continuar no WhatsApp", exact: true })
+    .click();
+  await page.getByRole("status").filter({ hasText: "Pedido #" }).waitFor();
+  assert.equal(
+    (
+      await value(
+        "select available from public.product_stock where product_id='bc-1'",
+      )
+    )[0].available,
+    0,
+  );
+  await page
+    .getByRole("button", { name: "Voltar ao catálogo", exact: true })
+    .click();
+  await page.getByRole("button", { name: simple.name, exact: true }).click();
+  assert.equal(
+    await page.locator(".product-purchase-bar button.ui-primary").isDisabled(),
+    true,
+  );
+  pass(
+    "ready stock: same-day checkout reserves the last unit and disables a subsequent purchase",
+  );
+  await page.getByRole("button", { name: "Voltar", exact: true }).click();
+  await page
+    .getByRole("button", { name: /^(Abrir menu|Mais|Mais opções)$/ })
+    .and(page.locator("button:visible"))
+    .first()
+    .click();
+  await page.screenshot({ path: path.join(out, "refined-menu-390.png") });
+  await page.getByRole("button", { name: "Fechar menu", exact: true }).click();
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(platform.errors, []);
   fs.writeFileSync(

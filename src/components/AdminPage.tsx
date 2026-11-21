@@ -36,6 +36,14 @@ export function AdminPage({
         }
       >
         <div className="admin-heading">
+          <button
+            type="button"
+            className="ui-icon-action page-back"
+            onClick={onBack}
+            aria-label="Voltar"
+          >
+            <ArrowLeft size={18} aria-hidden="true" />
+          </button>
           <div className="admin-page-title">
             <span className="page-eyebrow">Gestão da loja</span>
             <h1 className="type-module">{title}</h1>
@@ -56,10 +64,6 @@ export function AdminPage({
                 {refreshing ? "A atualizar…" : "Atualizar"}
               </button>
             )}
-            <button type="button" className="ui-secondary" onClick={onBack}>
-              <ArrowLeft size={15} strokeWidth={1.65} aria-hidden="true" />
-              Voltar
-            </button>
           </div>
         </div>
         {children}

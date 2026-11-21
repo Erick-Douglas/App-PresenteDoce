@@ -8,8 +8,8 @@ import {
   Plus,
   Trash2,
   X,
-} from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+} from "lucide-react";
+import { useState, type FormEvent } from "react";
 import {
   deleteCatalogCategory,
   saveCatalogCategory,
@@ -17,22 +17,22 @@ import {
   type AdminCategoryRow,
   type CatalogRow,
   type CatalogTopic,
-} from '../features/products/catalogApi';
-import { moveCatalogItem } from '../features/products/catalogFields';
+} from "../features/products/catalogApi";
+import { moveCatalogItem } from "../features/products/catalogFields";
 
-export const catalogPrimary = 'ui-primary';
-export const catalogSecondary = 'ui-secondary text-primary';
-export const catalogField = 'ui-field';
-const actionIcon = 'ui-icon-action';
-const panel = 'ui-glass-panel space-y-3';
+export const catalogPrimary = "ui-primary";
+export const catalogSecondary = "ui-secondary text-primary";
+export const catalogField = "ui-field";
+const actionIcon = "ui-icon-action";
+const panel = "ui-glass-panel space-y-3";
 const normalize = (text: string) =>
-  text.normalize('NFC').trim().replace(/\s+/g, ' ');
+  text.normalize("NFC").trim().replace(/\s+/g, " ");
 
 export function categoryNameFrom(value: string) {
   const name = normalize(value);
-  if (!name || name.length > 60 || name.toLowerCase() === 'all') {
+  if (!name || name.length > 60 || name.toLowerCase() === "all") {
     throw new Error(
-      'Indique um nome de categoria válido com até 60 caracteres.',
+      "Indique um nome de categoria válido com até 60 caracteres.",
     );
   }
   return name;
@@ -64,7 +64,7 @@ function SortList({
           <button
             type="button"
             className={actionIcon}
-            aria-label={'Subir ' + item.name}
+            aria-label={"Subir " + item.name}
             disabled={index === 0}
             onClick={() => onMove(index, -1)}
           >
@@ -73,7 +73,7 @@ function SortList({
           <button
             type="button"
             className={actionIcon}
-            aria-label={'Descer ' + item.name}
+            aria-label={"Descer " + item.name}
             disabled={index === items.length - 1}
             onClick={() => onMove(index, 1)}
           >
@@ -102,12 +102,12 @@ export function CategoryEditor({
   onChanged: (change: CategoryChange) => void;
   onNewProduct?: () => void;
 }) {
-  const [associate, setAssociate] = useState('');
+  const [associate, setAssociate] = useState("");
   const [name, setName] = useState(category.name);
   const [topics, setTopics] = useState(category.topics);
   const [topicEditor, setTopicEditor] = useState<CatalogTopic | null>(null);
-  const [section, setSection] = useState<'details' | 'products' | 'categories'>(
-    'details',
+  const [section, setSection] = useState<"details" | "products" | "categories">(
+    "details",
   );
   const [originalProducts] = useState(() =>
     rows
@@ -120,8 +120,8 @@ export function CategoryEditor({
   const [productOrder, setProductOrder] = useState(originalProducts);
   const [categoryOrder, setCategoryOrder] = useState(originalCategories);
   const [deleting, setDeleting] = useState(false);
-  const [destination, setDestination] = useState('');
-  const [error, setError] = useState('');
+  const [destination, setDestination] = useState("");
+  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   function confirmTopic() {
@@ -137,7 +137,7 @@ export function CategoryEditor({
       )
     ) {
       setError(
-        'Indique um nome diferente para o tópico, com até 80 caracteres.',
+        "Indique um nome diferente para o tópico, com até 80 caracteres.",
       );
       return;
     }
@@ -148,19 +148,19 @@ export function CategoryEditor({
         : [...current, saved],
     );
     setTopicEditor(null);
-    setError('');
+    setError("");
   }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
     if (topicEditor) {
-      setSection('details');
-      setError('Confirme ou cancele o tópico em edição.');
+      setSection("details");
+      setError("Confirme ou cancele o tópico em edição.");
       return;
     }
     setBusy(true);
-    setError('');
+    setError("");
     try {
       const updated = { ...category, name: categoryNameFrom(name), topics };
       const changes = (before: { id: string }[], after: { id: string }[]) =>
@@ -184,7 +184,7 @@ export function CategoryEditor({
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível guardar a categoria.',
+          : "Não foi possível guardar a categoria.",
       );
     } finally {
       setBusy(false);
@@ -195,11 +195,11 @@ export function CategoryEditor({
     if (busy) return;
     const target = categories.find((item) => item.id === destination);
     if (originalProducts.length && !target) {
-      setError('Escolha uma categoria de destino para os produtos.');
+      setError("Escolha uma categoria de destino para os produtos.");
       return;
     }
     setBusy(true);
-    setError('');
+    setError("");
     try {
       await deleteCatalogCategory(category, target?.id ?? null, token);
       onChanged({ previous: category, destination: target });
@@ -207,7 +207,7 @@ export function CategoryEditor({
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível excluir a categoria.',
+          : "Não foi possível excluir a categoria.",
       );
     } finally {
       setBusy(false);
@@ -215,9 +215,9 @@ export function CategoryEditor({
   }
 
   const tabs = [
-    ['details', 'Dados e tópicos'],
-    ['products', 'Ordem dos produtos'],
-    ['categories', 'Ordem das categorias'],
+    ["details", "Dados e tópicos"],
+    ["products", "Ordem dos produtos"],
+    ["categories", "Ordem das categorias"],
   ] as const;
   const topicForm = topicEditor && (
     <div className="flex items-end gap-1 rounded-lg bg-surface/70 p-2">
@@ -231,7 +231,7 @@ export function CategoryEditor({
             setTopicEditor({ ...topicEditor, name: event.target.value })
           }
           onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+            if (event.key === "Enter" && !event.nativeEvent.isComposing) {
               event.preventDefault();
               confirmTopic();
             }
@@ -254,7 +254,7 @@ export function CategoryEditor({
         title="Cancelar tópico"
         onClick={() => {
           setTopicEditor(null);
-          setError('');
+          setError("");
         }}
       >
         <X size={15} aria-hidden="true" />
@@ -278,14 +278,14 @@ export function CategoryEditor({
               onClick={() => setSection(id)}
               className={
                 catalogSecondary +
-                ' aria-pressed:border-primary/20 aria-pressed:bg-primary/5'
+                " aria-pressed:border-primary/20 aria-pressed:bg-primary/5"
               }
             >
               {title}
             </button>
           ))}
         </div>
-        {section === 'details' && (
+        {section === "details" && (
           <>
             <div className={panel}>
               <label className="block max-w-xl space-y-2 text-sm">
@@ -308,8 +308,8 @@ export function CategoryEditor({
                   type="button"
                   disabled={!!topicEditor || topics.length >= 100}
                   onClick={() => {
-                    setError('');
-                    setTopicEditor({ id: '', name: '' });
+                    setError("");
+                    setTopicEditor({ id: "", name: "" });
                   }}
                   className="ui-quiet-action"
                 >
@@ -347,9 +347,9 @@ export function CategoryEditor({
                           type="button"
                           disabled={!!topicEditor}
                           className={actionIcon}
-                          aria-label={'Editar tópico ' + topic.name}
+                          aria-label={"Editar tópico " + topic.name}
                           onClick={() => {
-                            setError('');
+                            setError("");
                             setTopicEditor(topic);
                           }}
                         >
@@ -358,7 +358,7 @@ export function CategoryEditor({
                         <button
                           type="button"
                           className={actionIcon}
-                          aria-label={'Excluir tópico ' + topic.name}
+                          aria-label={"Excluir tópico " + topic.name}
                           onClick={() =>
                             setTopics((current) =>
                               current.filter((item) => item.id !== topic.id),
@@ -372,11 +372,16 @@ export function CategoryEditor({
                   </li>
                 ))}
               </ul>
-              {topicEditor?.id === '' && topicForm}
+              {topicEditor?.id === "" && topicForm}
+              <p className="text-xs text-muted">
+                Confirmar tópico prepara esta lista. Clique em Guardar
+                alterações para gravar a categoria. Depois, selecione os tópicos
+                no produto desejado e guarde o produto.
+              </p>
             </section>
           </>
         )}
-        {section === 'products' && (
+        {section === "products" && (
           <section className={panel} aria-label="Ordem dos produtos">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-sm text-muted flex-1">
@@ -423,7 +428,7 @@ export function CategoryEditor({
                   const row = rows.find((r) => r.id === associate);
                   if (!row) return;
                   setBusy(true);
-                  setError('');
+                  setError("");
                   try {
                     const picked = category.topics.filter((t) =>
                       row.details.tags?.some(
@@ -451,7 +456,7 @@ export function CategoryEditor({
                     setError(
                       e instanceof Error
                         ? e.message
-                        : 'Não foi possível mover o produto.',
+                        : "Não foi possível mover o produto.",
                     );
                   } finally {
                     setBusy(false);
@@ -472,7 +477,7 @@ export function CategoryEditor({
             />
           </section>
         )}
-        {section === 'categories' && (
+        {section === "categories" && (
           <section className={panel} aria-label="Ordem das categorias">
             <p className="text-sm text-muted">
               Esta ordem aparece nos atalhos e no catálogo da loja.
@@ -504,8 +509,8 @@ export function CategoryEditor({
               <>
                 <label className="block max-w-md space-y-1 text-sm">
                   <span>
-                    Mover {originalProducts.length}{' '}
-                    {originalProducts.length === 1 ? 'produto' : 'produtos'}{' '}
+                    Mover {originalProducts.length}{" "}
+                    {originalProducts.length === 1 ? "produto" : "produtos"}{" "}
                     para
                   </span>
                   <AppSelect
@@ -536,7 +541,7 @@ export function CategoryEditor({
                 className={catalogSecondary}
                 onClick={() => {
                   setDeleting(false);
-                  setError('');
+                  setError("");
                 }}
               >
                 Cancelar exclusão
@@ -554,7 +559,7 @@ export function CategoryEditor({
         )}
         <div className="admin-actions">
           <button type="submit" className={catalogPrimary}>
-            {busy ? 'A guardar…' : 'Guardar alterações'}
+            {busy ? "A guardar…" : "Guardar alterações"}
           </button>
           <button type="button" className="ui-quiet-action" onClick={onBack}>
             Cancelar edição

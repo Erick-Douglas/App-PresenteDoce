@@ -206,7 +206,7 @@ export function Sidebar({
                       size={17}
                       strokeWidth={1.65}
                       aria-hidden="true"
-                      className="text-muted group-hover:text-primary"
+                      className="menu-group-icon"
                     />
                     <span>{label}</span>
                   </button>

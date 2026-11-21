@@ -1,8 +1,8 @@
-import { Menu, Share2 } from 'lucide-react';
-import { useState } from 'react';
-import { BUSINESS_INFO } from '../config/constants';
-import { useStore } from '../features/platform/StoreProvider';
-import { imageUrl } from '../features/products/catalogApi';
+import { Menu, Share2 } from "lucide-react";
+import { useState } from "react";
+import { BUSINESS_INFO } from "../config/constants";
+import { useStore } from "../features/platform/StoreProvider";
+import { imageUrl } from "../features/products/catalogApi";
 
 interface HeaderProps {
   onOpenMenu: () => void;
@@ -11,25 +11,25 @@ interface HeaderProps {
 
 export function Header({ onOpenMenu, showShare = true }: HeaderProps) {
   const { store } = useStore();
-  const [shareNotice, setShareNotice] = useState('');
+  const [shareNotice, setShareNotice] = useState("");
 
   const handleShare = async () => {
     const { name, description, website } = BUSINESS_INFO;
-    setShareNotice('');
+    setShareNotice("");
     if (navigator.share) {
       try {
         await navigator.share({ title: name, text: description, url: website });
         return;
       } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError')
+        if (error instanceof DOMException && error.name === "AbortError")
           return;
       }
     }
     try {
       await navigator.clipboard.writeText(
-        [name, description, website].join('\n'),
+        [name, description, website].join("\n"),
       );
-      setShareNotice('Descrição e link copiados.');
+      setShareNotice("Descrição e link copiados.");
     } catch {
       setShareNotice(website);
     }
@@ -39,15 +39,15 @@ export function Header({ onOpenMenu, showShare = true }: HeaderProps) {
     <header className="relative text-on-strong">
       <div
         className={
-          'page-width grid grid-cols-[2.75rem_1fr_2.75rem] items-center ' +
-          (showShare ? 'min-h-24 pt-3 sm:min-h-28' : 'min-h-18')
+          "page-width grid grid-cols-[2.75rem_1fr_2.75rem] items-center " +
+          (showShare ? "min-h-24 pt-3 sm:min-h-28" : "min-h-18")
         }
       >
         <button
           type="button"
           aria-label="Abrir menu"
           onClick={onOpenMenu}
-          className="store-icon-action"
+          className="store-icon-action masthead-menu"
         >
           <Menu size={21} strokeWidth={1.6} aria-hidden="true" />
         </button>
@@ -56,7 +56,7 @@ export function Header({ onOpenMenu, showShare = true }: HeaderProps) {
           alt={BUSINESS_INFO.name}
           width={1176}
           height={521}
-          className={'mx-auto h-auto ' + (showShare ? 'w-36 sm:w-40' : 'w-28')}
+          className={"mx-auto h-auto " + (showShare ? "w-36 sm:w-40" : "w-28")}
         />
         {showShare && (
           <button

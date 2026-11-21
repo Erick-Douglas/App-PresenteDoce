@@ -1,4 +1,4 @@
-import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, Plus } from "lucide-react";
 import type { Product } from "../config/types";
 import { currencySymbol } from "../features/checkout/order";
 import { LiveProductStock } from "../features/platform/LiveEditing";
@@ -27,7 +27,7 @@ export function CatalogCard({
     .filter((s) => s.product_id === product.id)
     .reduce((sum, s) => sum + s.available, 0);
   const needsOptions = product.configuravel || ready;
-  const CartIcon = needsOptions ? ArrowUpRight : ShoppingBag;
+  const CartIcon = needsOptions ? ArrowUpRight : Plus;
   const cartAction = needsOptions ? "Personalizar " : "Adicionar ao carrinho ";
 
   return (
@@ -86,15 +86,17 @@ export function CatalogCard({
           data-active={inCart}
         >
           <CartIcon size={15} strokeWidth={1.7} aria-hidden="true" />
-          <span>{needsOptions ? "Escolher" : "Adicionar"}</span>
+          <span className="sr-only">
+            {needsOptions ? "Escolher" : "Adicionar"}
+          </span>
         </button>
       </div>
       {onEdit && (
-        <div className="flex justify-end border-t border-muted-fill px-3 sm:px-4">
+        <div className="catalog-live-row border-t border-muted-fill px-3 sm:px-4">
           <ProductEditButton product={product} onEdit={onEdit} />
+          <LiveProductStock product={product} />
         </div>
       )}
-      <LiveProductStock product={product} />
     </article>
   );
 }

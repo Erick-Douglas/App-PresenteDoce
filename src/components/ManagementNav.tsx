@@ -5,30 +5,30 @@ import {
   Eye,
   EyeOff,
   LayoutDashboard,
-  Menu,
+  MoreHorizontal,
   Package,
   Settings,
   Store,
   Users,
   Wallet,
-} from 'lucide-react';
-import type { View } from '../config/types';
+} from "lucide-react";
+import type { View } from "../config/types";
 export const managementLinks: {
   view: View;
   label: string;
   icon: typeof Store;
 }[] = [
-  { view: 'home', label: 'Vitrine', icon: Store },
-  { view: 'dashboard', label: 'Visão geral', icon: LayoutDashboard },
-  { view: 'orders', label: 'Encomendas', icon: ClipboardList },
-  { view: 'agenda', label: 'Agenda e produção', icon: CalendarDays },
-  { view: 'finance', label: 'Financeiro', icon: Wallet },
-  { view: 'customers', label: 'Clientes', icon: Users },
-  { view: 'catalog-admin', label: 'Catálogo', icon: Package },
-  { view: 'pricing', label: 'Precificação', icon: Calculator },
-  { view: 'inventory', label: 'Pronta entrega', icon: Package },
-  { view: 'ingredients', label: 'Ingredientes', icon: Package },
-  { view: 'store-settings', label: 'Configurações da loja', icon: Settings },
+  { view: "home", label: "Vitrine", icon: Store },
+  { view: "dashboard", label: "Visão geral", icon: LayoutDashboard },
+  { view: "orders", label: "Encomendas", icon: ClipboardList },
+  { view: "agenda", label: "Agenda e produção", icon: CalendarDays },
+  { view: "finance", label: "Financeiro", icon: Wallet },
+  { view: "customers", label: "Clientes", icon: Users },
+  { view: "catalog-admin", label: "Catálogo", icon: Package },
+  { view: "pricing", label: "Precificação", icon: Calculator },
+  { view: "inventory", label: "Pronta entrega", icon: Package },
+  { view: "ingredients", label: "Ingredientes", icon: Package },
+  { view: "store-settings", label: "Configurações da loja", icon: Settings },
 ];
 export function ManagementNav({
   current,
@@ -46,20 +46,20 @@ export function ManagementNav({
   return (
     <>
       <aside
-        className={'management-rail ' + (preview ? 'is-preview' : '')}
+        className={"management-rail " + (preview ? "is-preview" : "")}
         aria-label="Gestão da loja"
       >
         <div className="management-brand">Gestão da loja</div>
         <button className="ui-secondary preview-action" onClick={onPreview}>
-          {preview ? <EyeOff size={16} /> : <Eye size={16} />}{' '}
-          {preview ? 'Voltar à gestão' : 'Pré-visualizar como cliente'}
+          {preview ? <EyeOff size={16} /> : <Eye size={16} />}{" "}
+          {preview ? "Voltar à gestão" : "Pré-visualizar como cliente"}
         </button>
         {!preview && (
           <nav>
             {managementLinks.map(({ view, label, icon: Icon }) => (
               <button
                 key={view}
-                aria-current={current === view ? 'page' : undefined}
+                aria-current={current === view ? "page" : undefined}
                 onClick={() => onNavigate(view)}
               >
                 <Icon size={18} strokeWidth={1.6} />
@@ -67,7 +67,7 @@ export function ManagementNav({
               </button>
             ))}
             <button onClick={onMenu}>
-              <Menu size={18} /> Mais opções
+              <MoreHorizontal size={18} /> Mais opções
             </button>
           </nav>
         )}
@@ -82,22 +82,22 @@ export function ManagementNav({
           <>
             {managementLinks
               .filter((l) =>
-                ['home', 'agenda', 'customers', 'finance'].includes(l.view),
+                ["home", "agenda", "customers", "finance"].includes(l.view),
               )
               .map(({ view, label, icon: Icon }) => (
                 <button
                   key={view}
-                  aria-current={current === view ? 'page' : undefined}
+                  aria-current={current === view ? "page" : undefined}
                   onClick={() => onNavigate(view)}
                 >
                   <Icon size={19} strokeWidth={1.6} />
                   <span>
-                    {label === 'Agenda e produção' ? 'Agenda' : label}
+                    {label === "Agenda e produção" ? "Agenda" : label}
                   </span>
                 </button>
               ))}
             <button onClick={onMenu}>
-              <Menu size={19} />
+              <MoreHorizontal size={19} />
               Mais
             </button>
           </>

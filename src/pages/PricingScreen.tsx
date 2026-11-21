@@ -1,19 +1,19 @@
 import { AppSelect } from "../components/AppSelect";
-import { Calculator, Plus, Save, Trash2 } from 'lucide-react';
-import { useEffect, useState, type FormEvent } from 'react';
-import { formatEuros } from '../features/checkout/order';
-import type { Ingredient as ManagedIngredient } from '../features/platform/types';
-import { parseDecimal } from '../features/pricing/calculation';
+import { Calculator, Plus, Save, Trash2 } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
+import { formatEuros } from "../features/checkout/order";
+import type { Ingredient as ManagedIngredient } from "../features/platform/types";
+import { parseDecimal } from "../features/pricing/calculation";
 import {
   applyProductPrice,
   listPricingRecipes,
   savePricingRecipe,
   type PricingRecipe,
   type PricingRow,
-} from '../features/pricing/pricingApi';
-import { validatePricingRecipe } from '../features/pricing/recipe';
-import type { CatalogRow } from '../features/products/catalogApi';
-import { activeStoreId, pilotStoreId } from '../features/products/storeContext';
+} from "../features/pricing/pricingApi";
+import { validatePricingRecipe } from "../features/pricing/recipe";
+import type { CatalogRow } from "../features/products/catalogApi";
+import { activeStoreId, pilotStoreId } from "../features/products/storeContext";
 
 type Ingredient = {
   ingredientId?: string;
@@ -28,36 +28,36 @@ type Recipe = PricingRecipe;
 type Pricing = ReturnType<typeof validatePricingRecipe>;
 const storageKey = () =>
   activeStoreId() === pilotStoreId
-    ? 'presente-doce-pricing-draft-v1'
-    : 'pricing-draft:' + activeStoreId();
-const input = 'ui-field';
+    ? "presente-doce-pricing-draft-v1"
+    : "pricing-draft:" + activeStoreId();
+const input = "ui-field";
 const emptyIngredient = (): Ingredient => ({
-  name: '',
-  unit: 'g',
-  packQuantity: '',
-  packPrice: '',
-  usedQuantity: '',
+  name: "",
+  unit: "g",
+  packQuantity: "",
+  packPrice: "",
+  usedQuantity: "",
 });
 const emptyRecipe = (): Recipe => ({
-  title: '',
-  yieldCount: '',
-  salePrice: '',
+  title: "",
+  yieldCount: "",
+  salePrice: "",
   ingredients: [emptyIngredient()],
 });
-const percent = new Intl.NumberFormat('pt-PT', {
-  style: 'percent',
+const percent = new Intl.NumberFormat("pt-PT", {
+  style: "percent",
   maximumFractionDigits: 2,
 });
 
 function readDraft(): Recipe {
   try {
     const value: Recipe = JSON.parse(
-      localStorage.getItem(storageKey()) ?? 'null',
+      localStorage.getItem(storageKey()) ?? "null",
     );
     if (
       !value ||
       ![value.title, value.yieldCount, value.salePrice].every(
-        (item) => typeof item === 'string',
+        (item) => typeof item === "string",
       ) ||
       !Array.isArray(value.ingredients) ||
       value.ingredients.length < 1 ||
@@ -71,7 +71,7 @@ function readDraft(): Recipe {
             row.packQuantity,
             row.packPrice,
             row.usedQuantity,
-          ].every((item) => typeof item === 'string'),
+          ].every((item) => typeof item === "string"),
       )
     )
       return emptyRecipe();
@@ -94,11 +94,11 @@ export default function PricingScreen({
 }) {
   const [recipe, setRecipe] = useState(readDraft);
   const [result, setResult] = useState<Pricing | null>(null);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [savedRecipes, setSavedRecipes] = useState<PricingRow[]>([]);
   const [saved, setSaved] = useState<PricingRow | null>(null);
-  const [productId, setProductId] = useState('');
+  const [productId, setProductId] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmPrice, setConfirmPrice] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -115,7 +115,7 @@ export default function PricingScreen({
           setError(
             cause instanceof Error
               ? cause.message
-              : 'Não foi possível carregar as fichas.',
+              : "Não foi possível carregar as fichas.",
           );
       })
       .finally(() => {
@@ -128,17 +128,17 @@ export default function PricingScreen({
     const row = savedRecipes.find((item) => item.id === id) ?? null;
     setSaved(row);
     setRecipe(row?.recipe ?? emptyRecipe());
-    setProductId(row?.product_id ?? '');
+    setProductId(row?.product_id ?? "");
     setResult(null);
-    setError('');
-    setNotice('');
+    setError("");
+    setNotice("");
     setConfirmPrice(false);
   }
 
   async function saveRecipe() {
     if (busy) return;
     setBusy(true);
-    setError('');
+    setError("");
     try {
       validatePricingRecipe(recipe);
       const row = await savePricingRecipe(
@@ -155,12 +155,12 @@ export default function PricingScreen({
         row,
         ...current.filter((item) => item.id !== row.id),
       ]);
-      setNotice('Ficha guardada na conta da confeitaria.');
+      setNotice("Ficha guardada na conta da confeitaria.");
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível guardar a ficha.',
+          : "Não foi possível guardar a ficha.",
       );
     } finally {
       setBusy(false);
@@ -170,23 +170,23 @@ export default function PricingScreen({
   async function applyPrice() {
     if (!product || busy) return;
     setBusy(true);
-    setError('');
+    setError("");
     try {
       validatePricingRecipe(recipe);
       const row = await applyProductPrice(
         product,
         recipe.salePrice,
-        recipe.variant ?? '',
+        recipe.variant ?? "",
         token,
       );
       onProductChanged(row);
-      setNotice('Preço atualizado no catálogo.');
+      setNotice("Preço atualizado no catálogo.");
       setConfirmPrice(false);
     } catch (cause) {
       setError(
         cause instanceof Error
           ? cause.message
-          : 'Não foi possível aplicar o preço.',
+          : "Não foi possível aplicar o preço.",
       );
     } finally {
       setBusy(false);
@@ -196,8 +196,8 @@ export default function PricingScreen({
   function update(fields: Partial<Recipe>) {
     setRecipe((current) => ({ ...current, ...fields }));
     setResult(null);
-    setError('');
-    setNotice('');
+    setError("");
+    setNotice("");
     setConfirmPrice(false);
   }
 
@@ -211,13 +211,13 @@ export default function PricingScreen({
 
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError('');
+    setError("");
     setResult(null);
     try {
       setResult(validatePricingRecipe(recipe));
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : 'Não foi possível calcular.',
+        cause instanceof Error ? cause.message : "Não foi possível calcular.",
       );
     }
   }
@@ -225,9 +225,9 @@ export default function PricingScreen({
   function saveDraft() {
     try {
       localStorage.setItem(storageKey(), JSON.stringify(recipe));
-      setNotice('Rascunho guardado neste navegador.');
+      setNotice("Rascunho guardado neste navegador.");
     } catch {
-      setNotice('Este navegador não permitiu guardar o rascunho.');
+      setNotice("Este navegador não permitiu guardar o rascunho.");
     }
   }
 
@@ -237,23 +237,31 @@ export default function PricingScreen({
     } catch {
       /* The in-memory form can still be cleared. */
     }
-    chooseRecipe('');
+    chooseRecipe("");
     setNotice(
-      'Rascunho local limpo. As fichas guardadas na conta foram preservadas.',
+      "Rascunho local limpo. As fichas guardadas na conta foram preservadas.",
     );
   }
 
   return (
     <div className="admin-form">
+      <p className="pricing-state">
+        {saved
+          ? "Ficha guardada na conta · As alterações só ficam guardadas ao clicar em Guardar ficha."
+          : "Nova ficha · O rascunho local fica apenas neste navegador."}{" "}
+        O preço da vitrine só muda após Aplicar preço e confirmação.
+      </p>
       <section className="ui-glass-panel space-y-3">
-        <h2 className="type-item text-primary">Fichas da confeitaria</h2>
+        <h2 className="type-item pricing-step">
+          <span>1</span>Ficha e produto
+        </h2>
         <label className="block space-y-1">
           <span>Ficha guardada</span>
           <AppSelect
             aria-label="Ficha guardada"
             className="ui-field"
             disabled={busy || loading}
-            value={saved?.id ?? ''}
+            value={saved?.id ?? ""}
             onChange={(event) => chooseRecipe(event.target.value)}
           >
             <option value="">Nova ficha</option>
@@ -262,7 +270,7 @@ export default function PricingScreen({
                 {row.recipe.title ||
                   rows.find((product) => product.id === row.product_id)?.details
                     .name ||
-                  'Ficha sem título'}
+                  "Ficha sem título"}
               </option>
             ))}
           </AppSelect>
@@ -283,9 +291,9 @@ export default function PricingScreen({
               const item = rows.find((row) => row.id === event.target.value);
               setProductId(event.target.value);
               update({
-                title: recipe.title || item?.details.name || '',
+                title: recipe.title || item?.details.name || "",
                 salePrice: item ? String(item.details.price) : recipe.salePrice,
-                variant: '',
+                variant: "",
               });
             }}
           >
@@ -293,7 +301,7 @@ export default function PricingScreen({
             {rows.map((row) => (
               <option key={row.id} value={row.id}>
                 {row.details.name}
-                {row.published ? '' : ' · Rascunho'}
+                {row.published ? "" : " · Rascunho"}
               </option>
             ))}
           </AppSelect>
@@ -305,7 +313,7 @@ export default function PricingScreen({
               aria-label="Tamanho ou opção"
               className="ui-field"
               disabled={busy}
-              value={recipe.variant ?? ''}
+              value={recipe.variant ?? ""}
               onChange={(event) => {
                 const option = product.details.variants?.find(
                   (item) => item.label === event.target.value,
@@ -333,7 +341,9 @@ export default function PricingScreen({
       <form onSubmit={calculate} className="admin-form">
         <fieldset disabled={busy} className="admin-form">
           <section className="ui-glass-panel space-y-3">
-            <h2 className="type-item text-primary">Dados da receita</h2>
+            <h2 className="type-item pricing-step">
+              <span>2</span>Dados e rendimento
+            </h2>
             <label className="block space-y-1">
               <span>Nome da receita (opcional)</span>
               <input
@@ -374,7 +384,9 @@ export default function PricingScreen({
           </section>
           <section className="ui-glass-panel space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-x-3">
-              <h2 className="type-item text-primary">Ingredientes e custos</h2>
+              <h2 className="type-item pricing-step">
+                <span>3</span>Ingredientes e custos
+              </h2>
               <button
                 type="button"
                 className="ui-quiet-action"
@@ -385,7 +397,7 @@ export default function PricingScreen({
                   })
                 }
               >
-                <Plus size={15} strokeWidth={1.65} aria-hidden="true" />{' '}
+                <Plus size={15} strokeWidth={1.65} aria-hidden="true" />{" "}
                 Adicionar custo
               </button>
             </div>
@@ -407,14 +419,14 @@ export default function PricingScreen({
                     className="ui-field"
                     value={
                       row.ingredientId
-                        ? 'i:' + row.ingredientId
+                        ? "i:" + row.ingredientId
                         : row.recipeId
-                          ? 'r:' + row.recipeId
-                          : ''
+                          ? "r:" + row.recipeId
+                          : ""
                     }
                     onChange={(e) => {
-                      const [kind, id] = e.target.value.split(':');
-                      if (kind === 'i') {
+                      const [kind, id] = e.target.value.split(":");
+                      if (kind === "i") {
                         const i = ingredients.find((v) => v.id === id);
                         if (i)
                           updateIngredient(index, {
@@ -425,7 +437,7 @@ export default function PricingScreen({
                             packQuantity: String(i.pack_quantity),
                             packPrice: String(i.pack_price_cents / 100),
                           });
-                      } else if (kind === 'r') {
+                      } else if (kind === "r") {
                         const r = savedRecipes.find((v) => v.id === id);
                         if (r) {
                           try {
@@ -434,13 +446,13 @@ export default function PricingScreen({
                               recipeId: id,
                               ingredientId: undefined,
                               name: r.recipe.title,
-                              unit: 'un',
+                              unit: "un",
                               packQuantity: r.recipe.yieldCount,
                               packPrice: String(result.totalCost),
                             });
                           } catch {
                             setError(
-                              'Esta sub-receita precisa de uma ficha válida antes de ser usada.',
+                              "Esta sub-receita precisa de uma ficha válida antes de ser usada.",
                             );
                           }
                         }
@@ -454,7 +466,7 @@ export default function PricingScreen({
                     <option value="">Custo manual</option>
                     <optgroup label="Ingredientes cadastrados">
                       {ingredients.map((i) => (
-                        <option key={i.id} value={'i:' + i.id}>
+                        <option key={i.id} value={"i:" + i.id}>
                           {i.name} · {i.brand}
                         </option>
                       ))}
@@ -463,8 +475,8 @@ export default function PricingScreen({
                       {savedRecipes
                         .filter((r) => r.id !== saved?.id)
                         .map((r) => (
-                          <option key={r.id} value={'r:' + r.id}>
-                            {r.recipe.title || 'Ficha sem título'}
+                          <option key={r.id} value={"r:" + r.id}>
+                            {r.recipe.title || "Ficha sem título"}
                           </option>
                         ))}
                     </optgroup>
@@ -569,7 +581,7 @@ export default function PricingScreen({
                       })
                     }
                   >
-                    <Trash2 size={14} strokeWidth={1.65} aria-hidden="true" />{' '}
+                    <Trash2 size={14} strokeWidth={1.65} aria-hidden="true" />{" "}
                     Remover custo {index + 1}
                   </button>
                 )}
@@ -581,7 +593,7 @@ export default function PricingScreen({
               type="submit"
               className="ui-primary inline-flex items-center gap-2"
             >
-              <Calculator size={15} strokeWidth={1.65} aria-hidden="true" />{' '}
+              <Calculator size={15} strokeWidth={1.65} aria-hidden="true" />{" "}
               Calcular receita
             </button>
             <button
@@ -597,7 +609,7 @@ export default function PricingScreen({
               className="ui-secondary"
               onClick={() => void saveRecipe()}
             >
-              {busy ? 'A guardar…' : 'Guardar ficha'}
+              {busy ? "A guardar…" : "Guardar ficha"}
             </button>
             <button
               type="button"
@@ -624,21 +636,23 @@ export default function PricingScreen({
       </form>
       {result && (
         <section className="ui-glass-panel" aria-live="polite">
-          <h2 className="type-item text-primary">Resultado da simulação</h2>
+          <h2 className="type-item pricing-step">
+            <span>4</span>Resultado da simulação
+          </h2>
           <dl className="pricing-results mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {[
-              ['Custo total', formatEuros(result.totalCost)],
-              ['Custo por unidade', formatEuros(result.unitCost)],
-              ['Venda total', formatEuros(result.totalSales)],
-              ['Lucro total', formatEuros(result.totalProfit)],
-              ['Lucro por unidade', formatEuros(result.unitProfit)],
+              ["Custo total", formatEuros(result.totalCost)],
+              ["Custo por unidade", formatEuros(result.unitCost)],
+              ["Venda total", formatEuros(result.totalSales)],
+              ["Lucro total", formatEuros(result.totalProfit)],
+              ["Lucro por unidade", formatEuros(result.unitProfit)],
               [
-                'Markup',
-                result.markup === null ? '—' : percent.format(result.markup),
+                "Markup",
+                result.markup === null ? "—" : percent.format(result.markup),
               ],
               [
-                'Margem',
-                result.margin === null ? '—' : percent.format(result.margin),
+                "Margem",
+                result.margin === null ? "—" : percent.format(result.margin),
               ],
             ].map(([label, value]) => (
               <div
@@ -659,7 +673,7 @@ export default function PricingScreen({
             <div className="mt-4 space-y-2 border-t border-outline pt-3">
               <p className="text-sm">
                 Produto associado <strong>{product.details.name}</strong>
-                {recipe.variant ? ' · ' + recipe.variant : ''}
+                {recipe.variant ? " · " + recipe.variant : ""}
               </p>
               {confirmPrice ? (
                 <>
