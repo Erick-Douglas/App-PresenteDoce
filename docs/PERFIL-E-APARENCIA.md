@@ -4,7 +4,7 @@
 
 - Avatar circular de 40 px à esquerda do cabeçalho, menu à direita. Ícone UserRound quando não há foto ou sessão. A fotografia pertence à conta, não à marca da loja.
 - Visitante mantém painel compacto de 300 px à direita; gestão abre um menu que ocupa o viewport. Em tablet/desktop, os grupos distribuem-se em colunas. Voltar continua no cabeçalho dos módulos, antes do menu.
-- Títulos de grupo fora dos cartões. Cada módulo usa uma pílula com ícone em superfície suave e texto, cerca de 52 px de altura em celular. Alvo de toque preservado. Partilhar catálogo passa ao menu.
+- Títulos de grupo fora dos cartões. Cada módulo usa uma pílula com ícone em superfície suave e texto, cerca de 52 px de altura em celular. Alvo de toque preservado. Partilhar catálogo passa ao menu. Ao fechar perfil/menu com Esc ou o botão de fechar, o foco retorna ao controle que abriu o diálogo; fechar nativamente antes de desmontar o componente.
 - Edição de categoria: alvo 48 px, ícone 26 px, maior que o produto (44 px/19 px). Ambos usam fundo translúcido, blur e contorno de vidro.
 - Perfil e aparência oferece Claro, Escuro e Sistema. Sistema é o padrão. A escolha é guardada neste navegador/dispositivo; não altera o tema de outros utilizadores nem as cores gravadas da loja.
 

@@ -86,10 +86,24 @@ try {
   assert.equal(box.width, 300);
   assert.equal(Math.round(box.x + box.width), 390);
   await page.screenshot({ path: out + "/guest-menu-light.png" });
-  await click("Fechar menu");
+  await page.keyboard.press("Escape");
+  assert.equal(await drawer.isVisible(), false);
+  assert.equal(
+    await page.evaluate(() =>
+      document.activeElement?.getAttribute("aria-label"),
+    ),
+    "Abrir menu",
+  );
   await theme("Escuro");
   await checkTheme("dark");
-  await click("Fechar");
+  await page.keyboard.press("Escape");
+  assert.equal(await page.getByRole("dialog").count(), 0);
+  assert.equal(
+    await page.evaluate(() =>
+      document.activeElement?.getAttribute("aria-label"),
+    ),
+    "Perfil e aparência",
+  );
   await page.reload();
   await checkTheme("dark");
   await page
